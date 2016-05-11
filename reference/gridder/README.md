@@ -10,7 +10,9 @@ cmake .
 make
 ``` 
 
-# How to run
+## How to run
+```
 cd input-data
 ./gridder vla-sim cpu-vla-sim
+```
 
