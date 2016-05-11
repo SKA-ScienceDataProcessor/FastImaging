@@ -1,0 +1,9 @@
+cell_size:	0.4
+pixels_uv:	2048
+w_planes:	4
+oversample:	1
+frequency:	2500000000
+input-ra:	180
+input-dec:	34
+output-ra:	180
+output-dec:	34
