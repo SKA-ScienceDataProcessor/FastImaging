@@ -7,4 +7,5 @@
 - include: public header files
 - src: all other files (.cpp and .h)
 - test: unit tests
+- third-party: external code, such as libraries
 - tools: auxiliary tools

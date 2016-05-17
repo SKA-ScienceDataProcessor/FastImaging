@@ -1,11 +1,28 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(gridder)
 
-find_library(LIBFFTW3_DIR fftw3)
+enable_testing()
 
-set(CMAKE_CXX_FLAGS "-O3 -Wall")
+# Dependencies
+find_library(LIBFFTW3 fftw3)
+find_package(Threads REQUIRED) # libbenchmark needs this
+
+# Build options
+add_compile_options(-Wall -O3 -march=native)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../input-data)
-set(SOURCE_FILES ../src/cppGridderPrototype.cpp ../src/phasecorrection.cpp)
-include_directories(../src)
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${LIBFFTW3_DIR})
+
+# Build target
+set(GRIDDER_SOURCE_FILES ../src/cppGridderPrototype.cpp ../src/phasecorrection.cpp)
+include_directories(../src ../../../third-party/benchmark/include)
+add_executable(${PROJECT_NAME} ${GRIDDER_SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} ${LIBFFTW3})
+
+# Build tests
+set(TEST_SOURCE_FILES ../src/gridder_performance_test.cpp)
+add_executable(gridder_performance_test ${TEST_SOURCE_FILES})
+set(LIBBENCHMARK ${CMAKE_CURRENT_SOURCE_DIR}/../../../third-party/benchmark/src/libbenchmark.a)
+target_link_libraries(gridder_performance_test ${LIBBENCHMARK} ${CMAKE_THREAD_LIBS_INIT})
+
+# Tests
+add_test(NAME performance COMMAND gridder_performance_test)
+
