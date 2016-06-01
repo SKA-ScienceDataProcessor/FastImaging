@@ -22,7 +22,7 @@ set(TEST_SOURCE_FILES ../src/gridder_performance_test.cpp)
 add_executable(gridder_performance_test ${TEST_SOURCE_FILES} ${GRIDDER_SOURCE_FILES})
 set_property(TARGET gridder_performance_test PROPERTY CXX_STANDARD 11)
 
-# TODO
+# TESTING inhibits console output on original code and its main function
 target_compile_definitions(gridder_performance_test PRIVATE -DTESTING )
 set(LIBBENCHMARK ${CMAKE_CURRENT_SOURCE_DIR}/../../../third-party/benchmark/src/libbenchmark.a)
 target_link_libraries(gridder_performance_test ${LIBBENCHMARK} ${CMAKE_THREAD_LIBS_INIT} ${LIBFFTW3})
