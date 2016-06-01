@@ -73,54 +73,54 @@ typedef struct VectorF VectorF;
 //
 
 // grid parameters.
-double _cellSize = 0;		// the angular size of each output pixel
-double _uvCellSize = 0;		// in units of lambda
-int _uvPixels = 0;
-int _wPlanes = 0;
-double _inputRA = 0;
-double _inputDEC = 0;
-double _outputRA = 0;
-double _outputDEC = 0;
+extern double _cellSize;		// the angular size of each output pixel
+extern double _uvCellSize;		// in units of lambda
+extern int _uvPixels;
+extern int _wPlanes;
+extern double _inputRA;
+extern double _inputDEC;
+extern double _outputRA;
+extern double _outputDEC;
 	
 // samples.
-int _numSamples = 0;
-VectorF * _sample = NULL;
+extern int _numSamples;
+extern VectorF * _sample;
 
 // channels.
-int _numChannels = 0;
-double * _wavelength = NULL;
+extern int _numChannels;
+extern double * _wavelength;
 	
 // w-plane details.
-double * _wPlaneMean = NULL;
-double * _wPlaneMax = NULL;
+extern double * _wPlaneMean;
+extern double * _wPlaneMax;
 	
 // visibilities.
-complex<double> * _visibility = NULL;
+extern complex<double> * _visibility;
 	
 // kernel parameters.
-double _oversample = 0;
-int _support = 0;
-int _kernelSize = 0;
+extern double _oversample;
+extern int _support;
+extern int _kernelSize;
 
 // anti-aliasing kernel parameters.
-int _aaSupport = 0;
-int _aaKernelSize = 0;
+extern int _aaSupport;
+extern int _aaKernelSize;
 
 // w-kernel parameters.
-int _wSupport = 0;
-int _wKernelSize = 0;
+extern int _wSupport;
+extern int _wKernelSize;
 
 // kernel data.
-complex<double> * _kernel = NULL;
+extern complex<double> * _kernel;
 	
 // store the anti-aliasing kernel (with no oversampling) because we will need to remove this from the image domain.
-complex<double> * _aaKernel = NULL;
+extern complex<double> * _aaKernel;
 	
 // gridded data.
-complex<double> * _grid = NULL;
+extern complex<double> * _grid;
 	
 // deconvolution image.
-complex<double> * _deconvolutionImage = NULL;
+extern complex<double> * _deconvolutionImage;
 
 //
 //	GENERAL FUNCTIONS

@@ -518,10 +518,11 @@ Matrix PhaseCorrection::reprojectUV()
 	// get the 2x2 inverse and then the 2x2 transpose.
 	rotationMatrixReduced = transpose( inverse2x2( rotationMatrixReduced ) );
 	
+        #ifndef TESTING
 	// display reduced matrix for debugging.
 	printf( "rot4: 11 (%f), 12 (%f), 21 (%f), 22 (%f)\n\n", rotationMatrixReduced.a11, rotationMatrixReduced.a12,
-								rotationMatrixReduced.a21, rotationMatrixReduced.a22 );
-	
+        							rotationMatrixReduced.a21, rotationMatrixReduced.a22 );
+	#endif
 	// return something.
 	return rotationMatrixReduced;
 	
@@ -560,12 +561,16 @@ void PhaseCorrection::init()
 	// finally, rotate into UVW coordinates relative to the output position.
 	_uvwRotation = multMatrix( convertXYZtoUVW( outCoords ), _uvwRotation );
 	
+        
+         #ifndef TESTING
 	printf( "\nuvrot matrix:\n\n"
 		"    %f %f %f\n"
 		"    %f %f %f\n"
 		"    %f %f %f\n",	_uvwRotation.a11, _uvwRotation.a12,_uvwRotation.a13,
 					_uvwRotation.a21, _uvwRotation.a22, _uvwRotation.a23,
 					_uvwRotation.a31, _uvwRotation.a32, _uvwRotation.a33 );
+        
+        #endif
   
 } // init
 

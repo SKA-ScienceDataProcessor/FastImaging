@@ -1,7 +1,57 @@
-#include "cppGridderPrototype.h"
-
+#include "/home/ca-santos/SKADEV/git/FastImaging/reference/gridder/src/cppGridderPrototype.h"
+#include <fftw3.h>
 // my phase correction code.
-#include "phasecorrection.h"
+#include "/home/ca-santos/SKADEV/git/FastImaging/reference/gridder/src/phasecorrection.h"
+
+double _cellSize = 0;
+double _uvCellSize = 0;		// in units of lambda
+int _uvPixels = 0;
+int _wPlanes = 0;
+double _inputRA = 0;
+double _inputDEC = 0;
+double _outputRA = 0;
+double _outputDEC = 0;
+	
+// samples.
+int _numSamples = 0;
+VectorF * _sample = NULL;
+
+// channels.
+int _numChannels = 0;
+double * _wavelength = NULL;
+	
+// w-plane details.
+double * _wPlaneMean = NULL;
+double * _wPlaneMax = NULL;
+	
+// visibilities.
+complex<double> * _visibility = NULL;
+	
+// kernel parameters.
+double _oversample = 0;
+int _support = 0;
+int _kernelSize = 0;
+
+// anti-aliasing kernel parameters.
+int _aaSupport = 0;
+int _aaKernelSize = 0;
+
+// w-kernel parameters.
+int _wSupport = 0;
+int _wKernelSize = 0;
+
+// kernel data.
+complex<double> * _kernel = NULL;
+	
+// store the anti-aliasing kernel (with no oversampling) because we will need to remove this from the image domain.
+complex<double> * _aaKernel = NULL;
+	
+// gridded data.
+complex<double> * _grid = NULL;
+	
+// deconvolution image.
+complex<double> * _deconvolutionImage = NULL;
+
 
 using namespace std;
 
@@ -19,13 +69,14 @@ using namespace std;
 
 void performFFT( complex<double> * pGrid, int pSize, fftdirection pFFTDirection )
 {
-	
+#ifndef TESTING
 	printf( "performing fft.....\n" );
-
+#endif
+           
+           
 	// reserve some FFTW memory for the image, and generate a plan.
 	fftw_complex * gridFFT = (fftw_complex *) fftw_malloc( pSize * pSize * sizeof( fftw_complex ) );
 	fftw_plan fftPlan = fftw_plan_dft_2d( pSize, pSize, gridFFT, gridFFT, (pFFTDirection == INVERSE ? FFTW_BACKWARD : FFTW_FORWARD), FFTW_MEASURE );
-
 	// the floor and ceiling pivots will be the same if we have an even image size, and forward and inverse FFT shifts will
 	// be identical. but for uneven image sizes we must be more careful.
 	int floorPivot = (int) floor( (double)pSize / 2.0 );
@@ -46,10 +97,13 @@ void performFFT( complex<double> * pGrid, int pSize, fftdirection pFFTDirection 
 				jFrom = j - floorPivot;
 			memcpy( &gridFFT[ (j * pSize) + i ], &pGrid[ (jFrom * pSize) + iFrom ], sizeof( complex<double> ) );
 		}
+		
 	
 	// execute the fft.
 	fftw_execute( fftPlan );
-	
+        
+     
+        
 	// do forward FFT shift before FFTing.
 	for ( int i = 0; i < pSize; i++ )
 		for ( int j = 0; j < pSize; j++ )
@@ -64,6 +118,8 @@ void performFFT( complex<double> * pGrid, int pSize, fftdirection pFFTDirection 
 				jFrom = j - ceilPivot;
 			memcpy( &pGrid[ (j * pSize) + i ], &gridFFT[ (jFrom * pSize) + iFrom ], sizeof( complex<double> ) );
 		}
+		
+
 		
 	// destroy the FFT plan.
 	fftw_destroy_plan( fftPlan );
@@ -125,6 +181,9 @@ void quickSort( double * pValues, long int pLeft, long int pRight )
 void calculateKernelSize()
 {
 	
+   //     cout << "_uvPixels = " << _uvPixels << endl;
+   //     cout << "_cellSize = " << _cellSize << endl;
+    
 	// calculate the size of each uv pixel.
 	_uvCellSize = (1 / (_uvPixels * (_cellSize / 3600) * (PI / 180)));
 	
@@ -141,6 +200,8 @@ void calculateKernelSize()
 	
 	// convert the maximum baseline length into units of lambda.
 	//double maxBaselineLambda = maxBaseline / wavelength;
+        
+       
 		
 	// if we are using w-projection, we need to determine the distribution of w-planes.
 	if (_wPlanes > 1)
@@ -186,9 +247,9 @@ void calculateKernelSize()
 			_wPlaneMean[ i ] = totalW / (double)(maxVisibility - minVisibility);
 			
 		}
-		
+#ifndef TESTING
 		printf( "Maximum w-value: %f lambda\n", _wPlaneMax[ _wPlanes - 1 ] );
-		
+#endif
 		// free w-value memory.
 		free( wValue );
 			
@@ -214,6 +275,8 @@ void calculateKernelSize()
 	// my implementation of oversampling works correctly.
 	_kernelSize = (2 * _support) + 3;
 	
+#ifndef TESTING
+        
 	printf( "_support = %i\n", _support );
 	printf( "_aaSupport = %i\n", _aaSupport );
 	printf( "_wSupport = %i\n", _wSupport );
@@ -221,7 +284,9 @@ void calculateKernelSize()
 	//printf( "maxBaselineLambda = %f\n", maxBaselineLambda );
 	printf( "_cellSize = %f arcsec, %1.12f rad\n", _cellSize, (_cellSize / 3600) * (PI / 180) );
 	printf( "_uvCellSize = %f\n", _uvCellSize );
-	//printf( "frequency = %f Hz\n", frequency );
+	//printf( "frequency = %f Hz\n", frequency ); 
+#endif
+        
 	
 } // calculateKernelSize
 
@@ -236,6 +301,7 @@ void calculateKernelSize()
 void doPhaseCorrection()
 {
 	
+    
 	const char J2000[] = "J2000";
 	const double INTERVAL = 0.05; // progress is updated at these % intervals.
 	
@@ -256,8 +322,9 @@ void doPhaseCorrection()
 	phaseCorrection.init();
 	
 	int fraction = -1;
+#ifndef TESTING      
 	printf( "\nphase rotating visibilities.....\n" );
-	
+#endif
 	// loop through all the visibilities.
 	for ( int i = 0; i < _numSamples; i++ )
 	{
@@ -295,12 +362,16 @@ void doPhaseCorrection()
 		if ((double)i / (double)_numSamples >= ((double)(fraction + 1) * INTERVAL))
 		{
 			fraction = fraction + 1;
-			printf( "%i%%.", (int)(fraction * INTERVAL * 100) );
-			fflush( stdout );
+#ifndef TESTING
+        		printf( "%i%%.", (int)(fraction * INTERVAL * 100) );
+                        fflush( stdout );
+#endif
 		}
 		
 	}
+#ifndef TESTING
 	printf( "100%%\n" );
+#endif
 	
 } // doPhaseCorrection
 
@@ -564,7 +635,6 @@ void generateWKernel( complex<double> * pWKernel, int pImageSize, double pW, dou
 
 bool generateKernel()
 {
-	
 	bool ok = true;
 	double cellSizeRadians = (_cellSize / 3600.0) * (PI / 180.0);
 	
@@ -586,7 +656,7 @@ bool generateKernel()
 		
 	// reserve some memory for the global anti-aliasing kernel. this is used to remove the kernel convolution.
 	_aaKernel = (complex<double> *) malloc( _aaKernelSize * _aaKernelSize * sizeof( complex<double> ) );
-		
+        
 	// reserve some memory for a w-kernel.
 	complex<double> * wKernel = (complex<double> *) malloc( imageSize * imageSize * sizeof( complex<double> ) );
 	
@@ -605,14 +675,13 @@ bool generateKernel()
 	generateAAKernel( aaKernel, oversampledAAKernelSize, imageSize );
 	
 	// copy the anti-aliasing kernel from its temporary home into the global anti-aliasing kernel. it will be
-	// used later to deconvolve the dirty image.
+// 	// used later to deconvolve the dirty image.
 	updateKernel( _aaKernel, aaKernel, _aaSupport, imageSupport, 0, 0 );
-	
+        
 	// if we are using w-projection then we will need to combine the AA-kernel with the W-kernel, and, for this, we will
 	// need the AA-kernel to be in the image domain. FFT the AA-kernel.
 	if (_wPlanes > 1)
 		performFFT( aaKernel, imageSize, INVERSE );
-	
 	// calculate separate kernels for each w-value.
 	for ( int w_plane = 0; w_plane < _wPlanes; w_plane++ )
 	{
@@ -624,6 +693,8 @@ bool generateKernel()
 		{
 			
 			// generate a w-kernel with size [imageSize] in [wKernel].
+                    
+                       
 			generateWKernel( wKernel, imageSize, _wPlaneMean[ w_plane ], cellSizeRadians );
 			
 			// now we need to convolve the w-kernel and the AA-kernel. we don't do this is are not
@@ -632,9 +703,12 @@ bool generateKernel()
 				for ( int j = 0; j < imageSize; j++ )
 					wKernel[ (j * imageSize) + i ] *= aaKernel[ (j * imageSize) + i ];
 				
+                          cout << "perform wKernel fft *********"<<wKernel[0] << endl;      
+                                
 			// perform a 2D fft to move the kernel into the uv domain.
 			performFFT( wKernel, imageSize, FORWARD );
-			
+                        
+			cout << "first result fft wKernel " << wKernel[0] << endl;
 		}
 		else
 			
@@ -726,7 +800,6 @@ void getParameters()
 bool gridVisibilities( complex<double> * pGrid, complex<double> * pVisibility, int pOversample, int pKernelSize, int pSupport,
 			complex<double> * pKernel, int pWPlanes, VectorF * pSample, int pNumSamples, int pNumChannels )
 {
-	
 	const double INTERVAL = 0.05; // progress is updated at these % intervals.
 	bool ok = true;
 	
@@ -738,6 +811,7 @@ bool gridVisibilities( complex<double> * pGrid, complex<double> * pVisibility, i
 	// clear the memory.
 	memset( pGrid, 0, _uvPixels * _uvPixels * sizeof( complex<double> ) );
 	
+        
 	// loop through the samples.
 	int fraction = -1;
 	for ( long int sample = 0; sample < pNumSamples; sample++ )
@@ -747,9 +821,13 @@ bool gridVisibilities( complex<double> * pGrid, complex<double> * pVisibility, i
 		if ((double)sample / (double)pNumSamples >= ((double)(fraction + 1) * INTERVAL))
 		{
 			fraction = fraction + 1;
+#ifndef TESTING
 			printf( "%i%%.", (int)(fraction * INTERVAL * 100) );
 			fflush( stdout );
-		}
+#endif
+                }
+			
+                                        
 		
 		// loop through the channels.
 		for ( long int channel = 0; channel < pNumChannels; channel++ )
@@ -762,7 +840,7 @@ bool gridVisibilities( complex<double> * pGrid, complex<double> * pVisibility, i
 			uvwSample.u = uvwSample.u / _wavelength[ channel ];
 			uvwSample.v = uvwSample.v / _wavelength[ channel ];
 			uvwSample.w = uvwSample.w / _wavelength[ channel ];
-			
+                        
 			// get the u index (plus remainer).
 			double uExact = uvwSample.u / _uvCellSize;
 			int uGrid = floor( uExact );
@@ -781,7 +859,7 @@ bool gridVisibilities( complex<double> * pGrid, complex<double> * pVisibility, i
 				for ( int i = pWPlanes - 1; i >= 0; i-- )
 					if (uvwSample.w <= _wPlaneMax[ i ])
 						wGrid = i;
-				
+		
 			// calculate the kernel offset using the uOversample, vOversample and wGrid.
 			long int kernelIdx = (uOversample * pKernelSize * pKernelSize) + (vOversample * pKernelSize * pKernelSize * pOversample);
 						
@@ -820,7 +898,9 @@ bool gridVisibilities( complex<double> * pGrid, complex<double> * pVisibility, i
 		}
 		
 	}
+#ifndef TESTING
 	printf("100%%\n\n");
+#endif
 	
 	// return success/failure.
 	return ok;
@@ -891,7 +971,7 @@ bool loadData( char * pInputUVWFilename, char * pInputVisFilename, char * pInput
 	_visibility = (complex<double> *) malloc( sizeof( complex<double> ) * _numSamples * _numChannels );
 	
 	// read lines from input file again, storing visibilies.
-	int visibility = 0;
+	int visibility = 0;        
 	input = fopen( pInputVisFilename, "rt" );
 	while ( fgets(line, 1024, input) != NULL )
 	{
@@ -975,9 +1055,9 @@ bool saveBitmap( char * pOutputFilename, complex<double> * pGrid )
 			if (abs( pGrid[i] ) > max)
 				max = abs( pGrid[i] );
 		}
-		
+#ifndef TESTING
 		printf("min - %f, max - %f\n", min, max );
-		
+#endif
 		// add 1% allowance to max - we don't want saturation.
 		max = ((max - min) * 1.01) + min;
 		
@@ -1029,11 +1109,11 @@ bool generateImageOfConvolutionFunction( char * pDeconvolutionFilename )
 	
 	// create the deconvolution image.
 	_deconvolutionImage = (complex<double> *) malloc( _uvPixels * _uvPixels * sizeof( complex<double> ) );
-		
+        
 	// create a single visibility with a value of 1.
 	complex<double> * tmpVisibility = (complex<double> *) malloc( sizeof( complex<double> ) );
 	tmpVisibility[ 0 ] = 1;
-	
+        
 	// create a single uvw vector with a value of <0, 0, 0>.
 	VectorF * tmpSample = (VectorF *) malloc( sizeof( VectorF ) );
 	tmpSample[ 0 ].u = 0;
@@ -1041,9 +1121,12 @@ bool generateImageOfConvolutionFunction( char * pDeconvolutionFilename )
 	tmpSample[ 0 ].w = 0;
 		
 	// generate the deconvolution function by gridding a single visibility.
+#ifndef TESTING
 	printf( "\ngridding visibilities for deconvolution function.....\n" );
+#endif
+        
 	ok = gridVisibilities( _deconvolutionImage, tmpVisibility, 1, _aaKernelSize, _aaSupport, _aaKernel, 1, tmpSample, 1, 1 );
-		
+        
 	// FFT the gridded data to get the deconvolution map.
 	performFFT( _deconvolutionImage, _uvPixels, INVERSE );
 	
@@ -1052,7 +1135,9 @@ bool generateImageOfConvolutionFunction( char * pDeconvolutionFilename )
 	free( tmpSample );
 	
 	// save the deconvolution image.
+#ifndef TESTING
 	printf( "\npixel intensity range of deconvolution image:\n" );
+#endif
 	ok = saveBitmap( pDeconvolutionFilename, _deconvolutionImage );
 	
 	// return success flag.
@@ -1060,6 +1145,8 @@ bool generateImageOfConvolutionFunction( char * pDeconvolutionFilename )
 	
 } // generateImageOfConvolutionFunction
 
+
+#ifndef TESTING
 //
 //	main()
 //
@@ -1237,3 +1324,4 @@ int main( int pArgc, char ** pArgv )
 	return true;
 	
 } // main
+#endif

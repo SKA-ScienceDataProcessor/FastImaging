@@ -76,7 +76,7 @@ class PhaseCorrection
 //
 //	CONSTANTS
 //
-
+#ifndef TESTING            
 		static const double PI = 3.14159265359;
 	
 		// coordinates of the Galactic coordinate system north pole in the J2000 coordinate system.
@@ -108,6 +108,39 @@ class PhaseCorrection
 		static const double NP_RA_B1950_IN_J2000 = 180.315843;
 		static const double NP_DEC_B1950_IN_J2000 = 89.72174782;
 		static const double NP_RA_OFFSET_B1950_IN_J2000 = 179.697628;
+#else
+                static constexpr double PI = 3.14159265359;
+                // coordinates of the Galactic coordinate system north pole in the J2000 coordinate system.
+		static constexpr double NP_RA_GAL_IN_J2000 = 192.859496;
+		static constexpr double NP_DEC_GAL_IN_J2000 = 27.128353;
+		static constexpr double NP_RA_OFFSET_GAL_IN_J2000 = 302.932069;
+	
+		// coordinates of the J2000 coordinate system north pole in the galactic coordinate system.
+		static constexpr double NP_RA_J2000_IN_GAL = 122.932000;
+		static constexpr double NP_DEC_J2000_IN_GAL = 27.128431;
+		static constexpr double NP_RA_OFFSET_J2000_IN_GAL = 12.860114;
+	
+		// coordinates of the Galactic coordinate system north pole in the B1950 coordinate system.
+		static constexpr double NP_RA_GAL_IN_B1950 = 192.250000;
+		static constexpr double NP_DEC_GAL_IN_B1950 = 27.400000;
+		static constexpr double NP_RA_OFFSET_GAL_IN_B1950 = 303.000000;
+	
+		// coordinates of the B1950 coordinate system north pole in the galactic coordinate system.
+		static constexpr double NP_RA_B1950_IN_GAL = 123.000000;
+		static constexpr double NP_DEC_B1950_IN_GAL = 27.400000;
+		static constexpr double NP_RA_OFFSET_B1950_IN_GAL = 12.250000;
+	
+		// coordinates of the J2000 coordinate system north pole in the B1950 coordinate system.
+		static constexpr double NP_RA_J2000_IN_B1950 = 359.686210;
+		static constexpr double NP_DEC_J2000_IN_B1950 = 89.721785;
+		static constexpr double NP_RA_OFFSET_J2000_IN_B1950 = 0.327475;
+	
+		// coordinates of the B1950 coordinate system north pole in the J2000 coordinate system.
+		static constexpr double NP_RA_B1950_IN_J2000 = 180.315843;
+		static constexpr double NP_DEC_B1950_IN_J2000 = 89.72174782;
+		static constexpr double NP_RA_OFFSET_B1950_IN_J2000 = 179.697628;
+                
+#endif
 
 //
 //	GLOBAL VARIABLES
