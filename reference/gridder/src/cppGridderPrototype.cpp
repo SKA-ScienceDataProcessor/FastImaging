@@ -1,7 +1,7 @@
-#include "/home/ca-santos/SKADEV/git/FastImaging/reference/gridder/src/cppGridderPrototype.h"
+#include "cppGridderPrototype.h"
 #include <fftw3.h>
 // my phase correction code.
-#include "/home/ca-santos/SKADEV/git/FastImaging/reference/gridder/src/phasecorrection.h"
+#include "phasecorrection.h"
 
 double _cellSize = 0;
 double _uvCellSize = 0;		// in units of lambda
