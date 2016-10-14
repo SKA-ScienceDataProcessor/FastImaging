@@ -1,0 +1,13 @@
+/** @file libstp.h
+ *  @brief Include of principal functions
+ *
+ *  @bug No known bugs.
+ */
+
+#ifndef LIBSTP_H
+#define LIBSTP_H
+
+#include "convolution/conv_func.h"
+#include "convolution/kernel_func.h"
+
+#endif /* LIBSTP_H */
