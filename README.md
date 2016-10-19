@@ -7,6 +7,7 @@
 - src: source code files (.cpp and .h)
   - libstp: the STP library code
   - test: unit tests for the STP library
+  - stp-runner: allows the execution of any STP function on arbitrary numpy data
   - third-party: external code, such as libraries
 - tools: auxiliary tools
 
@@ -14,24 +15,60 @@
 ### Dependencies
 - Armadillo [v 7.400.2]
 - Google Test [v 1.7.0]
+- Tclap [v 1.2.1]
+- Spdlog [v 1.12]
+- Cnpy
 
 ### Build
 - on the project top-level directory create a "build" directory and cd into it
 - mkdir build
+- mkdir stp-runner
 - cd build
 - cmake ../src/libstp
 - make
+- cd stp-runner
+- cmake ../../../src/stp-runner
+- make
 
-## Tests execution
+## Tests Execution
 ### Using CMake
 - cd build
 - make test
 
 ### Running on the Command Line (all tests)
 - cd build
-- run-parts ./bin
+- run-parts ./bin/tests
+
+## STP-Runner Execution
+- cd build
+- ./bin/stp-runner/stp-runner
+- can receive up to four arguments:
+   - REQUIRED mode (-m):
+      - tophat for tophat function
+      - sinc for sinc function
+      - gaussian for gaussian function
+      - gaussian-sinc for gaussian-sinc function
+      - triangle for triangle function
+      - tophat-kernel to generate a tophat kernel
+      - triangle-kernel to generate a triangle kernel
+   - REQUIRED filepath (-f):
+      - path/to/input/data: can be a npy or npz file
+   - key (-k): 
+      - key value to select data from npz file. If not present, stp-runner will assume a npy file
+   - print (-p):
+      - optional flag to print to an external file named "out.txt"
+
+- *Example:* ./bin/stp-runner/stp-runner -m tophat -f mock_uvw_vis.npz -k vis -p
+
+## Known Issues
+- Gaussian and Gaussian-Sinc convolution kernels fails with this file. To be reviewed in next release.
 
 ## Release Notes
+### 19 October 2016
+- Revised project structure
+- Task from _Development Plan_
+  - [Integrate cnpy into build, convert to/from Armadillo arrays, test.](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/2)
+
 ### 14 October 2016
 - Revised project structure
 - Tasks from _Development Plan_

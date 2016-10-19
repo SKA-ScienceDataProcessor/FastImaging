@@ -11,7 +11,6 @@
 
 #include "conv_func.h"
 
-
 /** @brief Construct TopHat Kernel Array Function
 *
 *	Function to create a TopHat Kernel array with some specs
@@ -37,7 +36,7 @@
 *
 *  	@return Result kernel
 */
-mat make_top_hat_kernel_array(const int support, const mat& offset, const double oversampling, const double half_base_width);
+mat make_top_hat_kernel_array(const int support, const mat& offset, double oversampling, const double half_base_width, double pad, bool normalize);
 
 /** @brief Construct Triangle Kernel Array Function
 *
@@ -64,6 +63,6 @@ mat make_top_hat_kernel_array(const int support, const mat& offset, const double
 *
 *  	@return Result kernel
 */
-mat make_triangle_kernel_array(const int support, const mat& offset, const double oversampling, const double half_base_width);
+mat make_triangle_kernel_array(const int support, const mat& offset, double oversampling, const double half_base_width, double pad, bool normalize);
 
 #endif /* KERNEL_FUNC_H */

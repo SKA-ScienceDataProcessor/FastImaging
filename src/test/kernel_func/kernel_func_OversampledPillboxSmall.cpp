@@ -7,7 +7,7 @@
  *  @bug No known bugs.
  */
 
-#include "../libstp/convolution/kernel_func.h"
+#include "../../libstp/convolution/kernel_func.h"
 #include "gtest/gtest.h"
 
 const int support(1);
@@ -32,7 +32,7 @@ TEST(KernelGenerationOversamplePillboxSmall, Offset1) {
          {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.},
          {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.}};
 
-    mat result_array = make_top_hat_kernel_array(support, offset_index, oversampling, half_base_width);
+    mat result_array = make_top_hat_kernel_array(support, offset_index, oversampling, half_base_width, false,false);
     EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
 
@@ -52,6 +52,6 @@ TEST(KernelGenerationOversamplePillboxSmall, Offset2) {
          {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.},
          {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.}};
 
-    mat result_array = make_top_hat_kernel_array(support, offset_index, oversampling, half_base_width);
+    mat result_array = make_top_hat_kernel_array(support, offset_index, oversampling, half_base_width, false,false);
     EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
 }

@@ -6,7 +6,7 @@
  *  @bug No known bugs.
  */
 
-#include "../libstp/convolution/conv_func.h"
+#include "../../libstp/convolution/conv_func.h"
 #include "gtest/gtest.h"
 
 const double tolerance(0.091);

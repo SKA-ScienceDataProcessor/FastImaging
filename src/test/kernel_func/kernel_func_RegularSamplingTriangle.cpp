@@ -7,7 +7,7 @@
  *  @bug No known bugs.
  */
 
-#include "../libstp/convolution/kernel_func.h"
+#include "../../libstp/convolution/kernel_func.h"
 #include "gtest/gtest.h"
 
 const int support(2);
@@ -32,7 +32,7 @@ TEST(KernelGenerationRegularSamplingTriangle, Offset1) {
          {0., kv1sq, kv1, kv1sq, 0.},
          {0., 0., 0., 0., 0.}};
 
-    mat result_array = make_triangle_kernel_array(support, offset_index, oversampling, half_base_width);
+    mat result_array = make_triangle_kernel_array(support, offset_index, oversampling, half_base_width, false,false);
     EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
 
@@ -47,6 +47,6 @@ TEST(KernelGenerationRegularSamplingTriangle, Offset2) {
          {0., 0., kv_half * kv1, kv_half * kv1, 0.},
          {0., 0., 0., 0., 0.}};
 
-    mat result_array = make_triangle_kernel_array(support, offset_index, oversampling, half_base_width);
+    mat result_array = make_triangle_kernel_array(support, offset_index, oversampling, half_base_width, false,false);
     EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
