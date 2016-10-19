@@ -61,12 +61,12 @@
 - *Example:* ./bin/stp-runner/stp-runner -m tophat -f mock_uvw_vis.npz -k vis -p
 
 ## Known Issues
-- Gaussian and Gaussian-Sinc convolution kernels fails with this file. To be reviewed in next release.
+- Gaussian and Gaussian-Sinc convolution kernels fails with one specific file made available by Tim. To be reviewed in next release.
 
 ## Release Notes
 ### 19 October 2016
 - Revised project structure
-- Created a STP-Runner
+- Created first version of the STP-Runner
 - Task from _Development Plan_
   - [Integrate cnpy into build, convert to/from Armadillo arrays, test.](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/2)
 
