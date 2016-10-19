@@ -17,12 +17,12 @@
 - Google Test [v 1.7.0]
 - Tclap [v 1.2.1]
 - Spdlog [v 1.12]
-- Cnpy
+- Cnpy [included in sources]
 
 ### Build
 - on the project top-level directory create a "build" directory and cd into it
 - mkdir build
-- mkdir stp-runner
+- mkdir build/stp-runner
 - cd build
 - cmake ../src/libstp
 - make
@@ -66,6 +66,7 @@
 ## Release Notes
 ### 19 October 2016
 - Revised project structure
+- Created a STP-Runner
 - Task from _Development Plan_
   - [Integrate cnpy into build, convert to/from Armadillo arrays, test.](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/2)
 
