@@ -7,75 +7,88 @@
  *  @bug No known bugs.
  */
 
-#include "../../libstp/convolution/kernel_func.h"
+#include "../../libstp/convolution/conv_func.h"
 #include "gtest/gtest.h"
 
 const int support(1);
 const double half_base_width(0.7);
 const double oversampling(3);
+const bool pad(false);
+const bool normalize(false);
 
-const double tolerance(0.002);
 
+// Test 2D kernel convolution method in a oversampled pillbox, without offset.
 TEST(KernelGenerationOversampledPillbox, Offset1) {
-    mat offset = { 0., 0. };
+    arma::mat offset_index = { 0., 0. };
 
-    mat expected_results =
-        {{0., 0., 0., 0., 0., 0., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 0., 0., 0., 0., 0., 0.}};
+    arma::mat expected_results =
+        {
+            { 0., 0., 0., 0., 0., 0., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 0., 0., 0., 0., 0., 0. }
+         };
 
-    mat result_array = make_top_hat_kernel_array(support, offset, oversampling, half_base_width, false,false);
-    EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
+    arma::mat result_array = make_kernel_array<TopHat>(support, offset_index, oversampling, pad, normalize, half_base_width);
+    EXPECT_TRUE(arma::approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
 
+// Test 2D kernel convolution method in a oversampled pillbox, with tiny offset.
 TEST(KernelGenerationOversampledPillbox, Offset2) {
-    mat offset = {0.01, 0.01};
+    arma::mat offset_index = { 0.01, 0.01 };
 
-    mat expected_results =
-        {{0., 0., 0., 0., 0., 0., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 1., 1., 1., 1., 1., 0.},
-         {0., 0., 0., 0., 0., 0., 0.}};
+    arma::mat expected_results =
+        {
+            { 0., 0., 0., 0., 0., 0., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 1., 1., 1., 1., 1., 0. },
+            { 0., 0., 0., 0., 0., 0., 0. }
+         };
 
-    mat result_array = make_top_hat_kernel_array(support, offset, oversampling, half_base_width, false,false);
-    EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
+    arma::mat result_array = make_kernel_array<TopHat>(support, offset_index, oversampling, pad, normalize, half_base_width);
+    EXPECT_TRUE(arma::approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
 
+// Test 2D kernel convolution method in a oversampled pillbox; we displace towards -ve x a bit: with -0.05 offset right.
 TEST(KernelGenerationOversampledPillbox, Offset3) {
-    mat offset = { -.05, 0. };
+    arma::mat offset_index = { -.05, 0. };
 
-    mat expected_results =
-        {{0., 0., 0., 0., 0., 0., 0.},
-         {0., 1., 1., 1., 1., 0., 0.},
-         {0., 1., 1., 1., 1., 0., 0.},
-         {0., 1., 1., 1., 1., 0., 0.},
-         {0., 1., 1., 1., 1., 0., 0.},
-         {0., 1., 1., 1., 1., 0., 0.},
-         {0., 0., 0., 0., 0., 0., 0.}};
+    arma::mat expected_results =
+        {
+            { 0., 0., 0., 0., 0., 0., 0. },
+            { 0., 1., 1., 1., 1., 0., 0. },
+            { 0., 1., 1., 1., 1., 0., 0. },
+            { 0., 1., 1., 1., 1., 0., 0. },
+            { 0., 1., 1., 1., 1., 0., 0. },
+            { 0., 1., 1., 1., 1., 0., 0. },
+            { 0., 0., 0., 0., 0., 0., 0. }
+         };
 
-    mat result_array = make_top_hat_kernel_array(support, offset, oversampling, half_base_width, false,false);
-    EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
+    arma::mat result_array = make_kernel_array<TopHat>(support, offset_index, oversampling, pad, normalize, half_base_width);
+    EXPECT_TRUE(arma::approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
 
+// Test 2D kernel convolution method in a oversampled pillbox, with 0.4 offset right.
 TEST(KernelGenerationOversampledPillbox, Offset4) {
-    mat offset = { 0.4, 0. };
+    arma::mat offset_index = { 0.4, 0. };
 
-    mat expected_results =
-        {{0., 0., 0., 0., 0., 0., 0.},
-         {0., 0., 0., 1., 1., 1., 1.},
-         {0., 0., 0., 1., 1., 1., 1.},
-         {0., 0., 0., 1., 1., 1., 1.},
-         {0., 0., 0., 1., 1., 1., 1.},
-         {0., 0., 0., 1., 1., 1., 1.},
-         {0., 0., 0., 0., 0., 0., 0.}};
+    arma::mat expected_results =
+        {
+            { 0., 0., 0., 0., 0., 0., 0. },
+            { 0., 0., 0., 1., 1., 1., 1.},
+            { 0., 0., 0., 1., 1., 1., 1.},
+            { 0., 0., 0., 1., 1., 1., 1.},
+            { 0., 0., 0., 1., 1., 1., 1.},
+            { 0., 0., 0., 1., 1., 1., 1.},
+            { 0., 0., 0., 0., 0., 0., 0. }
+         };
 
-    mat result_array = make_top_hat_kernel_array(support, offset, oversampling, half_base_width, false,false);
-    EXPECT_TRUE(approx_equal(result_array,expected_results, "absdiff", tolerance));
+    arma::mat result_array = make_kernel_array<TopHat>(support, offset_index, oversampling, pad, normalize, half_base_width);
+    EXPECT_TRUE(arma::approx_equal(result_array,expected_results, "absdiff", tolerance));
 }
