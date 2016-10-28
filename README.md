@@ -69,7 +69,7 @@
 - Updated 2D kernel function: use of templates and functors
 - Implemented 1st version of the gridder (functions: bounds_check_kernel_centre_locations and convolve_to_grid)
 - Created test environment for the Tophat convolution [on gridder]
-- Updated test environment for the STP library_
+- Updated test environment for the STP library
 - [Removed "using namespaces"](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8)
 
 ### 19 October 2016
