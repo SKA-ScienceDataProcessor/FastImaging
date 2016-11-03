@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.9)
 project (stp)
 
-# Debug build. Please remove for release
-set(${CMAKE_BUILD_TYPE} Debug)
+#Sets to build in debug mode. Remove on release
+set(CMAKE_BUILD_TYPE Debug)
 
 # Sets the convolution directory
 set(CONV_DIR ${CMAKE_CURRENT_SOURCE_DIR}/convolution/)
@@ -41,3 +41,6 @@ add_test(NAME GridderMultipleComplexVis COMMAND test_gridder_multiple_complex_vi
 add_test(NAME GridderNearbyComplexVis COMMAND test_gridder_nearby_complex_vis)
 add_test(NAME GridderSinglePixelOverlapPillbox COMMAND test_gridder_single_pixel_overlap_pillbox)
 add_test(NAME GridderSmallPillbox COMMAND test_gridder_small_pillbox)
+add_test(NAME GridderTriangle COMMAND test_gridder_triangle)
+add_test(NAME GridderFractionalCoordToOversampledIndexMath COMMAND test_gridder_fractional_coord_to_oversampled_index)
+add_test(NAME GridderStpeppedVsExactconvolution COMMAND test_gridder_stepped_vs_exact_convolution)

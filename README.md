@@ -64,13 +64,17 @@
 - Gaussian and Gaussian-Sinc convolution kernels fails with one specific file made available by Tim. To be reviewed in next release.
 
 ## Release Notes
+### 3 November 2016
+- Implemented 2st version of the gridder (functions: populate_kernel_cache and calculate_oversampled_kernel_indices)
+- Created test environment for: Triangle convolution [on gridder], StpeppedVsExactconvolution and FractionalCoordToOversampledIndexMath
+
 ### 28 October 2016
-- Updated 1D kernel functions: using dynamic classes
+- Updated 1D kernel functions: using template classes
 - Updated 2D kernel function: use of templates and functors
 - Implemented 1st version of the gridder (functions: bounds_check_kernel_centre_locations and convolve_to_grid)
 - Created test environment for the Tophat convolution [on gridder]
 - Updated test environment for the STP library
-- [Removed "using namespaces"](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8)
+- Removed "using namespaces" (https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8)
 
 ### 19 October 2016
 - Revised project structure
