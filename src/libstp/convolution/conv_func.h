@@ -10,7 +10,7 @@
 #ifndef CONV_FUNC_H
 #define CONV_FUNC_H
 
-#include <armadillo>
+#include "armadillo"
 #include <utility>
 
 const double NO_OVERSAMPLING(-100);
@@ -104,10 +104,10 @@ class GaussianSinc {
 *              otherwise the nearest integer grid-point would be different!
 *
 *  @param[in] pad (bool)
-*
 *  @param[in] normalize (bool)
+*  @param[in] Args&&... args : parameters that will be expanded to use on template class.
 *
-*  	@return Result kernel
+*  @return Result kernel
 */
 template <typename T, typename... Args>
 arma::mat make_kernel_array(const int support, const arma::mat& offset, const double oversampling, const bool pad, const bool normalize, Args&&... args) {
@@ -122,7 +122,7 @@ arma::mat make_kernel_array(const int support, const arma::mat& offset, const do
     if (pad == true) {
         localPad = 1.0;
     }
-    
+
     int array_size = 2 * (support + localPad) * localOversampling + 1;
     int centre_idx = (support + pad) * localOversampling;
     arma::mat distance_vec = ((arma::linspace(0, array_size - 1, array_size) - centre_idx) / localOversampling);
@@ -134,7 +134,7 @@ arma::mat make_kernel_array(const int support, const arma::mat& offset, const do
     arma::mat result = arma::repmat(y_kernel_coeffs, 1, array_size) * arma::diagmat(x_kernel_coeffs);
 
     if (normalize == true) {
-        result /= result;
+        result = (result/arma::accu(result));
     }
 
     return result;

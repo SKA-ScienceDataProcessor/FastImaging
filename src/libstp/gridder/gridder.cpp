@@ -17,3 +17,21 @@ arma::uvec bounds_check_kernel_centre_locations(arma::mat uv, arma::mat kernel_c
 
     return arma::find(out_of_bounds_bool == 0);
 }
+
+arma::mat calculate_oversampled_kernel_indices(arma::mat subpixel_coord, const double oversampling) {  
+ 
+    subpixel_coord = subpixel_coord * oversampling; 
+    subpixel_coord.for_each([](arma::mat::elem_type& val){
+        val = rint(val);
+    });
+    int range_max = oversampling / 2; 
+    int range_min = -1 * range_max; 
+     
+    arma::uvec range_max_idx = find(subpixel_coord == (range_max + 1)); 
+    arma::uvec range_min_idx = find(subpixel_coord == (range_min - 1)); 
+ 
+    subpixel_coord.elem( find(subpixel_coord == (range_max + 1)) ).fill(range_max); 
+    subpixel_coord.elem( find(subpixel_coord == (range_min - 1)) ).fill(range_min); 
+ 
+    return subpixel_coord; 
+} 

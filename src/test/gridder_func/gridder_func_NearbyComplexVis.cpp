@@ -17,14 +17,14 @@ class GridderNearbyComplexVis : public::testing::Test {
         arma::cx_cube result = convolve_to_grid<TopHat>(support, n_image, uv, vis, oversampling, pad, normalize, raise_bounds, half_base_width);
         arma::cx_mat expected_vis_grid =
             {
-                { 0.+0i, 0.+0i, 0.+0i,   0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
-                { 0.+0i, 0.+0i, 0.+0i,   0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
-                { 0.+0i, 0.+0i, 0.+0i,       v,     v,     v, 0.+0i, 0.+0i },
-                { 0.+0i, 0.+0i, 0.+0i,       v,     v,     v, 0.+0i, 0.+0i },
-                { 0.+0i,     v,     v,    2.*v,     v,     v, 0.+0i, 0.+0i },
-                { 0.+0i,     v,     v,       v, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
-                { 0.+0i,     v,     v,       v, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
-                { 0.+0i, 0.+0i, 0.+0i,   0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i }
+                { 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
+                { 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
+                { 0.+0i, 0.+0i, 0.+0i,     v,     v,     v, 0.+0i, 0.+0i },
+                { 0.+0i, 0.+0i, 0.+0i,     v,     v,     v, 0.+0i, 0.+0i },
+                { 0.+0i,     v,     v,  2.*v,     v,     v, 0.+0i, 0.+0i },
+                { 0.+0i,     v,     v,     v, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
+                { 0.+0i,     v,     v,     v, 0.+0i, 0.+0i, 0.+0i, 0.+0i },
+                { 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i, 0.+0i }
             };
 };
 

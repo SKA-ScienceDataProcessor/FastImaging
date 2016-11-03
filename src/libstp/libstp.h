@@ -8,7 +8,6 @@
 #define LIBSTP_H
 
 #include "convolution/conv_func.h"
-#include "convolution/kernel_func.h"
 #include "gridder/gridder.h"
 
 #endif /* LIBSTP_H */

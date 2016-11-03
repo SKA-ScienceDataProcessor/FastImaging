@@ -12,6 +12,7 @@
 
 #include "../convolution/conv_func.h"
 #include <float.h>
+#include <map>
 
 const int VIS_GRID_INDEX(0);
 const int SAMPLING_GRID_INDEX(1);
@@ -33,9 +34,22 @@ const int SAMPLING_GRID_INDEX(1);
  */
 arma::uvec bounds_check_kernel_centre_locations(arma::mat uv, arma::mat kernel_centre_indices, int support, int image_size, bool raise_if_bad);
 
+/** @brief calculate_oversampled_kernel_indices function
+ *
+ *  Find the nearest oversampled gridpoint for given sub-pixel offset.
+ *
+ *  @param[in] subpixel_coord (arma::mat): Array of 'fractional' co-ords, that is the
+               subpixel offsets from nearest pixel on the regular grid.
+ *  @param[in] oversampling (double). How many oversampled pixels to one regular pixel.
+ *
+ *  @return oversampled_kernel_idx (arma::mat): Corresponding oversampled pixel
+        indexes
+ */
+arma::mat calculate_oversampled_kernel_indices(arma::mat subpixel_coord, const double oversampling);
+
 /** @brief convolve_to_grid function
  *
- *  Generate Tophat convolution with an array input or scalar input.
+ *  Grid visibilities, calculating the exact kernel distribution for each.
  *
  *  @param[in] support (int): Defines the 'radius' of the bounding box within
  *              which convolution takes place. `Box width in pixels = 2*support+1`.
@@ -45,15 +59,14 @@ arma::uvec bounds_check_kernel_centre_locations(arma::mat uv, arma::mat kernel_c
  *              the pixel `[image_size//2,image_size//2]` corresponds to the origin
  *              in UV-space.
  *  @param[in] uv (arma::mat): UV-coordinates of visibilities.
- *              2d array of `float_`, shape: `(n_vis, 2)`.
- *              assumed ordering is u-then-v, i.e. `u, v = uv[idx]`
  *  @param[in] vis (arma::cx_mat): Complex visibilities.
  *              1d array, shape: `(n_vis,)`.
- *  @param[in] oversampling (double). Controls kernel-generation, see function
- *              description for details.
+ *  @param[in] oversampling (double). Controls kernel-generation
  *  @param[in] pad (bool).
+ *  @param[in] normalize (bool).
  *  @param[in] raise_bounds (bool): Raise an exception if any of the UV
  *              samples lie outside (or too close to the edge) of the grid.
+ *  @param[in] Args&&... args : parameters that will be expanded to use on template class.
  *
  *  @return (arma::cx_cube) with 2 slices: vis_grid and sampling_grid; representing
  *            the gridded visibilities and the sampling weights.
@@ -83,7 +96,6 @@ arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, 
 
     for (int idx(0); idx < good_vis_idx.n_elem; ++idx)
     {
-        vis_value = vis[good_vis_idx[idx]];
         gc_x = kernel_centre_on_grid(idx, 0);
         gc_y = kernel_centre_on_grid(idx, 1);
 
@@ -91,9 +103,9 @@ arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, 
         arma::mat normed_kernel_array = kernel / accu(kernel);
 
         arma::span xrange = arma::span(gc_x - support, gc_x + support);
-        arma::span yrange = arma::span(gc_y - support, gc_y + support );
+        arma::span yrange = arma::span(gc_y - support, gc_y + support);
 
-        vis_grid(yrange, xrange) += vis_value * normed_kernel_array;
+        vis_grid(yrange, xrange) += vis[good_vis_idx[idx]] * normed_kernel_array;
         sampling_grid(yrange, xrange) += typed_one[0] * normed_kernel_array;
     }
 
@@ -101,6 +113,37 @@ arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, 
     result_grid.slice(SAMPLING_GRID_INDEX) = sampling_grid;
 
     return result_grid;
+}
+
+/** @brief populate_kernel_cache function
+ *
+ *  Generate a cache of normalised kernels at oversampled-pixel offsets.
+ *
+ *  @param[in] support (int): See kernel generation routine.
+ *  @param[in] oversampling (float): Oversampling ratio.
+ *  @param[in] pad (bool).
+ *  @param[in] normalize (bool).
+ *  @param[in] Args&&... args : parameters that will be expanded to use on template class.
+ *
+ *  @return cache (std::map): Mapping oversampling-pixel offsets to normalised kernels.
+ */
+template <typename T, typename... Args>
+std::map<std::pair<int,int>, arma::mat> populate_kernel_cache (const int support, const float oversampling, bool pad, bool normalize, Args&&... args) {
+
+    int oversampled_pixel = oversampling / 2;
+    int cache_size = oversampled_pixel * 2 + 1;
+
+    arma::mat oversampled_pixel_offsets = arma::linspace(0, cache_size - 1, cache_size) - oversampled_pixel;
+    std::map<std::pair<int,int>, arma::mat> cache;
+
+    for (int x_step(0); x_step < oversampled_pixel_offsets.n_rows; ++x_step) {
+        for (int y_step(0); y_step < oversampled_pixel_offsets.n_rows; ++y_step) {
+            arma::mat subpixel_offset = arma::mat({oversampled_pixel_offsets[x_step], oversampled_pixel_offsets[y_step]}) / oversampling;
+            arma::mat kernel = make_kernel_array<T>(support, subpixel_offset, NO_OVERSAMPLING, pad, normalize, std::forward<Args>(args)...);
+            cache[std::make_pair(oversampled_pixel_offsets[x_step], oversampled_pixel_offsets[y_step])] = kernel;
+        }
+    }
+    return cache;
 }
 
 #endif /* GRIDDER_FUNC_H */
