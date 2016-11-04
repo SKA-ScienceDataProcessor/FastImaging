@@ -65,7 +65,7 @@
 
 ## Release Notes
 ### 3 November 2016
-- Implemented 2st version of the gridder (functions: populate_kernel_cache and calculate_oversampled_kernel_indices)
+- Implemented 2nd version of the gridder (functions: populate_kernel_cache and calculate_oversampled_kernel_indices)
 - Created test environment for: Triangle convolution [on gridder], StpeppedVsExactconvolution and FractionalCoordToOversampledIndexMath
 
 ### 28 October 2016
