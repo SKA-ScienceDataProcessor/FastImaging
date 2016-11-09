@@ -7,8 +7,8 @@
  *  @bug No known bugs.
  */
 
-#include "../../libstp/convolution/conv_func.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
 // Test the triangle functor implementation.
 TEST(ConvTriangleFunc, conv_funcs_triangle_func) {

@@ -12,6 +12,7 @@
 
 #include "armadillo"
 #include <utility>
+#include <complex>
 
 const double NO_OVERSAMPLING(-100);
 const double tolerance(0.002);
@@ -89,7 +90,7 @@ class GaussianSinc {
 
 /** @brief Make Kernel Array
 *
-*	Function to create a Kernel array with some specs
+*  Function (template + functor) to create a Kernel array with some specs.
 *
 *  @param[in] support (int): Defines the 'radius' of the bounding box within
 *              which convolution takes place. `Box width in pixels = 2*support+1`.
@@ -98,24 +99,23 @@ class GaussianSinc {
 *              should be set to `ceil(trunc+0.5)` to ensure that the kernel
 *              function is fully supported for all valid subpixel offsets.
 *
-*  @param[in] offset (arma::mat): 2-vector subpixel offset from the sampling position of the<
+*  @param[in] offset (arma::mat): 2-vector subpixel offset from the sampling position of the
 *              central pixel to the origin of the kernel function.
-*              Ordering is (x_offset,y_offset). Should have values such that `abs(offset) <= 0.5`
-*              otherwise the nearest integer grid-point would be different!
 *
-*  @param[in] pad (bool)
+*  @param[in] pad (bool) : Whether to pad the array by an extra pixel-width.
+*             This is used when generating an oversampled kernel that will be used for interpolation.
 *  @param[in] normalize (bool)
-*  @param[in] Args&&... args : parameters that will be expanded to use on template class.
+*  @param[in] Args&&... args : parameters that will be expanded to use on functor.
 *
 *  @return Result kernel
 */
 template <typename T, typename... Args>
 arma::mat make_kernel_array(const int support, const arma::mat& offset, const double oversampling, const bool pad, const bool normalize, Args&&... args) {
 
-    int localOversampling = 1.0;
-    int localPad = 0.0;
+    int localOversampling(1.0);
+    int localPad(0.0);
 
-    if (oversampling != NO_OVERSAMPLING) {
+    if (oversampling < NO_OVERSAMPLING || oversampling > NO_OVERSAMPLING) {
         localOversampling = oversampling;
     }
 
@@ -125,12 +125,15 @@ arma::mat make_kernel_array(const int support, const arma::mat& offset, const do
 
     int array_size = 2 * (support + localPad) * localOversampling + 1;
     int centre_idx = (support + pad) * localOversampling;
+
     arma::mat distance_vec = ((arma::linspace(0, array_size - 1, array_size) - centre_idx) / localOversampling);
 
+    // Call the operator () of the functor passed.
     T obj;
     arma::vec x_kernel_coeffs = obj((distance_vec - offset[0]), std::forward<Args>(args)...);
     arma::vec y_kernel_coeffs = obj((distance_vec - offset[1]), std::forward<Args>(args)...);
 
+    // Multiply the two vectores obtained width convolution function, to obtain the 2D kernel.
     arma::mat result = arma::repmat(y_kernel_coeffs, 1, array_size) * arma::diagmat(x_kernel_coeffs);
 
     if (normalize == true) {

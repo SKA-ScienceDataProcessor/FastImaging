@@ -1,5 +1,5 @@
-#include "../../libstp/gridder/gridder.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
 class GridderTriangle : public ::testing::Test {
     double half_base_width = 2.0;
@@ -8,7 +8,6 @@ class GridderTriangle : public ::testing::Test {
     double oversampling = 1.0;
     bool pad = false;
     bool normalize = false;
-    bool raise_bounds = true;
     double triangle_value = 1.0;
     
     public: 
@@ -18,7 +17,7 @@ class GridderTriangle : public ::testing::Test {
         arma::mat subpix_offset = {0.1, -0.15};
         arma::cx_mat vis = arma::ones<arma::cx_mat>(uv_1.n_rows);
         arma::mat uv_2 = uv_1 + subpix_offset; 
-        arma::cx_cube result = convolve_to_grid<Triangle>(support, n_image, uv_2, vis, oversampling_GRID, pad, normalize, raise_bounds, half_base_width, triangle_value);
+        arma::cx_cube result = convolve_to_grid<Triangle>(support, n_image, uv_2, vis, oversampling_GRID, pad, normalize, half_base_width, triangle_value);
         arma::mat kernel = make_kernel_array<Triangle>(support, subpix_offset, oversampling_KERNEL, pad, normalize, half_base_width, triangle_value);
 };
 

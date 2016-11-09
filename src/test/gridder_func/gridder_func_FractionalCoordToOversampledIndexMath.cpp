@@ -1,8 +1,8 @@
-#include "../../libstp/gridder/gridder.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
-const double oversampling_1(7);
-const double oversampling_2(5);
+const double oversampling_edge_case(7);
+const double oversampling_kernel_indices(5);
 arma::mat subpix_offset = {0.5};
 arma::mat io_pairs =
     {
@@ -21,11 +21,11 @@ arma::mat io_pairs =
     };
 
 TEST(GridderFractionalCoordToOversampledIndexMath, IndexValueGreater1) {    
-    EXPECT_EQ(round(oversampling_1 * subpix_offset)[0], 4);
+    EXPECT_EQ(round(oversampling_edge_case * subpix_offset)[0], 4);
 }
 
 TEST(GridderFractionalCoordToOversampledIndexMath, IndexValueGreater2) {
-    EXPECT_EQ(calculate_oversampled_kernel_indices(subpix_offset, oversampling_1)[0], 3);
+    EXPECT_EQ(calculate_oversampled_kernel_indices(subpix_offset, oversampling_edge_case)[0], 3);
 }
 
 TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculation) {    
@@ -38,7 +38,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculation) {
         col++;
     });
     
-    arma::mat outputs = calculate_oversampled_kernel_indices(aux, oversampling_2);
+    arma::mat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
      
     col = 0;
     io_pairs.each_row([&aux, &col](arma::mat &r) {
@@ -61,7 +61,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry) {
         col++;
     });
     
-    arma::mat outputs = calculate_oversampled_kernel_indices(aux, oversampling_2);
+    arma::mat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
     
     col = 0;
     io_pairs.each_row([&aux, &col](arma::mat &r) {
@@ -72,9 +72,8 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry) {
     EXPECT_TRUE(arma::approx_equal(aux, outputs, "absdiff", tolerance));
 }
 
-
 TEST(GridderFractionalCoordToOversampledIndexMath, CoOrdinatePairs) {
     arma::mat inputs = {{0.3, 0.3}};
     arma::mat outputs = {{2, 2}};
-    EXPECT_TRUE(arma::approx_equal(calculate_oversampled_kernel_indices(inputs, oversampling_2), outputs, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(calculate_oversampled_kernel_indices(inputs, oversampling_kernel_indices), outputs, "absdiff", tolerance));
 }

@@ -8,42 +8,49 @@
   - libstp: the STP library code
   - test: unit tests for the STP library
   - stp-runner: allows the execution of any STP function on arbitrary numpy data
-  - third-party: external code, such as libraries
+  - third-party: external code, mostly libraries
 - tools: auxiliary tools
 
 ## Build & Run
 ### Dependencies
-- Armadillo [v 7.400.2]
-- Google Test [v 1.7.0]
-- Tclap [v 1.2.1]
-- Spdlog [v 1.12]
-- Cnpy [included in sources]
+
+#### External (Debian-provided)
+- [Armadillo](http://arma.sourceforge.net/) [7.500.0]
+- [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
+- [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
+
+#### In Source (third-party)
+- [Google Test](https://github.com/google/googletest) [1.8.0]
+- [Google Benchmark](https://github.com/google/benchmark) [1.1.0]
+- [cnpy](https://github.com/rogersce/cnpy) [repository head]
 
 ### Build
-- on the project top-level directory create a "build" directory and cd into it
-- mkdir build
-- mkdir build/stp-runner
-- cd build
-- cmake ../src/libstp
-- make
-- cd stp-runner
-- cmake ../../../src/stp-runner
+
+#### Using a build script (Includes tests execution)
+- cd to the project's top-level directory
+- chmod +x build.sh
+- ./build.sh
+
+#### Manually
+- Create a build directory: mkdir -p path/to/build/directory
+- cd path/to/build/directory
+- cmake path/to/project/src
 - make
 
 ## Tests Execution
-### Using CMake
-- cd build
+### Using CMake (after successful build)
+- cd path/to/build/directory
 - make test
 
 ### Running on the Command Line (all tests)
-- cd build
-- run-parts ./bin/tests
+- cd path/to/build/directory
+- run-parts ./libstp/tests
 
 ## STP-Runner Execution
-- cd build
-- ./bin/stp-runner/stp-runner
+- cd build folder
+- ./stp-runner/stp-runner
 - can receive up to four arguments:
-   - REQUIRED mode (-m):
+   - REQUIRED action (-a):
       - tophat for tophat function
       - sinc for sinc function
       - gaussian for gaussian function
@@ -58,12 +65,17 @@
    - print (-p):
       - optional flag to print to an external file named "out.txt"
 
-- *Example:* ./bin/stp-runner/stp-runner -m tophat -f mock_uvw_vis.npz -k vis -p
-
-## Known Issues
-- Gaussian and Gaussian-Sinc convolution kernels fails with one specific file made available by Tim. To be reviewed in next release.
+- *Example:* ./bin/stp-runner/stp-runner -a tophat -f mock_uvw_vis.npz -k vis -p
 
 ## Release Notes
+### 9 November 2016
+- Google Test is now an in-source dependency
+- Added Google Benchmark to the in-source dependencies directory
+- CMake scipts were greatly improved
+- Added convenience bash script for building the source tree
+- Code fixes to the gridder/convolution functions
+- Code fixes to the STP Runner
+
 ### 3 November 2016
 - Implemented 2nd version of the gridder (functions: populate_kernel_cache and calculate_oversampled_kernel_indices)
 - Created test environment for: Triangle convolution [on gridder], StpeppedVsExactconvolution and FractionalCoordToOversampledIndexMath
@@ -74,7 +86,7 @@
 - Implemented 1st version of the gridder (functions: bounds_check_kernel_centre_locations and convolve_to_grid)
 - Created test environment for the Tophat convolution [on gridder]
 - Updated test environment for the STP library
-- Removed "using namespaces" (https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8)
+- [Removed "using namespaces"](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8)
 
 ### 19 October 2016
 - Revised project structure

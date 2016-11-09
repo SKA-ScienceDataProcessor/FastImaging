@@ -7,8 +7,8 @@
  *  @bug No known bugs.
  */
 
-#include "../../libstp/convolution/conv_func.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
 const int support(2);
 const double half_base_width(1.5);

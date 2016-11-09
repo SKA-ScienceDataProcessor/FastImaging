@@ -7,8 +7,8 @@
  *  @bug No known bugs.
  */
 
-#include "../../libstp/convolution/conv_func.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
 // Test the gaussian functor implementation.
 TEST(ConvGaussianFunc, test_conv_funcs_test_gaussian) {

@@ -1,6 +1,6 @@
 #include "gridder.h"
 
-arma::uvec bounds_check_kernel_centre_locations(arma::mat uv, arma::mat kernel_centre_indices, int support, int image_size, bool raise_if_bad) {
+arma::uvec bounds_check_kernel_centre_locations(arma::mat kernel_centre_indices, int support, int image_size) {
     arma::vec out_of_bounds_bool = arma::zeros<arma::vec>(kernel_centre_indices.n_rows);
 
     int col(0);

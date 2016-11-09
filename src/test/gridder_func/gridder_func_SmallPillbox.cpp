@@ -1,5 +1,5 @@
-#include "../../libstp/gridder/gridder.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
 class GridderSmallPillbox : public ::testing::Test {
     int n_image = 8;
@@ -8,13 +8,12 @@ class GridderSmallPillbox : public ::testing::Test {
     double oversampling = NO_OVERSAMPLING;
     bool pad = false;
     bool normalize = false;
-    bool raise_bounds = true;
     arma::mat uv = {{-1.5, 0.5}};
     double v = 1. / 4.;
 
     public:
         arma::cx_mat vis = arma::ones<arma::cx_mat>(uv.n_rows);
-        arma::cx_cube result = convolve_to_grid<TopHat>(support, n_image, uv, vis, oversampling, pad, normalize, raise_bounds, half_base_width);
+        arma::cx_cube result = convolve_to_grid<TopHat>(support, n_image, uv, vis, oversampling, pad, normalize, half_base_width);
         arma::mat expected_result =
             {
                 { 0., 0., 0., 0., 0., 0., 0., 0. },

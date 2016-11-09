@@ -1,5 +1,5 @@
-#include "../../libstp/gridder/gridder.h"
-#include "gtest/gtest.h"
+#include <libstp.h>
+#include <gtest/gtest.h>
 
 class GridderSinglePixelOverlapPillbox : public::testing::Test {
     int n_image = 8;
@@ -9,13 +9,12 @@ class GridderSinglePixelOverlapPillbox : public::testing::Test {
     double oversampling = NO_OVERSAMPLING;
     bool pad = false;
     bool normalize = false;
-    bool raise_bounds = true;
 
     public:
         arma::mat uv = {{-2.,0}, {-2,0}};
         arma::cx_mat one = arma::ones<arma::cx_mat>(uv.n_cols);
         arma::cx_mat vis = vis_amplitude * one;
-        arma::cx_cube result = convolve_to_grid<TopHat>(support, n_image, uv, vis, oversampling, pad, normalize, raise_bounds, half_base_width);
+        arma::cx_cube result = convolve_to_grid<TopHat>(support, n_image, uv, vis, oversampling, pad, normalize, half_base_width);
         arma::mat expected_result =
             {
                 { 0., 0., 0., 0., 0., 0., 0., 0. },
