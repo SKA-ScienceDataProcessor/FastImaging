@@ -71,7 +71,7 @@
 ### 9 November 2016
 - Google Test is now an in-source dependency
 - Added Google Benchmark to the in-source dependencies directory
-- CMake scipts were greatly improved
+- CMake scripts were greatly improved
 - Added convenience bash script for building the source tree
 - Code fixes to the gridder/convolution functions
 - Code fixes to the STP Runner
