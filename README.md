@@ -8,6 +8,7 @@
   - libstp: the STP library code
   - test: unit tests for the STP library
   - stp-runner: allows the execution of any STP function on arbitrary numpy data
+  - auxiliary: external functions to auxiliate the library
   - third-party: external code, mostly libraries
 - tools: auxiliary tools
 
@@ -23,6 +24,8 @@
 - [Google Test](https://github.com/google/googletest) [1.8.0]
 - [Google Benchmark](https://github.com/google/benchmark) [1.1.0]
 - [cnpy](https://github.com/rogersce/cnpy) [repository head]
+- [FFTW3](http://www.fftw.org/)[3.3.5]
+- [rapidjson](https://github.com/miloyip/rapidjson)[1.1.0]
 
 ### Build
 
@@ -49,25 +52,34 @@
 ## STP-Runner Execution
 - cd build folder
 - ./stp-runner/stp-runner
-- can receive up to four arguments:
-   - REQUIRED action (-a):
-      - tophat for tophat function
-      - sinc for sinc function
-      - gaussian for gaussian function
-      - gaussian-sinc for gaussian-sinc function
-      - triangle for triangle function
-      - tophat-kernel to generate a tophat kernel
-      - triangle-kernel to generate a triangle kernel
+- can receive up to three arguments:
    - REQUIRED filepath (-f):
-      - path/to/input/data: can be a npy or npz file
-   - key (-k): 
-      - key value to select data from npz file. If not present, stp-runner will assume a npy file
-   - print (-p):
-      - optional flag to print to an external file named "out.txt"
+      - path/to/input/data: must be a npz file
+   - convolution-type (-c):
+      - tophat to use tophat function
+      - sinc to use sinc function
+      - gaussian to use gaussian function
+      - gaussian-sinc to use gaussian-sinc function
+      - triangle to use triangle function
+   - REQUIRED mode (-m):
+      - convolution for a 1D convolution
+      - kernel for a 2D convolution
+      - pipeline for a pipeline convolution
+      - fileconfiguration to load all configurations from configuration file
 
-- *Example:* ./bin/stp-runner/stp-runner -a tophat -f mock_uvw_vis.npz -k vis -p
+- *Example:* ./bin/stp-runner/stp_runner -f ../../../mock_uvw_vis.npz -m pipeline -c tophat
+- Note: STP-Runner loads configuration data from configuration_data/configuration.json
 
 ## Release Notes
+### 23 November 2016
+- FFTW3 is now an in-source dependency
+- Added rapidjson to the source dependencies
+- Implemented 1st version of the pipeline (function: image_visibilities)
+- Added tests for pipeline and cnpy
+- Completely changed the implementation of the STP Runner
+- Added JSON files with configuration values for the STP Runner and tests
+- Reduced tolerance value for all tests
+
 ### 9 November 2016
 - Google Test is now an in-source dependency
 - Added Google Benchmark to the in-source dependencies directory

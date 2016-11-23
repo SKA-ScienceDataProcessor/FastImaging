@@ -7,24 +7,26 @@
  *  @bug No known bugs.
  */
 
-#include <libstp.h>
 #include <gtest/gtest.h>
+#include <libstp.h>
 
 // Test the sinc functor implementation.
-TEST(ConvSincFunc, conv_funcs_sinc)  {
-    Sinc sinc;
+TEST(ConvSincFunc, conv_funcs_sinc)
+{
+    // width_normalization = 1.0
+    // threshold = 3.0
+    Sinc sinc(1.0, 3.0);
 
     arma::mat input = { 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.5 };
-    arma::mat output =
-        {
-            1.0,
-            1. / (0.5 * arma::datum::pi),
-            0.0,
-            -1. / (1.5 * arma::datum::pi),
-            0.0,
-            1. / (2.5 * arma::datum::pi),
-            0.0
-        };
+    arma::mat output = {
+        1.0,
+        1. / (0.5 * arma::datum::pi),
+        0.0,
+        -1. / (1.5 * arma::datum::pi),
+        0.0,
+        1. / (2.5 * arma::datum::pi),
+        0.0
+    };
 
-    EXPECT_TRUE(arma::approx_equal(sinc(input), output, "absdiff", 0.091));
+    EXPECT_TRUE(arma::approx_equal(sinc(input), output, "absdiff", tolerance));
 }

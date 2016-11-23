@@ -36,7 +36,7 @@ enable_testing()
 set(LIBSTP_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libstp)
 add_subdirectory(${LIBSTP_SOURCE_DIRECTORY})
 
-# Target STP Runner
+# Target: STP Runner
 set(RUNNER_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp-runner)
 add_subdirectory(${RUNNER_SOURCE_DIRECTORY})
 
@@ -60,4 +60,3 @@ if(CPPCHECK)
 else()
     message(WARNING "cppcheck was not found. Target \"cppcheck\" will not be available.")
 endif()
-

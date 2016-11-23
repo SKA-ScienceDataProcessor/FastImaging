@@ -10,9 +10,11 @@
 #ifndef GRIDDER_FUNC_H
 #define GRIDDER_FUNC_H
 
-#include "../convolution/conv_func.h"
 #include <cfloat>
+#include <fstream>
 #include <map>
+
+#include "../convolution/conv_func.h"
 
 const int VIS_GRID_INDEX(0);
 const int SAMPLING_GRID_INDEX(1);
@@ -25,26 +27,28 @@ const int SAMPLING_GRID_INDEX(1);
  *  @param[in] oversampling (float): Oversampling ratio.
  *  @param[in] pad (bool).
  *  @param[in] normalize (bool).
- *  @param[in] Args&&... args : parameters that will be expanded to use on template class.
+ *  @param[in] T& kernel_creator : the kernel creator functor
  *
  *  @return cache (std::map): Mapping oversampling-pixel offsets to normalised kernels.
  */
-template <typename T, typename... Args>
-std::map<std::pair<int,int>, arma::mat> populate_kernel_cache (const int support, const float oversampling, bool pad, bool normalize, Args&&... args) {
+template <typename T>
+std::map<std::pair<int, int>, arma::mat> populate_kernel_cache(const int support, const float oversampling, bool pad, bool normalize, const T& kernel_creator)
+{
 
     int oversampled_pixel(oversampling / 2);
     int cache_size(oversampled_pixel * 2 + 1);
 
     arma::mat oversampled_pixel_offsets = arma::linspace(0, cache_size - 1, cache_size) - oversampled_pixel;
-    std::map<std::pair<int,int>, arma::mat> cache;
+    std::map<std::pair<int, int>, arma::mat> cache;
 
-    for (arma::uword x_step(0); x_step < oversampled_pixel_offsets.n_rows; ++x_step) {
-        for (arma::uword y_step(0); y_step < oversampled_pixel_offsets.n_rows; ++y_step) {
-            arma::mat subpixel_offset = arma::mat({oversampled_pixel_offsets[x_step], oversampled_pixel_offsets[y_step]}) / oversampling;
-            arma::mat kernel = make_kernel_array<T>(support, subpixel_offset, NO_OVERSAMPLING, pad, normalize, std::forward<Args>(args)...);
-            cache[std::make_pair(oversampled_pixel_offsets[x_step], oversampled_pixel_offsets[y_step])] = kernel;
-        }
-    }
+    oversampled_pixel_offsets.for_each([&oversampled_pixel_offsets, &oversampling, &support, &pad, &normalize, &kernel_creator, &cache](arma::mat::elem_type& val_x) {
+        oversampled_pixel_offsets.for_each([&val_x, &oversampled_pixel_offsets, &oversampling, &support, &pad, &normalize, &kernel_creator, &cache](arma::mat::elem_type& val_y) {
+            arma::mat subpixel_offset = arma::mat({ val_x, val_y }) / oversampling;
+            arma::mat kernel = make_kernel_array(support, subpixel_offset, NO_OVERSAMPLING, pad, normalize, kernel_creator);
+            cache[std::make_pair(val_x, val_y)] = kernel;
+        });
+    });
+
     return cache;
 }
 
@@ -92,23 +96,23 @@ arma::mat calculate_oversampled_kernel_indices(arma::mat subpixel_coord, const d
  *  @param[in] pad (bool) :  Whether to pad the array by an extra pixel-width.
  *             This is used when generating an oversampled kernel that will be used for interpolation.
  *  @param[in] normalize (bool).
- *  @param[in] Args&&... args : parameters that will be expanded to use on template class.
  *
  *  @return (arma::cx_cube) with 2 slices: vis_grid and sampling_grid; representing
  *            the gridded visibilities and the sampling weights.
  */
-template <typename T, typename... Args>
-arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, arma::cx_mat vis, double oversampling, bool pad, bool normalize, Args&&... args) {
+template <typename T>
+arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, arma::cx_mat vis, double oversampling, bool pad, bool normalize, const T& kernel_creator)
+{
 
     arma::mat uv_rounded = uv;
-    uv_rounded.for_each([](arma::mat::elem_type& val){
+    uv_rounded.for_each([](arma::mat::elem_type& val) {
         val = rint(val);
     });
 
     arma::mat uv_frac = uv - uv_rounded;
-    arma::mat uv_rounded_int = arma::conv_to< arma::mat >::from(uv_rounded);
+    arma::mat uv_rounded_int = arma::conv_to<arma::mat>::from(uv_rounded);
     double image_size_int = image_size / 2;
-    arma::mat kernel_centre_on_grid = uv_rounded_int + repmat(arma::mat{image_size_int,image_size_int}, uv_rounded_int.n_rows, 1);
+    arma::mat kernel_centre_on_grid = uv_rounded_int + repmat(arma::mat{ image_size_int, image_size_int }, uv_rounded_int.n_rows, 1);
     arma::uvec good_vis_idx = bounds_check_kernel_centre_locations(kernel_centre_on_grid, support, image_size);
 
     arma::cx_mat vis_grid = arma::zeros<arma::cx_mat>(image_size, image_size);
@@ -120,37 +124,36 @@ arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, 
     arma::mat oversampled_offset;
 
     if (oversampling < NO_OVERSAMPLING) {
-        //If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
-        kernel_cache = populate_kernel_cache<T>(support, oversampling, pad, normalize, std::forward<Args>(args)...);
+        // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
+        kernel_cache = populate_kernel_cache(support, oversampling, pad, normalize, kernel_creator);
         oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling);
     }
 
-    arma::uword gc_x;
-    arma::uword gc_y;
-    arma::mat normed_kernel_array;
-    std::complex<double> vis_value;
+    arma::uword idx(0);
 
-    for (arma::uword idx(0); idx < good_vis_idx.n_elem; ++idx)
-    {
-        gc_x = kernel_centre_on_grid(idx, 0);
-        gc_y = kernel_centre_on_grid(idx, 1);
+    good_vis_idx.for_each([&idx, &kernel_centre_on_grid, &support, &oversampling, &kernel_cache, &oversampled_offset, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid, &typed_one](arma::uvec::elem_type& val) {
+        arma::uword gc_x = kernel_centre_on_grid(idx, 0);
+        arma::uword gc_y = kernel_centre_on_grid(idx, 1);
 
         arma::span xrange = arma::span(gc_x - support, gc_x + support);
         arma::span yrange = arma::span(gc_y - support, gc_y + support);
 
+        arma::mat normed_kernel_array;
+
         if (oversampling < NO_OVERSAMPLING) {
-            //We then pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
-            normed_kernel_array = kernel_cache[std::make_pair(oversampled_offset.at(idx,0), oversampled_offset.at(idx,1))];
+            // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
+            normed_kernel_array = kernel_cache[std::make_pair(oversampled_offset.at(idx, 0), oversampled_offset.at(idx, 1))];
         } else {
             // Exact gridding is used, i.e. the kernel is recalculated for each visibility, with
             // precise sub-pixel offset according to that visibility's UV co-ordinates.
-            arma::mat kernel = make_kernel_array<T>(support, uv_frac.row(idx), oversampling, pad, normalize, std::forward<Args>(args)...);
+            arma::mat kernel = make_kernel_array(support, uv_frac.row(idx), oversampling, pad, normalize, kernel_creator);
             normed_kernel_array = kernel / accu(kernel);
         }
 
-        vis_grid(yrange, xrange) += vis[good_vis_idx[idx]] * normed_kernel_array;
+        vis_grid(yrange, xrange) += vis[val] * normed_kernel_array;
         sampling_grid(yrange, xrange) += typed_one[0] * normed_kernel_array;
-    }
+        idx++;
+    });
 
     result_grid.slice(VIS_GRID_INDEX) = vis_grid;
     result_grid.slice(SAMPLING_GRID_INDEX) = sampling_grid;
