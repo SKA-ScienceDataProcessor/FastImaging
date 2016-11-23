@@ -1,7 +1,7 @@
-/** @file cov_func.h
+/** @file conv_func.h
  *  @brief Classes and functions of convolution methods
  *
- *  This contains the prototypes and the classes for the convolutions
+ *  This contains the prototypes and the classes for the convolution
  *  functions
  *
  *  @bug No known bugs.
@@ -10,82 +10,212 @@
 #ifndef CONV_FUNC_H
 #define CONV_FUNC_H
 
-#include "armadillo"
-#include <utility>
+#include <armadillo>
 #include <complex>
+#include <utility>
 
 const double NO_OVERSAMPLING(-100);
-const double tolerance(0.002);
+const double tolerance(0.000000000000002);
 
-/** @brief Class Tophat
- *
- *  Generate Tophat convolution with an array input or scalar input.
- *
- *  @param[in] radius_in_pix (arma::mat)
- *  @param[in] half_base_width (double)
- *
- *  @return Result convolution
+/**
+ * @brief The TopHat functor class
  */
 class TopHat {
-    public:
-        arma::mat operator() (const arma::mat& radius_in_pix, const double half_base_width);
+public:
+    /**
+     * @brief TopHat constructor
+     * @param half_base_width (double)
+     */
+    TopHat(double half_base_width)
+        : _half_base_width(half_base_width)
+    {
+    }
+
+    /**
+     * @brief operator ()
+     * @param radius_in_pix (arma::mat)
+     * @return TopHat mat
+     */
+    arma::mat operator()(const arma::mat& radius_in_pix) const;
+
+private:
+    double _half_base_width;
 };
 
-/** @brief Class Triangle
- *
- *  Generate Triangle convolution with an array input or scalar input.
- *
- *  @param[in] radius_in_pix (arma::mat)
- *  @param[in] half_base_width (double)
- *  @param[in] triangle_value (double)
- *
- *  @return Result convolution
+/**
+ * @brief The Triangle functor class
  */
 class Triangle {
-    public:
-        arma::mat operator() (const arma::mat& radius_in_pix, const double half_base_width, const double triangle_value);
+public:
+    /**
+     * @brief Triangle constructor
+     *
+     * Generate Triangle convolution with an array input or scalar input.
+     *
+     * @param[in] half_base_width (double)
+     * @param[in] triangle_value (double)
+     */
+    Triangle(double half_base_width, double triangle_value)
+        : _half_base_width(half_base_width)
+        , _triangle_value(triangle_value)
+    {
+    }
+
+    /**
+     * @brief operator ()
+     * @param[in] radius_in_pix (arma::mat)
+     * @return Triangle mat
+     */
+    arma::mat operator()(const arma::mat& radius_in_pix) const;
+
+private:
+    const double _half_base_width;
+    const double _triangle_value;
 };
 
-/** @brief Class Sinc
- *
- *  Generate Sinc convolution with an array input or scalar input.
- *
- *  @param[in] radius_in_pix (arma::mat)
- *
- *  @return Result convolution
+/**
+ * @brief The Sinc functor class
  */
 class Sinc {
-    public:
-        arma::mat operator() (const arma::mat& radius_in_pix);
+public:
+    /** @brief Default constructor, with no truncation.
+     */
+    Sinc() = default;
+
+    /**
+     * @brief Constructor with no truncation.
+     * @param[in] width_normalization (double)
+     */
+    Sinc(double width_normalization)
+        : _width_normalization(width_normalization)
+    {
+    }
+
+    /**
+     * @brief Sinc constructor with truncation threshold.
+     * @param[in] truncation threshold
+     */
+    Sinc(double width_normalization, const double threshold)
+        : _truncate(true)
+        , _threshold(threshold)
+        , _width_normalization(width_normalization)
+    {
+    }
+
+    /**
+     * @brief operator ()
+     * @param[in] radius_in_pix (arma::mat&)
+     * @return Convolution kernel
+     */
+    arma::mat operator()(const arma::mat& radius_in_pix) const;
+
+private:
+    bool _truncate = false;
+    double _threshold = 0.0;
+
+    double _width_normalization = 1.0;
 };
 
-/** @brief Class Gaussian
- *
- *  Generate Gaussian convolution with an array input or scalar input.
- *
- *  @param[in] radius_in_pix (arma::mat)
- *  @param[in] width (double)
- *
- *  @return Result convolution
+/**
+ * @brief The Gaussian functor class
  */
 class Gaussian {
-    public:
-        arma::mat operator() (const arma::mat& radius_in_pix, const double width);
+public:
+    /**
+     * @brief Default constructor
+     */
+    Gaussian() = default;
+
+    /**
+     * @brief Constructor with no truncation.
+     * @param[in] width_normalization (double)
+     */
+    Gaussian(double width_normalization)
+        : _width_normalization(width_normalization)
+    {
+    }
+
+    /**
+     * @brief Constructor with truncation
+     * @param[in] width_normalization (double)
+     * @param[in] threshold (double)
+     */
+    Gaussian(const double width_normalization, double threshold)
+        : _truncate(true)
+        , _threshold(threshold)
+        , _width_normalization(width_normalization)
+    {
+    }
+
+    /**
+     * @brief operator ()
+     * @param[in] radius_in_pix (arma:mat&)
+     * @return Convolution kernel
+     */
+    arma::mat operator()(const arma::mat& radius_in_pix) const;
+
+private:
+    bool _truncate = false;
+    double _threshold = 0.0;
+
+    double _width_normalization = 1.0;
 };
 
-/** @brief Class GaussianSinc
- *
- *  Generate Gaussian Sinc convolution  with an array input or scalar input.
- *
- *  @param[in] radius_in_pix (arma::mat)
- *  @param[in] width_normalization_gaussian (double)
- *  @param[in] width_normalization_sinc (double)
- *
- *  @return Result convolution
+/**
+ * @brief The GaussianSinc functor class
  */
 class GaussianSinc {
-    public:
-        arma::mat operator() (const arma::mat& radius_in_pix, const double width_normalization_gaussian, const double width_normalization_sinc);
+public:
+    /**
+     * @brief Default constructor
+     */
+    GaussianSinc()
+        : _gaussian(_default_width_normalization_gaussian)
+        , _sinc(_default_width_normalization_sinc)
+    {
+    }
+
+    /**
+     * @brief Constructor with no truncation.
+     * @param[in] width_normalization_gaussian (double)
+     * @param[in] width_normalization_sinc (double)
+     */
+    GaussianSinc(double width_normalization_gaussian, double width_normalization_sinc)
+        : _gaussian(width_normalization_gaussian)
+        , _sinc(width_normalization_sinc)
+    {
+    }
+
+    /**
+     * @brief Constructor with truncation threshold.
+     * @param[in] width_normalization_gaussian
+     * @param[in] width_normalization_sinc
+     * @param[in] threshold
+     */
+    GaussianSinc(double width_normalization_gaussian, double width_normalization_sinc, double threshold)
+        : _truncate(true)
+        , _threshold(threshold)
+        , _gaussian(width_normalization_gaussian)
+        , _sinc(width_normalization_sinc)
+    {
+    }
+
+    /**
+     * @brief operator ()
+     * @param[in] radius_in_pix (arma:mat&)
+     * @return Convolution kernel
+     */
+    arma::mat operator()(const arma::mat& radius_in_pix) const;
+
+private:
+    const bool _truncate = false;
+    const double _threshold = 0.0;
+
+    Gaussian _gaussian;
+    Sinc _sinc;
+
+    const double _default_width_normalization_gaussian = 2.52;
+    const double _default_width_normalization_sinc = 1.55;
 };
 
 /** @brief Make Kernel Array
@@ -105,17 +235,17 @@ class GaussianSinc {
 *  @param[in] pad (bool) : Whether to pad the array by an extra pixel-width.
 *             This is used when generating an oversampled kernel that will be used for interpolation.
 *  @param[in] normalize (bool)
-*  @param[in] Args&&... args : parameters that will be expanded to use on functor.
 *
 *  @return Result kernel
 */
-template <typename T, typename... Args>
-arma::mat make_kernel_array(const int support, const arma::mat& offset, const double oversampling, const bool pad, const bool normalize, Args&&... args) {
+template <typename T>
+arma::mat make_kernel_array(int support, const arma::mat& offset, double oversampling, bool pad, bool normalize, const T& kernel_creator)
+{
 
     int localOversampling(1.0);
     int localPad(0.0);
 
-    if (oversampling < NO_OVERSAMPLING || oversampling > NO_OVERSAMPLING) {
+    if ((oversampling < NO_OVERSAMPLING) || (oversampling > NO_OVERSAMPLING)) {
         localOversampling = oversampling;
     }
 
@@ -126,21 +256,16 @@ arma::mat make_kernel_array(const int support, const arma::mat& offset, const do
     int array_size = 2 * (support + localPad) * localOversampling + 1;
     int centre_idx = (support + pad) * localOversampling;
 
-    arma::mat distance_vec = ((arma::linspace(0, array_size - 1, array_size) - centre_idx) / localOversampling);
+    arma::mat distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / localOversampling);
 
-    // Call the operator () of the functor passed.
-    T obj;
-    arma::vec x_kernel_coeffs = obj((distance_vec - offset[0]), std::forward<Args>(args)...);
-    arma::vec y_kernel_coeffs = obj((distance_vec - offset[1]), std::forward<Args>(args)...);
+    // Call the functor's operator ()
+    arma::vec x_kernel_coeffs = kernel_creator(distance_vec - offset[0]);
+    arma::vec y_kernel_coeffs = kernel_creator(distance_vec - offset[1]);
 
-    // Multiply the two vectores obtained width convolution function, to obtain the 2D kernel.
+    // Multiply the two vectors obtained with convolution function to obtain the 2D kernel.
     arma::mat result = arma::repmat(y_kernel_coeffs, 1, array_size) * arma::diagmat(x_kernel_coeffs);
 
-    if (normalize == true) {
-        result = (result/arma::accu(result));
-    }
-
-    return result;
+    return (normalize == true) ? (result / arma::accu(result)) : result;
 }
 
 #endif /* CONV_FUNC_H */

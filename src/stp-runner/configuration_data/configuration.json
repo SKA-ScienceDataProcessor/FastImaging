@@ -1,0 +1,36 @@
+{
+   "type_input":"vis",
+   "convolution":{
+      "tophat":{
+         "half_base_width":3.0
+      },
+      "triangle":{
+         "triangle_value":1.0,
+         "half_base_width":3.0
+      },
+      "gaussian":{
+         "gaussian_width":1.0,
+         "trunc":5.0
+      },
+      "sinc":{
+         "trunc":5.0,
+         "width_normalization":1.0
+      },
+      "gaussiansinc":{
+         "width_normalization_gaussian":2.52,
+         "width_normalization_sinc":1.55,
+         "trunc":5.0
+      }
+   },
+   "kernel":{
+      "support":1,
+      "oversampling":1,
+      "pad":false,
+      "normalize":false
+   },
+   "pipeline":{
+      "cell_size":1.0,
+      "image_size":8.0,
+      "oversampling":-100
+   }
+}
