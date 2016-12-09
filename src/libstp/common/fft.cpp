@@ -1,16 +1,16 @@
 #include "fft.h"
 #include <fftw3.h>
 
-arma::cx_mat fft_fftw(arma::cx_mat& in, bool inverse)
+arma::cx_mat fft_fftw(arma::cx_mat& input, bool inverse)
 {
-    arma::cx_mat out(arma::size(in));
+    arma::cx_mat output(arma::size(input));
 
     int sign = (inverse == false) ? FFTW_FORWARD : FFTW_BACKWARD;
     fftw_plan plan = fftw_plan_dft_2d(
-        in.n_cols, // FFTW uses row-major order, requiring the plan
-        in.n_rows, // to be passed the dimensions in reverse.
-        reinterpret_cast<fftw_complex*>(in.memptr()),
-        reinterpret_cast<fftw_complex*>(out.memptr()),
+        input.n_cols, // FFTW uses row-major order, requiring the plan
+        input.n_rows, // to be passed the dimensions in reverse.
+        reinterpret_cast<fftw_complex*>(input.memptr()),
+        reinterpret_cast<fftw_complex*>(output.memptr()),
         sign,
         FFTW_ESTIMATE);
 
@@ -22,25 +22,25 @@ arma::cx_mat fft_fftw(arma::cx_mat& in, bool inverse)
     // In order to match Numpy's inverse FFT, the result must
     // be divided by the number of elements in the matrix.
     if (inverse == true) {
-        out /= in.n_cols * in.n_rows; // in-place division
+        output /= input.n_cols * input.n_rows; // in-place division
     }
 
-    return out;
+    return output;
 }
 
-arma::cx_mat fft_arma(arma::cx_mat& in, bool inverse)
+arma::cx_mat fft_arma(arma::cx_mat& input, bool inverse)
 {
-    arma::cx_mat out(arma::size(in));
+    arma::cx_mat output(arma::size(input));
 
     if (inverse == false) {
-        out = arma::fft2(in);
+        output = arma::fft2(input);
     } else {
-        out = arma::ifft2(in);
+        output = arma::ifft2(input);
     }
 
     // Armadillo normalises the FFT, so there's no
     // need for any division.
-    return out;
+    return output;
 }
 
 arma::cx_mat fftshift(const arma::cx_mat& m, bool is_forward)
@@ -62,4 +62,3 @@ arma::cx_mat fftshift(const arma::cx_mat& m, bool is_forward)
 
     return result;
 }
-

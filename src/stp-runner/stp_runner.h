@@ -49,7 +49,7 @@ TCLAP::ValueArg<std::string> _convFlag("c", "convolution-types", "Chooses which 
 // Filepath flag
 TCLAP::ValueArg<std::string> _fileArg("f", "filepath", "Input filepath", true, "../mock_uvw_vis.npz", "string");
 // Command line parser
-TCLAP::CmdLine _cmd("Parser for the stp runner", ' ', "0.3");
+TCLAP::CmdLine _cmd("Parser for the stp runner", ' ', "1.0");
 
 /**
  * @brief Loads a json configuration file into a rapidjson document
@@ -139,16 +139,15 @@ public:
 *
 * Creates and initializes the logger to be used throughout the program
 */
-void initLogger() throw(TCLAP::ArgException);
+void init_logger() throw(TCLAP::ArgException);
 
 /**
-* @brief Creates the switch flags to be used by the parser
+* @brief Creates the flags to be used by the parser
 *
-* Creates a list of switch arguments and then xor adds to the command line parser, meaning that only
-* one flag and one only is required to run the program_invocation_name
+* Creates and adds the convolution, action and file flags to the command line parser
 *
 */
-void createFlags() throw(TCLAP::ArgException);
+void create_flags() throw(TCLAP::ArgException);
 
 /**
  * @brief Run all convolutions classes
@@ -161,7 +160,7 @@ void run_all_configurations(ConfigurationFile& cfg, arma::cx_mat input, arma::cx
  * @brief Run convolution
  *
  * Uses the configuration parameters/inputed matrix and command
- * line parameter to call the respective class and prints the result.
+ * line parameter to call the respective class and prints the convolution result.
  */
 void run_convolution(ConfigurationFile& cfg, arma::cx_mat input);
 

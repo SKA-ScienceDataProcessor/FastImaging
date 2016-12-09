@@ -12,5 +12,5 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
 
 # Build the auxiliary functions
 add_library(auxiliary load_data.cpp load_data.h)
-target_include_directories(auxiliary PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
+target_include_directories(auxiliary PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
 target_link_libraries(auxiliary cnpy)

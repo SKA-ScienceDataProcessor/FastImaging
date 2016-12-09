@@ -14,7 +14,7 @@
 #include <complex>
 #include <utility>
 
-const double NO_OVERSAMPLING(-100);
+const double oversampling_disabled(-100);
 const double tolerance(0.000000000000002);
 
 /**
@@ -242,16 +242,8 @@ template <typename T>
 arma::mat make_kernel_array(int support, const arma::mat& offset, double oversampling, bool pad, bool normalize, const T& kernel_creator)
 {
 
-    int localOversampling(1.0);
-    int localPad(0.0);
-
-    if ((oversampling < NO_OVERSAMPLING) || (oversampling > NO_OVERSAMPLING)) {
-        localOversampling = oversampling;
-    }
-
-    if (pad == true) {
-        localPad = 1.0;
-    }
+    int localOversampling = (oversampling < oversampling_disabled || (oversampling > oversampling_disabled)) ? oversampling : 1.0;
+    int localPad = (pad == true) ? 1.0 : 0.0;
 
     int array_size = 2 * (support + localPad) * localOversampling + 1;
     int centre_idx = (support + pad) * localOversampling;

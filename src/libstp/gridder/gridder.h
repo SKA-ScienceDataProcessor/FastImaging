@@ -44,7 +44,7 @@ std::map<std::pair<int, int>, arma::mat> populate_kernel_cache(const int support
     oversampled_pixel_offsets.for_each([&oversampled_pixel_offsets, &oversampling, &support, &pad, &normalize, &kernel_creator, &cache](arma::mat::elem_type& val_x) {
         oversampled_pixel_offsets.for_each([&val_x, &oversampled_pixel_offsets, &oversampling, &support, &pad, &normalize, &kernel_creator, &cache](arma::mat::elem_type& val_y) {
             arma::mat subpixel_offset = arma::mat({ val_x, val_y }) / oversampling;
-            arma::mat kernel = make_kernel_array(support, subpixel_offset, NO_OVERSAMPLING, pad, normalize, kernel_creator);
+            arma::mat kernel = make_kernel_array(support, subpixel_offset, oversampling_disabled, pad, normalize, kernel_creator);
             cache[std::make_pair(val_x, val_y)] = kernel;
         });
     });
@@ -123,7 +123,7 @@ arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, 
     std::map<std::pair<int, int>, arma::mat> kernel_cache;
     arma::mat oversampled_offset;
 
-    if (oversampling < NO_OVERSAMPLING) {
+    if (oversampling < oversampling_disabled) {
         // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
         kernel_cache = populate_kernel_cache(support, oversampling, pad, normalize, kernel_creator);
         oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling);
@@ -140,7 +140,7 @@ arma::cx_cube convolve_to_grid(const int support, int image_size, arma::mat uv, 
 
         arma::mat normed_kernel_array;
 
-        if (oversampling < NO_OVERSAMPLING) {
+        if (oversampling < oversampling_disabled) {
             // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
             normed_kernel_array = kernel_cache[std::make_pair(oversampled_offset.at(idx, 0), oversampled_offset.at(idx, 1))];
         } else {

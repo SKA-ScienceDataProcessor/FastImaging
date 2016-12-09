@@ -2,7 +2,6 @@
 #define FFT_H
 
 #include <armadillo>
-#include <memory>
 
 /**
  * @brief Performs a fast fourier transform on a matrix using the armadillo library
@@ -15,7 +14,7 @@
  *
  * @return The transformed matrix
  */
-arma::cx_mat fft_arma(arma::cx_mat& in, bool inverse = false);
+arma::cx_mat fft_arma(arma::cx_mat& input, bool inverse = false);
 
 /**
  * @brief Performs a fast fourier transform on a matrix using the FFTW library
@@ -28,7 +27,7 @@ arma::cx_mat fft_arma(arma::cx_mat& in, bool inverse = false);
  *
  * @return The transformed matrix
  */
-arma::cx_mat fft_fftw(arma::cx_mat& in, bool inverse = false);
+arma::cx_mat fft_fftw(arma::cx_mat& input, bool inverse = false);
 
 /**
  * @brief fftshift
@@ -42,4 +41,3 @@ arma::cx_mat fft_fftw(arma::cx_mat& in, bool inverse = false);
 arma::cx_mat fftshift(const arma::cx_mat& m, bool is_forward = true);
 
 #endif /* FFT_H */
-

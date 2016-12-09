@@ -36,7 +36,7 @@ arma::cx_cube image_visibilities(arma::cx_mat vis, arma::cx_mat uvw_lambda, int 
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * image_size));
     arma::mat uvw_in_pixels = arma::real(uvw_lambda) / grid_pixel_width_lambda;
 
-    arma::mat uv_in_pixels(10, 2);
+    arma::mat uv_in_pixels(uvw_in_pixels.n_rows, 2);
     uv_in_pixels.col(0) = uvw_in_pixels.col(0);
     uv_in_pixels.col(1) = uvw_in_pixels.col(1);
 
