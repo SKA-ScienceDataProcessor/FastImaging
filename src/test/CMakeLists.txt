@@ -44,23 +44,23 @@ configure_file(pipeline/pipeline_func.h pipeline_func/pipeline_func.h @ONLY)
 # Convolution Functions Tests
 
 # Triangle
-add_executable(test_conv_triangle_func convolution/conv_test_triangle.cpp)
+add_executable(test_conv_triangle_func conv/conv_test_triangle.cpp)
 target_link_libraries(test_conv_triangle_func ${TEST_LINK_LIBRARIES})
 
 # Tophat
-add_executable(test_conv_tophat convolution/conv_test_tophat.cpp)
+add_executable(test_conv_tophat conv/conv_test_tophat.cpp)
 target_link_libraries(test_conv_tophat ${TEST_LINK_LIBRARIES})
 
 # Sinc
-add_executable(test_conv_sinc convolution/conv_test_sinc.cpp)
+add_executable(test_conv_sinc conv/conv_test_sinc.cpp)
 target_link_libraries(test_conv_sinc ${TEST_LINK_LIBRARIES})
 
 # Gaussian
-add_executable(test_conv_gaussian convolution/conv_test_gaussian.cpp)
+add_executable(test_conv_gaussian conv/conv_test_gaussian.cpp)
 target_link_libraries(test_conv_gaussian ${TEST_LINK_LIBRARIES})
 
 # Gaussian Sinc
-add_executable(test_conv_gaussian_sinc convolution/conv_test_gaussiansinc.cpp)
+add_executable(test_conv_gaussian_sinc conv/conv_test_gaussiansinc.cpp)
 target_link_libraries(test_conv_gaussian_sinc ${TEST_LINK_LIBRARIES})
 
 
