@@ -71,6 +71,15 @@
 - Note: STP-Runner loads configuration data from configuration_data/configuration.json
 
 ## Release Notes
+### 9 December 2016
+- Implemented 1st version of the SourceFindImage (IslandParams and SourceFindImage structs/functions)
+- Implemented 1st version of the Fixtures (functions uncorrelated_gaussian_noise_background and evaluate_model_on_pixel_grid)
+- Implemented Connected Components Labeling function 
+- Implemented Gaussian2D class (based on Gaussian2D of the astropy library)
+- Created test environment for: SourceFind and Fixtures modules
+- Added Google Benchmark functions for all tests except 1D convolution
+- Rename some files/variables/functions/structs 
+
 ### 23 November 2016
 - FFTW3 is now an in-source dependency
 - Added rapidjson to the source dependencies

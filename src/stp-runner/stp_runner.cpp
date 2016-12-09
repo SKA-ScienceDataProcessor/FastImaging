@@ -24,7 +24,7 @@ std::map<std::string, convolution_types> conv_types = {
     { "gaussian-sinc", gaussianSinc }
 };
 
-void initLogger() throw(TCLAP::ArgException)
+void init_logger() throw(TCLAP::ArgException)
 {
     // Creates two spdlog sinks
     // One sink for the stdout and another for a file
@@ -34,17 +34,17 @@ void initLogger() throw(TCLAP::ArgException)
     _logger = std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
 }
 
-void createFlags() throw(TCLAP::ArgException)
+void create_flags() throw(TCLAP::ArgException)
 {
-    // Adds the action flag to the parse.
-    _logger->debug("Adding the mode flag to the command line parser");
+    // Adds the action flag to the parser.
+    _logger->debug("Adding the action flag to the command line parser");
     _cmd.add(_modeFlag);
 
     // Adds the convolution flag to the parse.
     _logger->debug("Adding the mode flag to the command line parser");
     _cmd.add(_convFlag);
 
-    // Adds the value flag to the parser list. This is flag is required
+    // Adds the file flag to the parser list. This flag is required
     _logger->debug("Adding the filepath flag to the command line parser");
     _cmd.add(_fileArg);
 }
@@ -197,22 +197,22 @@ void run_pipeline(ConfigurationFile& cfg, arma::cx_mat input_vis, arma::cx_mat i
 int main(int argc, char** argv)
 {
     // Creates and initializes the logger
-    initLogger();
+    init_logger();
     _logger->info("Program start");
 
     // Adds the flags to the parser
-    createFlags();
+    create_flags();
 
     // Parses the arguments from the command console
     _logger->info("Parsing arguments from console");
     _cmd.parse(argc, argv);
 
     // Load the file argument to a npy array
-    cnpy::NpyArray input_vis1(cnpy::npz_load(_fileArg.getValue(), "vis"));
-    cnpy::NpyArray input_uvw1(cnpy::npz_load(_fileArg.getValue(), "uvw"));
+    cnpy::NpyArray input_vis_npy(cnpy::npz_load(_fileArg.getValue(), "vis"));
+    cnpy::NpyArray input_uvw_npy(cnpy::npz_load(_fileArg.getValue(), "uvw"));
 
-    arma::cx_mat input_vis = load_npy_array(&input_vis1);
-    arma::cx_mat input_uvw = load_npy_array(&input_uvw1);
+    arma::cx_mat input_vis = load_npy_array(input_vis_npy);
+    arma::cx_mat input_uvw = load_npy_array(input_uvw_npy);
 
     arma::cx_mat input;
     // Load all configurations from json configuration file

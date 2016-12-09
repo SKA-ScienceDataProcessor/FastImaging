@@ -14,6 +14,6 @@
 *
 *   @return Armadillo matrix with npy values
 */
-arma::cx_mat load_npy_array(cnpy::NpyArray* npy) throw(std::invalid_argument);
+arma::cx_mat load_npy_array(cnpy::NpyArray& npy) throw(std::invalid_argument);
 
 #endif /* LOAD_DATA_H */

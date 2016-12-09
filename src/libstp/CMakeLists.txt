@@ -31,10 +31,17 @@ set(STP_TARGET_NAME "stp")
 # For convenience, all source files are grouped into one variable
 # Note: adding single headers to the list of sources is required
 # so that IDEs will notice them, but it's otherwise innocuous.
-set(LIBSTP_SOURCE_FILES libstp.h convolution/conv_func.cpp gridder/gridder.cpp pipeline/pipeline.h common/fft.cpp)
+set(LIBSTP_SOURCE_FILES libstp.h convolution/conv_func.cpp gridder/gridder.cpp pipeline/pipeline.h sourcefind/sourcefind.cpp fixtures/fixtures.h common/fft.cpp common/ccl.cpp common/gaussian2d.cpp)
 
 # Configures the pipeline.h on which fft implementation to use
-add_definitions ( -D_ARMA=0 )
+
+option(ARMA_IMP "Builds the libstp using the armadillo FFT implementation" ON)
+
+if(ARMA_IMP)
+    add_definitions ( -D_ARMA=0 )
+else()
+    add_definitions ( -D_ARMA=1 )
+endif()
 configure_file(pipeline/pipeline.h pipeline/pipeline.h @ONLY)
 
 # Create the library as static
