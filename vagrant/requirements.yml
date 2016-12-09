@@ -1,0 +1,6 @@
+# Ansible requirements file
+- src: timstaley.base
+  version: master
+
+- src: jbzdak.jessie_role
+  version: 18e8c1d2f76f36c3040ebfa437efae5f85f08cd2
