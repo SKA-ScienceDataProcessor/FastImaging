@@ -1,18 +1,11 @@
 # --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Prototype
 
-# Minimum version is current on Debian "Testing"
-cmake_minimum_required(VERSION 3.6.2)
+# Minimum version is the one shipping with Ubuntu 16.04 LTS
+cmake_minimum_required(VERSION 3.5.1)
 
-# Top-level project for the prototype. Language is C++
-project(stp-prototype LANGUAGES CXX)
-
-# Minimum language standard is C++14
-set(CMAKE_CXX_STANDARD 14)
-set(CXX_STANDARD_REQUIRED ON)
-
-# Turn on useful compiler flags
-add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstrict-aliasing)
+# Top-level project for the prototype.
+project(stp-prototype)
 
 # The default build type is Debug. Other types can be specified
 # by appending -D CMAKE_BUILD_TYPE=type to the CMake call, where
@@ -29,16 +22,43 @@ if(NOT CMAKE_VERBOSE_MAKEFILE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Makefile is verbose")
 endif()
 
-# Testing must be enabled at top script level
-enable_testing()
+# Options
+option(BUILD_TESTS "Builds the unit tests" ON)
+option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
 
-# Target: STP Library
-set(LIBSTP_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libstp)
-add_subdirectory(${LIBSTP_SOURCE_DIRECTORY})
+# Sub-project: third-party dependencies (Google Test, Google Benchmark)
+set(THIRD_PARTY_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+add_subdirectory(${THIRD_PARTY_SOURCE_DIRECTORY})
 
-# Target: STP Runner
-set(RUNNER_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp-runner)
-add_subdirectory(${RUNNER_SOURCE_DIRECTORY})
+# Sub-project: STP Library
+set(STP_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp)
+add_subdirectory(${STP_SOURCE_DIRECTORY})
+
+# Target: STP Reduce
+set(REDUCE_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/reduce)
+add_subdirectory(${REDUCE_SOURCE_DIRECTORY})
+
+# Sub-project: Python Bindings
+set(PYTHON_BINDINGS_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp-python)
+add_subdirectory(${PYTHON_BINDINGS_SOURCE_DIRECTORY})
+
+# Sub-project: unit tests
+if(BUILD_TESTS)
+    # Note: testing must be enabled at top script level
+    enable_testing()
+    set(TESTS_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test)
+    add_subdirectory(${TESTS_SOURCE_DIRECTORY})
+else()
+    message(STATUS "Unit tests will not be built")
+endif()
+
+# Sub-project: benchmarking tests
+if(BUILD_BENCHMARK)
+    set(BENCHMARK_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/benchmark)
+    add_subdirectory(${BENCHMARK_SOURCE_DIRECTORY})
+else()
+    message(STATUS "Benchmarking tests will not be built")
+endif()
 
 # If cppcheck is available, add a target for it.
 # Note: this target must be run on demand and won't be part of "all"
@@ -54,9 +74,9 @@ if(CPPCHECK)
         --std=c++11
         --quiet
         --verbose
-        ${LIBSTP_SOURCE_DIRECTORY}
-        ${RUNNER_SOURCE_DIRECTORY}
+        ${STP_SOURCE_DIRECTORY}
     )
 else()
     message(WARNING "cppcheck was not found. Target \"cppcheck\" will not be available.")
 endif()
+

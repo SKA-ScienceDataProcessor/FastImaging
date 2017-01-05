@@ -8,14 +8,13 @@
  */
 
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 // Test the triangle functor implementation.
 TEST(ConvTriangleFunc, conv_funcs_triangle_func)
 {
-    // half_base_width = 2.0
-    // triangle_value = 1.0
-
     arma::mat input = { 0.0, 1.0, 2.0, 2.000001, 100, 0.1, 0.5 };
     arma::mat output = { 1.0, 0.5, 0.0, 0.0, 0.0, 0.95, 0.75 };
 

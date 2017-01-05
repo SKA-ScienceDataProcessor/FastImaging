@@ -1,0 +1,6 @@
+{
+	"image_size_pix": 1024,
+	"cell_size_arcsec": 1,
+	"sourcefind_detection": 50,
+	"sourcefind_analysis": 50
+}

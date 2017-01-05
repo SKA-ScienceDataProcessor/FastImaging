@@ -1,6 +1,14 @@
-#include <benchmark/benchmark.h>
+/** @file sourcefind_testBasicSourceDetection.cpp
+ *  @brief Test SourceFindImage module implementation
+ *         for the Rms estimation
+ *
+ *  @bug No known bugs.
+ */
+
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 class SourceFindRmsEstimation : public ::testing::Test {
 private:
@@ -39,7 +47,7 @@ public:
         img += evaluate_model_on_pixel_grid(ydim, xdim, gaussian_point_source(bright_x_centre, bright_y_centre, bright_amplitude));
         img += evaluate_model_on_pixel_grid(ydim, xdim, gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude));
 
-        rms_est = _estimate_rms(img);
+        rms_est = estimate_rms(img);
 
         arma::mat aux = { (rms_est - rms) / rms };
         absolute_rms = arma::abs(aux)[0];
@@ -51,10 +59,4 @@ TEST_F(SourceFindRmsEstimation, Absolute_rms)
 {
     run();
     EXPECT_LT(absolute_rms, 0.05);
-}
-
-TEST_F(SourceFindRmsEstimation, SourceFindRmsEstimation_benchmark)
-{
-    benchmark::RegisterBenchmark("SourceFindRmsEstimation", [this](benchmark::State& state) { while(state.KeepRunning())run(); });
-    benchmark::RunSpecifiedBenchmarks();
 }

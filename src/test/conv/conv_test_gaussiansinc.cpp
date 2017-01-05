@@ -8,7 +8,9 @@
  */
 
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 // Test the gaussiansinc functor implementation; with conventional scaling values.
 TEST(ConvGaussianSincFunc, test_conv_funcs_test_gaussian_sinc)

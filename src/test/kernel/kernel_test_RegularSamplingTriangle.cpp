@@ -7,13 +7,14 @@
  *  @bug No known bugs.
  */
 
-#include <benchmark/benchmark.h>
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 const int support(2);
 const double half_base_width(1.5);
-const double oversampling(1);
+const std::experimental::optional<int> oversampling{ 1 };
 const double triangle_value(1.0);
 const bool pad(false);
 const bool normalize(false);
@@ -35,7 +36,7 @@ TEST(KernelGenerationRegularSamplingTriangle, NoOffset)
         { 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(support, offset_index, oversampling, pad, normalize, Triangle(half_base_width, triangle_value));
+    arma::mat result_array = make_kernel_array(Triangle(half_base_width, triangle_value), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
 }
 
@@ -52,22 +53,6 @@ TEST(KernelGenerationRegularSamplingTriangle, OffsetRight)
         { 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(support, offset_index, oversampling, pad, normalize, Triangle(half_base_width, triangle_value));
+    arma::mat result_array = make_kernel_array(Triangle(half_base_width, triangle_value), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
-}
-
-// Benchmark functions
-
-void BM_RegularSamplingTriangle_without_offset(benchmark::State& state)
-{
-    arma::mat offset_index = { 0., 0. };
-
-    while (state.KeepRunning())
-        make_kernel_array(support, offset_index, oversampling, pad, normalize, Triangle(half_base_width, triangle_value));
-}
-
-TEST(KernelGenerationRegularSamplingTriangle, RegularSamplingTriangle_benchmark)
-{
-    BENCHMARK(BM_RegularSamplingTriangle_without_offset);
-    benchmark::RunSpecifiedBenchmarks();
 }
