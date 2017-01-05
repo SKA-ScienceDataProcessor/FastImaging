@@ -1,33 +1,34 @@
-#include <benchmark/benchmark.h>
+/** @file sourcefind_testBasicSourceDetection.cpp
+ *  @brief Test SourceFindImage module implementation
+ *         for a basic source detection
+ *
+ *  @bug No known bugs.
+ */
+
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 class SourceFindBasicSourceDetection : public ::testing::Test {
 private:
     double ydim;
     double xdim;
     double rms;
-
+    std::experimental::optional<double> rms_est;
     double detection_n_sigma;
     double analysis_n_sigma;
-    double rms_est;
-    bool find_negative_sources;
-
     double bright_x_centre;
     double bright_y_centre;
     double bright_amplitude;
-
     double faint_x_centre;
     double faint_y_centre;
     double faint_amplitude;
+    bool find_negative_sources;
 
     island_params found_src;
-
     Gaussian2D bright_src;
     Gaussian2D faint_src;
-
-    source_find_image sf;
-
     arma::mat img;
 
 public:
@@ -58,7 +59,7 @@ public:
     void run()
     {
         img += evaluate_model_on_pixel_grid(ydim, xdim, bright_src);
-        sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        source_find_image sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
 
         found_src = sf.islands[0];
 
@@ -128,10 +129,4 @@ TEST_F(SourceFindBasicSourceDetection, Total_islands2)
 {
     run();
     EXPECT_EQ(total_islands2, 2);
-}
-
-TEST_F(SourceFindBasicSourceDetection, SourceFindBasicSourceDetection_benchmark)
-{
-    benchmark::RegisterBenchmark("SourceFindBasicSourceDetection", [this](benchmark::State& state) { while(state.KeepRunning())run(); });
-    benchmark::RunSpecifiedBenchmarks();
 }

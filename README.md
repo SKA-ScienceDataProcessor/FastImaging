@@ -1,31 +1,33 @@
 # Slow Transients Pipeline Prototype
-## Filesystem organisation
+## Project organisation
 - doc: documentation files
   - html: auto-generated documentation (e.g. doxygen, LaTeX)
 - reference: reference code published on Confluence
-- include: public header files
 - src: source code files (.cpp and .h)
-  - libstp: the STP library code
+  - stp: the STP library code
+  - stp-python: python bindings for STP library
+  - reduce: command-line tool for the execution of the STP on arbitrary numpy data
   - test: unit tests for the STP library
-  - stp-runner: allows the execution of any STP function on arbitrary numpy data
-  - auxiliary: external functions to auxiliate the library
+  - benchmark: functions for benchmarking of STP library
+  - auxiliary: external functions to auxiliate tests, benchmark and reduce module
   - third-party: external code, mostly libraries
-- tools: auxiliary tools
+- config: auxiliary configuration files
 
 ## Build & Run
 ### Dependencies
 
 #### External (Debian-provided)
-- [Armadillo](http://arma.sourceforge.net/) [7.500.0]
+- [Armadillo](http://arma.sourceforge.net/) [7.500.2]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
+- [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
 
 #### In Source (third-party)
 - [Google Test](https://github.com/google/googletest) [1.8.0]
 - [Google Benchmark](https://github.com/google/benchmark) [1.1.0]
 - [cnpy](https://github.com/rogersce/cnpy) [repository head]
-- [FFTW3](http://www.fftw.org/)[3.3.5]
-- [rapidjson](https://github.com/miloyip/rapidjson)[1.1.0]
+- [FFTW3](http://www.fftw.org/) [3.3.5]
+- [pybind11](https://github.com/pybind/pybind11) [2.0.0]
 
 ### Build
 
@@ -49,28 +51,38 @@
 - cd path/to/build/directory
 - run-parts ./libstp/tests
 
-## STP-Runner Execution
-- cd build folder
-- ./stp-runner/stp-runner
-- can receive up to three arguments:
-   - REQUIRED filepath (-f):
-      - path/to/input/data: must be a npz file
-   - convolution-type (-c):
-      - tophat to use tophat function
-      - sinc to use sinc function
-      - gaussian to use gaussian function
-      - gaussian-sinc to use gaussian-sinc function
-      - triangle to use triangle function
-   - REQUIRED mode (-m):
-      - convolution for a 1D convolution
-      - kernel for a 2D convolution
-      - pipeline for a pipeline convolution
-      - fileconfiguration to load all configurations from configuration file
+## Benchmark Execution
+- cd path/to/build/directory
+- make benchmarking
 
-- *Example:* ./bin/stp-runner/stp_runner -f ../../../mock_uvw_vis.npz -m pipeline -c tophat
-- Note: STP-Runner loads configuration data from configuration_data/configuration.json
+## STP Execution using Reduce module
+- cd build folder
+- ./reduce/reduce
+- receives two mandatory arguments:
+   - REQUIRED input filename (-f):
+      - path/to/input/data: must be a npz file
+   - REQUIRED json configuration filename (-c):
+      - path/to/input/config: must be a json file (see example: projectroot/config/fastimg_config.json)
+
+- *Example:* ./bin/reduce/reduce -f ./mock_uvw_vis.npz -c ./fastimg_config.json
 
 ## Release Notes
+### 5 January 2017
+- Renamed libstp to stp
+- Added namespace stp
+- Removed STP-Runner
+- Added Reduce module for simulated run of pipeline
+- Implemented visibity module
+- Implemented python bindings for the "image_visibilities" function, as per imager.py (fastimgproto/bindings)
+- Renamed pipeline.h to imager.h
+- Implemented new pipeline module based on simpipe.py (fastimgproto/scripts)
+- Implemented sigma_clip function
+- Added std::optional to represent oversampling and rms
+- Added new tests and improved existing ones
+- Defined benchmark functions in new folder (not implemented yet)
+- Fixed reading of fortran_order flag in cnpy functions 
+- Applied several optimizations to stp functions
+
 ### 9 December 2016
 - Implemented 1st version of the SourceFindImage (IslandParams and SourceFindImage structs/functions)
 - Implemented 1st version of the Fixtures (functions uncorrelated_gaussian_noise_background and evaluate_model_on_pixel_grid)

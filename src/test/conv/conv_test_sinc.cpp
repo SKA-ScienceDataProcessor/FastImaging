@@ -8,14 +8,13 @@
  */
 
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 // Test the sinc functor implementation.
 TEST(ConvSincFunc, conv_funcs_sinc)
 {
-    // width_normalization = 1.0
-    // threshold = 3.0
-
     arma::mat input = { 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.5 };
     arma::mat output = {
         1.0,

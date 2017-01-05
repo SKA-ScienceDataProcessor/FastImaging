@@ -8,13 +8,13 @@
  */
 
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 // Test the tophat functor implementation.
 TEST(ConvTopHatFunc, conv_funcs_tophat_func)
 {
-    // half_base_width = 3.0
-
     arma::mat input = { 0.0, 2.5, 2.999, 3.0, 4.2 };
     arma::mat output = { 1.0, 1.0, 1.0, 0.0, 0.0 };
 

@@ -7,13 +7,14 @@
  *  @bug No known bugs.
  */
 
-#include <benchmark/benchmark.h>
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 const int support(1);
 const double half_base_width(0.7);
-const double oversampling(3);
+const std::experimental::optional<int> oversampling{ 3 };
 const bool pad(false);
 const bool normalize(false);
 
@@ -32,7 +33,7 @@ TEST(KernelGenerationOversampledPillbox, NoOffset)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(support, offset_index, oversampling, pad, normalize, TopHat(half_base_width));
+    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
 }
 
@@ -51,7 +52,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffset)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(support, offset_index, oversampling, pad, normalize, TopHat(half_base_width));
+    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
 }
 
@@ -70,7 +71,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffsetRight)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(support, offset_index, oversampling, pad, normalize, TopHat(half_base_width));
+    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
 }
 
@@ -89,22 +90,6 @@ TEST(KernelGenerationOversampledPillbox, OffsetRight)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(support, offset_index, oversampling, pad, normalize, TopHat(half_base_width));
+    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
-}
-
-// Benchmark functions
-
-void BM_OversampledPillbox_without_offset(benchmark::State& state)
-{
-    arma::mat offset_index = { 0., 0. };
-
-    while (state.KeepRunning())
-        make_kernel_array(support, offset_index, oversampling, pad, normalize, TopHat(half_base_width));
-}
-
-TEST(KernelGenerationOversampledPillbox, OversampledPillbox_benchmark)
-{
-    BENCHMARK(BM_OversampledPillbox_without_offset);
-    benchmark::RunSpecifiedBenchmarks();
 }

@@ -1,6 +1,14 @@
-#include <benchmark/benchmark.h>
+/** @file sourcefind_testBasicSourceDetection.cpp
+ *  @brief Test SourceFindImage module implementation
+ *         for a negative source detection
+ *
+ *  @bug No known bugs.
+ */
+
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 class SourceFindNegativeSourceDetection : public ::testing::Test {
 private:
@@ -10,7 +18,7 @@ private:
 
     double detection_n_sigma;
     double analysis_n_sigma;
-    double rms_est;
+    std::experimental::optional<double> rms_est;
     bool find_negative_sources;
 
     double bright_x_centre;
@@ -30,8 +38,6 @@ private:
     Gaussian2D bright_src;
     Gaussian2D faint_src;
     Gaussian2D negative_src;
-
-    source_find_image sf;
 
     arma::mat img;
 
@@ -72,7 +78,7 @@ public:
     void run()
     {
         img += evaluate_model_on_pixel_grid(ydim, xdim, negative_src);
-        sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        source_find_image sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
         found_src = sf.islands[0];
 
         total_islands0 = sf.islands.size();
@@ -165,10 +171,4 @@ TEST_F(SourceFindNegativeSourceDetection, Negative_same_island)
 {
     run();
     EXPECT_TRUE(same_island);
-}
-
-TEST_F(SourceFindNegativeSourceDetection, SourceFindNegativeSourceDetection_benchmark)
-{
-    benchmark::RegisterBenchmark("SourceFindNegativeSourceDetection", [this](benchmark::State& state) { while(state.KeepRunning())run(); });
-    benchmark::RunSpecifiedBenchmarks();
 }

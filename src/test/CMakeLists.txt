@@ -1,206 +1,155 @@
 # --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Library Unit Tests
 
-# Note: a binary directory must be specified for the dependencies
-# since the third-party directory isn't under libstp.
-
-# Dependency: Google Test
-set(BUILD_GTEST ON CACHE BOOL "Builds the googletest subproject")
-set(BUILD_GMOCK OFF CACHE BOOL "Builds the googlemock subproject")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/googletest
-                 ${CMAKE_CURRENT_BINARY_DIR}/googletest)
-
-# Dependency: Google Benchmark
-set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library.")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third-party/benchmark
-                 ${CMAKE_CURRENT_BINARY_DIR}/benchmark)
-
-# Dependency: rapidjson
+# External dependency: RapidJSON
 find_path(RAPIDJSON rapidjson)
-if(${RAPIDJSON} STREQUAL "RAPIDJSON-NOTFOUND")
-	message(FATAL_ERROR "rapidjson not found")
+if(NOT RAPIDJSON)
+    message(FATAL_ERROR "RapidJSON library was not found")
 endif()
-
-# TODO: Dependency: OpenBLAS
-# find_package(BLAS REQUIRED)
-
-# Dependency: auxiliary
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_BINARY_DIR}/../../auxiliary)
-
 
 # For convenience all link libraries required by
 # the tests are put in one variable
-set(TEST_LINK_LIBRARIES ${STP_TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} gtest gtest_main benchmark)
+set(TEST_LINK_LIBRARIES stp ${CMAKE_THREAD_LIBS_INIT} cnpy-static gtest gtest_main benchmark)
 
 # Copy configuration files to the binary directory
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pipeline_data/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/imager_data/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
 
-# Configures the pipeline_func.h on the location of the test data
-get_filename_component(PIPELINE_PATH "data/pipeline_data/" ABSOLUTE)
-add_definitions ( -D_TESTPATH="${PIPELINE_PATH}/")
-configure_file(pipeline/pipeline_func.h pipeline_func/pipeline_func.h @ONLY)
+# Configures the imager_func.h on the location of the test data
+get_filename_component(IMAGER_PATH "data/imager_data/" ABSOLUTE)
+add_definitions ( -D_TESTPATH="${IMAGER_PATH}/")
 
+# Helper function for test target specification
+function(add_unit_test unit_test_name unit_test_source)
+    add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/load_data.cpp ../auxiliary/load_json_imager.cpp)
+    add_dependencies(${unit_test_name} stp cnpy-static gtest gtest_main benchmark)
+    target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
+endfunction()
 
-# Convolution Functions Tests
+# Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
 # Triangle
-add_executable(test_conv_triangle_func conv/conv_test_triangle.cpp)
-target_link_libraries(test_conv_triangle_func ${TEST_LINK_LIBRARIES})
+add_unit_test(test_conv_triangle_func conv/conv_test_triangle.cpp)
 
 # Tophat
-add_executable(test_conv_tophat conv/conv_test_tophat.cpp)
-target_link_libraries(test_conv_tophat ${TEST_LINK_LIBRARIES})
+add_unit_test(test_conv_tophat conv/conv_test_tophat.cpp)
 
 # Sinc
-add_executable(test_conv_sinc conv/conv_test_sinc.cpp)
-target_link_libraries(test_conv_sinc ${TEST_LINK_LIBRARIES})
+add_unit_test(test_conv_sinc conv/conv_test_sinc.cpp)
 
 # Gaussian
-add_executable(test_conv_gaussian conv/conv_test_gaussian.cpp)
-target_link_libraries(test_conv_gaussian ${TEST_LINK_LIBRARIES})
+add_unit_test(test_conv_gaussian conv/conv_test_gaussian.cpp)
 
 # Gaussian Sinc
-add_executable(test_conv_gaussian_sinc conv/conv_test_gaussiansinc.cpp)
-target_link_libraries(test_conv_gaussian_sinc ${TEST_LINK_LIBRARIES})
+add_unit_test(test_conv_gaussian_sinc conv/conv_test_gaussiansinc.cpp)
 
-
-# Kernel Functions Tests
+# Test Cases: Kernel Functions -----------------------------------------------------------------------------------------
 
 # Oversampled Pillbox
-add_executable(test_kernel_generation_oversampled_pillbox kernel/kernel_test_OversampledPillbox.cpp)
-target_link_libraries(test_kernel_generation_oversampled_pillbox ${TEST_LINK_LIBRARIES})
+add_unit_test(test_kernel_generation_oversampled_pillbox kernel/kernel_test_OversampledPillbox.cpp)
 
 # Oversampled Pillbox Small
-add_executable(test_kernel_generation_oversample_pillbox_small kernel/kernel_test_OversampledPillboxSmall.cpp)
-target_link_libraries(test_kernel_generation_oversample_pillbox_small ${TEST_LINK_LIBRARIES})
+add_unit_test(test_kernel_generation_oversample_pillbox_small kernel/kernel_test_OversampledPillboxSmall.cpp)
 
 # Regular Sampling Pillbox
-add_executable(test_kernel_generation_regular_sampling_pillbox kernel/kernel_test_RegularSamplingPillbox.cpp)
-target_link_libraries(test_kernel_generation_regular_sampling_pillbox ${TEST_LINK_LIBRARIES})
+add_unit_test(test_kernel_generation_regular_sampling_pillbox kernel/kernel_test_RegularSamplingPillbox.cpp)
 
 # Regular Sampling Triangle
-add_executable(test_kernel_generation_regular_sampling_triangle kernel/kernel_test_RegularSamplingTriangle.cpp)
-target_link_libraries(test_kernel_generation_regular_sampling_triangle ${TEST_LINK_LIBRARIES})
+add_unit_test(test_kernel_generation_regular_sampling_triangle kernel/kernel_test_RegularSamplingTriangle.cpp)
 
-
-# Gridder Functions Tests
+# Test Cases: Gridder Functions ----------------------------------------------------------------------------------------
 
 # Bounds Checking
-add_executable(test_gridder_bouns_checking gridder/gridder_test_BoundsChecking.cpp)
-target_link_libraries(test_gridder_bouns_checking ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_bouns_checking gridder/gridder_test_BoundsChecking.cpp)
 
 # Multi Pixel Pillbox
-add_executable(test_gridder_multi_pixel_pillbox gridder/gridder_test_MultiPixelPillbox.cpp)
-target_include_directories(test_gridder_multi_pixel_pillbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
-target_link_libraries(test_gridder_multi_pixel_pillbox ${TEST_LINK_LIBRARIES} auxiliary)
+add_unit_test(test_gridder_multi_pixel_pillbox gridder/gridder_test_MultiPixelPillbox.cpp)
 
 # Multiple Complex Vis
-add_executable(test_gridder_multiple_complex_vis gridder/gridder_test_MultipleComplexVis.cpp)
-target_link_libraries(test_gridder_multiple_complex_vis ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_multiple_complex_vis gridder/gridder_test_MultipleComplexVis.cpp)
 
 # Nearby Complex Vis
-add_executable(test_gridder_nearby_complex_vis gridder/gridder_test_NearbyComplexVis.cpp)
-target_link_libraries(test_gridder_nearby_complex_vis ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_nearby_complex_vis gridder/gridder_test_NearbyComplexVis.cpp)
 
 # Single Pixel Overlap Pillbox
-add_executable(test_gridder_single_pixel_overlap_pillbox gridder/gridder_test_SinglePixelOverlapPillbox.cpp)
-target_link_libraries(test_gridder_single_pixel_overlap_pillbox ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_single_pixel_overlap_pillbox gridder/gridder_test_SinglePixelOverlapPillbox.cpp)
 
 # Small Pixel
-add_executable(test_gridder_small_pillbox gridder/gridder_test_SmallPillbox.cpp)
-target_link_libraries(test_gridder_small_pillbox ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_small_pillbox gridder/gridder_test_SmallPillbox.cpp)
 
 # Triangle
-add_executable(test_gridder_triangle gridder/gridder_test_Triangle.cpp)
-target_link_libraries(test_gridder_triangle ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_triangle gridder/gridder_test_Triangle.cpp)
 
 # FractionalCoordToOversampledIndexMath
-add_executable(test_gridder_fractional_coord_to_oversampled_index gridder/gridder_test_FractionalCoordToOversampledIndexMath.cpp)
-target_link_libraries(test_gridder_fractional_coord_to_oversampled_index ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_fractional_coord_to_oversampled_index gridder/gridder_test_FractionalCoordToOversampledIndexMath.cpp)
 
 # SteppedVsExactConvolution
-add_executable(test_gridder_stepped_vs_exact_convolution gridder/gridder_test_SteppedVsExactConvolution.cpp)
-target_link_libraries(test_gridder_stepped_vs_exact_convolution ${TEST_LINK_LIBRARIES})
+add_unit_test(test_gridder_stepped_vs_exact_convolution gridder/gridder_test_SteppedVsExactConvolution.cpp)
 
-
-# Pipeline Functions Tests
+# Test Cases: Imager Functions -----------------------------------------------------------------------------------------
 
 # Triangle
-add_executable(test_pipeline_triangle pipeline/pipeline_test_Triangle.cpp pipeline/pipeline_func.h)
-target_include_directories(test_pipeline_triangle PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
-target_link_libraries(test_pipeline_triangle ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_imager_triangle imager/imager_test_Triangle.cpp)
 
 # TopHat
-add_executable(test_pipeline_tophat pipeline/pipeline_test_TopHat.cpp pipeline/pipeline_func.h)
-target_include_directories(test_pipeline_tophat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
-target_link_libraries(test_pipeline_tophat ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_imager_tophat imager/imager_test_TopHat.cpp)
 
 # Sinc
-add_executable(test_pipeline_sinc pipeline/pipeline_test_Sinc.cpp pipeline/pipeline_func.h)
-target_include_directories(test_pipeline_sinc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
-target_link_libraries(test_pipeline_sinc ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_imager_sinc imager/imager_test_Sinc.cpp)
 
 # Gaussian
-add_executable(test_pipeline_gaussian pipeline/pipeline_test_Gaussian.cpp pipeline/pipeline_func.h)
-target_include_directories(test_pipeline_gaussian PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
-target_link_libraries(test_pipeline_gaussian ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_imager_gaussian imager/imager_test_Gaussian.cpp)
 
 # GaussianSinc
-add_executable(test_pipeline_gaussiansinc pipeline/pipeline_test_GaussianSinc.cpp pipeline/pipeline_func.h)
-target_include_directories(test_pipeline_gaussiansinc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy)
-target_link_libraries(test_pipeline_gaussiansinc ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_imager_gaussiansinc imager/imager_test_GaussianSinc.cpp)
 
-
-# Cnpy Function Tests
+# Test Cases: Cnpy Functions -------------------------------------------------------------------------------------------
 
 # Complex
-add_executable(test_cnpy_load_complex cnpy/cnpy_test_complex.cpp)
-target_include_directories(test_cnpy_load_complex PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary)
-target_link_libraries(test_cnpy_load_complex ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_cnpy_load_complex cnpy/cnpy_test_complex.cpp)
 
 # Float
-add_executable(test_cnpy_load_float cnpy/cnpy_test_float.cpp)
-target_include_directories(test_cnpy_load_float PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary)
-target_link_libraries(test_cnpy_load_float ${TEST_LINK_LIBRARIES} cnpy auxiliary)
+add_unit_test(test_cnpy_load_float cnpy/cnpy_test_float.cpp)
 
+# Test Cases: Fixtures Functions ---------------------------------------------------------------------------------------
 
-# Fixtures Functions Tests
-add_executable(test_fixtures_model_generation_evaluation fixtures/fixtures_test_ModelGenerationEvaluation.cpp)
-target_link_libraries(test_fixtures_model_generation_evaluation ${TEST_LINK_LIBRARIES})
+add_unit_test(test_fixtures_model_generation_evaluation fixtures/fixtures_test_ModelGenerationEvaluation.cpp)
 
-
-# SourceFind Functions Tests
+# Test Cases: SourceFind Functions -------------------------------------------------------------------------------------
 
 # BasicSourceDetection
-add_executable(test_sourcefind_basic_source_detection sourcefind/sourcefind_test_BasicSourceDetection.cpp)
-target_link_libraries(test_sourcefind_basic_source_detection ${TEST_LINK_LIBRARIES})
+add_unit_test(test_sourcefind_basic_source_detection sourcefind/sourcefind_test_BasicSourceDetection.cpp)
 
 # NegativeSourceDetection
-add_executable(test_sourcefind_negative_source_detection sourcefind/sourcefind_test_NegativeSourceDetection.cpp)
-target_link_libraries(test_sourcefind_negative_source_detection ${TEST_LINK_LIBRARIES})
+add_unit_test(test_sourcefind_negative_source_detection sourcefind/sourcefind_test_NegativeSourceDetection.cpp)
 
 # RmsEstimation
-add_executable(test_sourcefind_rms_estimation sourcefind/sourcefind_test_RmsEstimation.cpp)
-target_link_libraries(test_sourcefind_rms_estimation ${TEST_LINK_LIBRARIES})
+add_unit_test(test_sourcefind_rms_estimation sourcefind/sourcefind_test_RmsEstimation.cpp)
 
+# Test Cases: Visibilities Functions -----------------------------------------------------------------------------------
 
-# After the tests are built, declare them.
-# Each unit test has its own executable for practicality.
+# VisibilityNoiseGeneration
+add_unit_test(test_visibility_noise_generation visibility/visibility_test_noise_generation.cpp)
 
-# Convolution Tests
+# Test Cases: Pipeline Functions ---------------------------------------------------------------------------------------
+add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp)
+
+# Pass the test cases to CTest
+# Note: for practicality each unit test has its own executable.
+
+# Convolution
 add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle_func)
 add_test(NAME ConvTopHatFunc COMMAND test_conv_tophat)
 add_test(NAME ConvSincFunc COMMAND test_conv_sinc)
 add_test(NAME ConvGaussianFunc COMMAND test_conv_gaussian)
 add_test(NAME ConvGaussianSincFunc COMMAND test_conv_gaussian_sinc)
 
-# Kernel Tests
+# Kernel
 add_test(NAME KernelGenerationOversampledPillbox COMMAND test_kernel_generation_oversampled_pillbox)
 add_test(NAME KernelGenerationOversamplePillboxSmall COMMAND test_kernel_generation_oversample_pillbox_small)
 add_test(NAME KernelGenerationRegularSamplingPillbox COMMAND test_kernel_generation_regular_sampling_pillbox)
 add_test(NAME KernelGenerationRegularSamplingTriangle COMMAND test_kernel_generation_regular_sampling_triangle)
 
-# Gridder Tests
+# Gridder
 add_test(NAME GridderBoundsChecking COMMAND test_gridder_bouns_checking)
 add_test(NAME GridderMultiPixelPillbox COMMAND test_gridder_multi_pixel_pillbox)
 add_test(NAME GridderMultipleComplexVis COMMAND test_gridder_multiple_complex_vis)
@@ -211,21 +160,27 @@ add_test(NAME GridderTriangle COMMAND test_gridder_triangle)
 add_test(NAME GridderFractionalCoordToOversampledIndexMath COMMAND test_gridder_fractional_coord_to_oversampled_index)
 add_test(NAME GridderSteppedVsExactconvolution COMMAND test_gridder_stepped_vs_exact_convolution)
 
-# Pipeline Tests
-add_test(NAME PipelineTopHat COMMAND test_pipeline_tophat)
-add_test(NAME PipelineTriangle COMMAND test_pipeline_triangle)
-add_test(NAME PipelineSinc COMMAND test_pipeline_sinc)
-add_test(NAME PipelineGaussian COMMAND test_pipeline_gaussian)
-add_test(NAME PipelineGaussianSinc COMMAND test_pipeline_gaussiansinc)
+# Imager
+add_test(NAME ImagerTopHat COMMAND test_imager_tophat)
+add_test(NAME ImagerTriangle COMMAND test_imager_triangle)
+add_test(NAME ImagerSinc COMMAND test_imager_sinc)
+add_test(NAME ImagerGaussian COMMAND test_imager_gaussian)
+add_test(NAME ImagerGaussianSinc COMMAND test_imager_gaussiansinc)
 
-# Cnpy Tests
+# Cnpy
 add_test(NAME CnpyLoadComplex COMMAND test_cnpy_load_complex)
 add_test(NAME CnpyLoadFloat COMMAND test_cnpy_load_float)
 
-# Fixtures Tests
+# Fixtures
 add_test(NAME FixturesModelGenerationEvaluation COMMAND test_fixtures_model_generation_evaluation)
 
-# SourceFind Tests
+# SourceFind
 add_test(NAME SourceFindBasicSourceDetection COMMAND test_sourcefind_basic_source_detection)
 add_test(NAME SourceFindNegativeSourceDetection COMMAND test_sourcefind_negative_source_detection)
 add_test(NAME SourceFindRmsEstimation COMMAND test_sourcefind_rms_estimation)
+
+# Visibilities Functions
+add_test(NAME VisibilityNoiseGeneration COMMAND test_visibility_noise_generation)
+
+# Pipeline Functions
+add_test(NAME PipelineGaussianSincFunc COMMAND test_pipeline_gaussiansinc)

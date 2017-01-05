@@ -1,6 +1,7 @@
-#include <benchmark/benchmark.h>
 #include <gtest/gtest.h>
-#include <libstp.h>
+#include <stp.h>
+
+using namespace stp;
 
 class FixturesModelGenerationEvaluation : public ::testing::Test {
 private:
@@ -35,18 +36,10 @@ public:
 
 TEST_F(FixturesModelGenerationEvaluation, test0)
 {
-    run();
     EXPECT_EQ(img.at(0, 0), 0.0);
 }
 
 TEST_F(FixturesModelGenerationEvaluation, test1)
 {
-    run();
     EXPECT_LT(absolute_rms, 0.01);
-}
-
-TEST_F(FixturesModelGenerationEvaluation, FixturesModelGenerationEvaluation_benchmark)
-{
-    benchmark::RegisterBenchmark("FixturesModelGenerationEvaluation", [this](benchmark::State& state) { while(state.KeepRunning())run(); });
-    benchmark::RunSpecifiedBenchmarks();
 }
