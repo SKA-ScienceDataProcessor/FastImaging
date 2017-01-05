@@ -1,0 +1,43 @@
+- hosts: test
+
+  roles:
+    - timstaley.base
+
+  vars:
+    fastimg_dir: "/home/vagrant/fastimaging"
+
+  tasks:
+  - name: "Install debian-packaged dependencies"
+    apt: name={{item}} update_cache=yes cache_valid_time=1800
+    become: yes
+    with_items: "{{ lookup('file', 'files/fastimg-debian-pkgs.txt').split() }}"
+
+
+  - name: "Create install dir"
+    file:
+      path: "{{ fastimg_dir }}"
+      state: "directory"
+
+  - name: "Copy src directory"
+    synchronize:
+      src: "../src"
+      dest: "{{ fastimg_dir }}"
+
+  - name: "Create build dir"
+    file:
+      path: "{{ fastimg_dir }}/build/debug"
+      state: "directory"
+    register: build_dir
+
+  - name: "Configure FastImaging cmake build"
+    command: >
+                cmake ../../src -DCMAKE_INSTALL_PREFIX={{ fastimg_dir }}/install
+    args:
+      chdir: "{{ build_dir.path }}"
+
+  - name: "FastImaging make install"
+    shell: >
+        make install -j{{ ansible_processor_cores }} >make_stdout.log 2>make_stderr.log
+    args:
+      chdir: "{{ build_dir.path }}"
+
