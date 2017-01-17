@@ -1,11 +1,15 @@
 #include "fft.h"
 #include <fftw3.h>
+#include <thread>
 
 namespace stp {
 
 arma::cx_mat fft_fftw(arma::cx_mat& input, bool inverse)
 {
     arma::cx_mat output(arma::size(input));
+
+    fftw_init_threads();
+    fftw_plan_with_nthreads(std::thread::hardware_concurrency());
 
     int sign = (inverse == false) ? FFTW_FORWARD : FFTW_BACKWARD;
     fftw_plan plan = fftw_plan_dft_2d(
@@ -19,6 +23,8 @@ arma::cx_mat fft_fftw(arma::cx_mat& input, bool inverse)
     fftw_execute(plan);
 
     fftw_destroy_plan(plan);
+
+    fftw_cleanup_threads();
 
     // FFTW computes an unnormalized transform.
     // In order to match Numpy's inverse FFT, the result must

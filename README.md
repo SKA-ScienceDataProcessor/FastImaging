@@ -12,6 +12,9 @@
   - auxiliary: external functions to auxiliate tests, benchmark and reduce module
   - third-party: external code, mostly libraries
 - config: auxiliary configuration files
+- test-data: input test data files
+- plot-scripts: scripts to plot benchmarking results
+- vagrant: virtual machine configuration
 
 ## Build & Run
 ### Dependencies
@@ -34,7 +37,7 @@
 #### Using a build script (Includes tests execution)
 - cd to the project's top-level directory
 - chmod +x build.sh
-- ./build.sh
+- ./build.sh (add 'r' option to build in release mode)
 
 #### Manually
 - Create a build directory: mkdir -p path/to/build/directory
@@ -67,6 +70,23 @@
 - *Example:* ./bin/reduce/reduce -f ./mock_uvw_vis.npz -c ./fastimg_config.json
 
 ## Release Notes
+### 17 January 2017
+- Created three branchs:
+  - master: optimized multithreaded version
+  - reference-optimized: optimized single-threaded version
+  - reference-unopt: non-optimized single-threaded version
+- Fixed bug in kernel bound checking code
+- Added new kernel_exact parameter to disable oversampling
+- Significantly improved populate_kernel_cache function
+- Added new JSON parameters for reduce
+- Implementated new benchmarks: populate_kernel_cache, gridder and pipeline
+- Added TBB library to third-party
+- Parallelized gridder (oversampling case) using TBB
+- Enabled multithreaded FFTW
+- Disabled armadillo DEBUG flag 
+- Added gnuplot scripts to generate benchmark speedup plots
+- Performed several other improvements 
+
 ### 5 January 2017
 - Renamed libstp to stp
 - Added namespace stp

@@ -9,7 +9,8 @@ private:
     int image_size;
     int support;
     double half_base_width;
-    std::experimental::optional<int> oversampling;
+    bool kernel_exact;
+    int oversampling;
     bool pad;
     bool normalize;
 
@@ -20,6 +21,8 @@ public:
         image_size = 8;
         support = 1;
         half_base_width = 1.1;
+        kernel_exact = true;
+        oversampling = 1;
         pad = false;
         normalize = true;
         vis = arma::ones<arma::cx_mat>(uv.n_rows);
@@ -27,7 +30,7 @@ public:
 
     void run()
     {
-        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, oversampling, pad, normalize);
+        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize);
     }
 
     arma::mat uv = { { -2., 0 } };

@@ -31,9 +31,9 @@ std::shared_ptr<spdlog::logger> _logger;
 // Command line parser
 TCLAP::CmdLine _cmd("Simulated pipeline run for STP", ' ', "0.1");
 // Input npz filename flag
-TCLAP::ValueArg<std::string> _fileArg("f", "filename", "Input npz filename", true, "mock_uvw_vis.npz", "string");
+TCLAP::ValueArg<std::string> _fileArg("f", "input_npz", "Input NPZ filename", true, "mock_uvw_vis.npz", "input_npz");
 // Config json filename flag
-TCLAP::ValueArg<std::string> _confArg("c", "configuration", "Config json filename", true, "fastimg_config.json", "string");
+TCLAP::ValueArg<std::string> _confArg("c", "json_config", "Json configuration filename", true, "fastimg_config.json", "json_config");
 
 /**
  * @brief Loads a json configuration file into a rapidjson document
@@ -54,8 +54,10 @@ rapidjson::Document load_json_configuration(std::string& cfg);
 struct ConfigurationFile {
     rapidjson::Document config_document;
 
-    int cell_size;
     int image_size;
+    double cell_size;
+    bool kernel_exact;
+    int oversampling;
     double detection_n_sigma;
     double analysis_n_sigma;
 
@@ -66,8 +68,10 @@ public:
     {
         config_document = load_json_configuration(cfg);
 
-        cell_size = config_document["cell_size_arcsec"].GetInt();
         image_size = config_document["image_size_pix"].GetInt();
+        cell_size = config_document["cell_size_arcsec"].GetDouble();
+        kernel_exact = config_document["kernel_exact"].GetBool();
+        oversampling = config_document["oversampling"].GetInt();
         detection_n_sigma = config_document["sourcefind_detection"].GetDouble();
         analysis_n_sigma = config_document["sourcefind_analysis"].GetDouble();
     }
@@ -78,7 +82,7 @@ public:
 *
 * Creates and initializes the logger to be used throughout the program
 */
-void initLogger() throw(TCLAP::ArgException);
+void initLogger();
 
 /**
 * @brief Creates the switch flags to be used by the parser
@@ -87,7 +91,7 @@ void initLogger() throw(TCLAP::ArgException);
 * one flag and one only is required to run the program_invocation_name
 *
 */
-void createFlags() throw(TCLAP::ArgException);
+void createFlags();
 
 /**
  * @brief Simulated pipeline run
@@ -106,6 +110,6 @@ void createFlags() throw(TCLAP::ArgException);
  *
  * @return result of the pipeline
  */
-stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis, arma::cx_mat data_vis, int image_size, int cell_size, double detection_n_sigma, double analysis_n_sigma);
+stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis, arma::cx_mat data_vis, int image_size, double cell_size, double detection_n_sigma, double analysis_n_sigma);
 
 #endif /* REDUCE_H */

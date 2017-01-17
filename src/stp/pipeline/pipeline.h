@@ -10,7 +10,6 @@
 #include "../imager/imager.h"
 #include "../sourcefind/sourcefind.h"
 #include "../visibility/visibility.h"
-#include <experimental/optional>
 #include <utility>
 
 namespace stp {
@@ -64,9 +63,9 @@ source_find_image generate_pipeline(
     arma::cx_mat model_vis = visibilities_for_source_list(pointing_centre, steady_source_list, uvw_lambda);
 
     arma::cx_mat residual_vis = data_vis - model_vis;
-    std::pair<arma::cx_mat, arma::cx_mat> result = image_visibilities(kernel_creator, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, std::experimental::nullopt);
+    std::pair<arma::cx_mat, arma::cx_mat> result = image_visibilities(kernel_creator, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, true, 0);
 
-    return source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
+    return source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, 1, true);
 }
 }
 

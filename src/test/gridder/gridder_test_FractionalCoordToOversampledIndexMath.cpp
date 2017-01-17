@@ -4,8 +4,8 @@
 
 using namespace stp;
 
-const double oversampling_edge_case(7);
-const double oversampling_kernel_indices(5);
+const int oversampling_edge_case = 7;
+const int oversampling_kernel_indices = 5;
 arma::mat subpix_offset = { 0.5 };
 arma::mat io_pairs = {
     { -0.5, -2 },

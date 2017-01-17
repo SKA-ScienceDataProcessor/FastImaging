@@ -12,11 +12,11 @@
 
 using namespace stp;
 
-const int support(2);
-const double half_base_width(1.1);
-const std::experimental::optional<int> oversampling{ 1 };
-const bool pad(false);
-const bool normalize(false);
+const int support = 2;
+const double half_base_width = 1.1;
+const int oversampling = 1;
+const bool pad = false;
+const bool normalize = false;
 
 using namespace stp;
 

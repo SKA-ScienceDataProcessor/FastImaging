@@ -1,19 +1,22 @@
-#include "../auxiliary/load_data.h"
+#include "load_data.h"
 #include <gtest/gtest.h>
 #include <stp.h>
+
+// Cmake variable
+#ifndef _CNPYTESTPATH
+#define _CNPYTESTPATH 0
+#endif
 
 using namespace stp;
 
 // Cnpy test file locations
-const std::string COMPLEX_1D_PATH("../data/cnpy_test/complex_1d.npy");
-const std::string COMPLEX_2D_PATH("../data/cnpy_test/complex_2d.npy");
+const std::string complex_1D("complex_1d.npy");
+const std::string complex_2D("complex_2d.npy");
+const std::string cnpy_data_path(_CNPYTESTPATH);
 
 TEST(CnpyLoadComplex, complex1d)
 {
-    std::string location = __FILE__;
-    location = location.substr(0, location.size() - strlen("cnpy_func_complex.cpp"));
-
-    cnpy::NpyArray complex1d_npy = cnpy::npy_load(location.append(COMPLEX_1D_PATH));
+    cnpy::NpyArray complex1d_npy = cnpy::npy_load(cnpy_data_path + complex_1D);
     arma::cx_mat complex1d = load_npy_complex_array(complex1d_npy);
 
     arma::cx_mat expected_results
@@ -35,10 +38,7 @@ TEST(CnpyLoadComplex, complex1d)
 
 TEST(CnpyLoadComplex, complex2d)
 {
-    std::string location = __FILE__;
-    location = location.substr(0, location.size() - strlen("cnpy_func_complex.cpp"));
-
-    cnpy::NpyArray complex2d_npy = cnpy::npy_load(location.append(COMPLEX_2D_PATH));
+    cnpy::NpyArray complex2d_npy = cnpy::npy_load(cnpy_data_path + complex_2D);
     arma::cx_mat complex2d = load_npy_complex_array(complex2d_npy);
 
     arma::cx_mat expected_results

@@ -7,7 +7,7 @@
 
 #include "reduce.h"
 
-void initLogger() throw(TCLAP::ArgException)
+void initLogger()
 {
     // Creates two spdlog sinks
     // One sink for the stdout and another for a file
@@ -17,7 +17,7 @@ void initLogger() throw(TCLAP::ArgException)
     _logger = std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
 }
 
-void createFlags() throw(TCLAP::ArgException)
+void createFlags()
 {
     // Adds the input filename flag to the parser list. This is flag is required
     _logger->debug("Adding the input filename flag to the command line parser");
@@ -39,7 +39,7 @@ rapidjson::Document load_json_configuration(std::string& cfg)
     return aux;
 }
 
-stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis, arma::cx_mat data_vis, int image_size, int cell_size, double detection_n_sigma, double analysis_n_sigma)
+stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis, arma::cx_mat data_vis, int image_size, double cell_size, bool kernel_exact, int oversampling, double detection_n_sigma, double analysis_n_sigma)
 {
     // Subtract model-generated visibilities from incoming data
     arma::cx_mat residual_vis = data_vis - model_vis;
@@ -48,7 +48,7 @@ stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis
     int kernel_support = 3;
     stp::GaussianSinc kernel_func(kernel_support);
 
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, std::experimental::nullopt);
+    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
 
     return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
 }
@@ -57,18 +57,16 @@ int main(int argc, char** argv)
 {
     // Creates and initializes the logger
     initLogger();
-    _logger->info("Program start");
 
     // Adds the flags to the parser
     createFlags();
 
     // Parses the arguments from the command console
-    _logger->info("Parsing arguments from console");
     _cmd.parse(argc, argv);
 
     _logger->info("Loading data");
     // Load the input file argument to a npy array
-    cnpy::NpyArray input_uvw1(cnpy::npz_load(_fileArg.getValue(), "uvw"));
+    cnpy::NpyArray input_uvw1(cnpy::npz_load(_fileArg.getValue(), "uvw_lambda"));
     cnpy::NpyArray input_model1(cnpy::npz_load(_fileArg.getValue(), "model"));
     cnpy::NpyArray input_vis1(cnpy::npz_load(_fileArg.getValue(), "vis"));
 
@@ -82,16 +80,18 @@ int main(int argc, char** argv)
 
     _logger->info("Running pipeline");
     // Runs pipeline
-    stp::source_find_image sfimage = run_pipeline(input_uvw, input_model, input_vis, cfg.image_size, cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma);
+    stp::source_find_image sfimage = run_pipeline(input_uvw, input_model, input_vis, cfg.image_size, cfg.cell_size, cfg.kernel_exact, cfg.oversampling, cfg.detection_n_sigma, cfg.analysis_n_sigma);
+
+    _logger->info("Finished");
+
     int total_islands = sfimage.islands.size();
     _logger->info("Number of found islands: {} ", total_islands);
 
     for (int i = 0; i < total_islands; i++) {
-        _logger->info("Island {}: extremum_val={}, extremum_x_idx={}, extremum_y_idy={}, xbar={}, ybar={}, sign={} ",
-            i, sfimage.islands[i].extremum_val, sfimage.islands[i].extremum_x_idx, sfimage.islands[i].extremum_y_idx,
-            sfimage.islands[i].xbar, sfimage.islands[i].ybar, sfimage.islands[i].sign);
+        _logger->info(" * Island {}: label={}, sign={}, extremum_val={}, extremum_x_idx={}, extremum_y_idy={}, xbar={}, ybar={}",
+            i, sfimage.islands[i].label_idx, sfimage.islands[i].sign, sfimage.islands[i].extremum_val, sfimage.islands[i].extremum_x_idx, sfimage.islands[i].extremum_y_idx,
+            sfimage.islands[i].xbar, sfimage.islands[i].ybar);
     }
 
-    _logger->info("Program ends");
     return 0;
 }

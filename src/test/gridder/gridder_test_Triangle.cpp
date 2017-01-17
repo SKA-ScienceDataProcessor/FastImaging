@@ -9,15 +9,15 @@ private:
     const double _triangle_value = 1.0;
     const bool _pad = false;
     const bool _normalize = true;
-    std::experimental::optional<int> _oversampling_GRID;
-    std::experimental::optional<int> _oversampling_KERNEL;
+    bool _kernel_exact_GRID = true;
+    int _oversampling_GRID = 1;
+    int _oversampling_KERNEL = 1;
 
 public:
     void SetUp()
     {
         uv = { { 1.0, 0.0 } };
         vis = arma::ones<arma::cx_mat>(uv.n_rows);
-        _oversampling_KERNEL = 1;
     }
 
     void run()
@@ -25,7 +25,7 @@ public:
         arma::mat subpix_offset = { 0.1, -0.15 };
         arma::mat uv_offset = uv + subpix_offset;
 
-        result = convolve_to_grid(Triangle(_half_base_width, _triangle_value), support, image_size, uv_offset, vis, _oversampling_GRID, _pad, _normalize);
+        result = convolve_to_grid(Triangle(_half_base_width, _triangle_value), support, image_size, uv_offset, vis, _kernel_exact_GRID, _oversampling_GRID, _pad, _normalize);
         kernel = make_kernel_array(Triangle(_half_base_width, _triangle_value), support, subpix_offset, _oversampling_KERNEL, _pad, _normalize);
     }
 

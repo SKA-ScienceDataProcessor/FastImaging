@@ -7,9 +7,15 @@ set(CXX_STANDARD_REQUIRED ON)
 
 # Dependency: Armadillo
 find_package(Armadillo REQUIRED)
+add_definitions(-DARMA_NO_DEBUG)
+#add_definitions(-DARMA_USE_TBB_ALLOC)
+
+# Dependency: Threads (required because TBB is static)
+find_package(Threads)
 
 # Turn on useful compiler flags
-add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstrict-aliasing -fPIC -march=native)
+add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors)
+add_compile_options(-fstrict-aliasing -fPIC -march=native)
 
 # Target: stp
 set(STP_TARGET_NAME "stp")
@@ -28,12 +34,12 @@ set(STP_SOURCE_FILES
 # Configures which fft implementation is used
 option(WITH_ARMAFFT "Builds the stp using the armadillo FFT implementation" ON)
 if(WITH_ARMAFFT)
-    add_definitions ( -D_ARMAFFT )
+    add_definitions(-D_ARMAFFT)
 endif()
 
 # Create the library as static
 add_library(${STP_TARGET_NAME} STATIC ${STP_SOURCE_FILES})
-add_dependencies(${STP_TARGET_NAME} fftw)
+add_dependencies(${STP_TARGET_NAME} fftw fftw_threads tbb)
 target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${ARMADILLO_INCLUDE_DIRS})
-target_link_libraries(${STP_TARGET_NAME} ${ARMADILLO_LIBRARIES} fftw)
+target_link_libraries(${STP_TARGET_NAME} ${ARMADILLO_LIBRARIES} tbb fftw fftw_threads ${CMAKE_THREAD_LIBS_INIT})
 

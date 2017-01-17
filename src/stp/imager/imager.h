@@ -5,8 +5,6 @@
 #include "../common/fft.h"
 #include "../gridder/gridder.h"
 
-#include <experimental/optional>
-
 #define arc_sec_to_rad(value) ((value / 3600.0) * (M_PI / 180.0))
 
 namespace stp {
@@ -24,7 +22,8 @@ const double beam_slice = 1;
  * @param[in] image_size (int): Width of the image in pixels
  * @param[in] cell_size (double): Angular-width of a synthesized pixel in the image to be created
  * @param[in] support (double): Defines the 'radius' of the bounding box within which convolution takes place.
- * @param[in] oversampling (Oversampling): Controls kernel-generation
+ * @param[in] kernel_exact (bool): Calculate exact kernel-values for every UV-sample.
+ * @param[in] oversampling (int): Controls kernel-generation if ``exact==False``. Larger values give a finer-sampled set of pre-cached kernels.
  * @param[in] normalize (bool): Whether or not the returned image and beam should be normalized such that the beam peaks at a value of 1.0 Jansky.
  *                              You normally want this to be true, but it may be interesting to check the raw values for debugging purposes.
  *
@@ -37,10 +36,13 @@ std::pair<arma::cx_mat, arma::cx_mat> image_visibilities(
     arma::mat uvw_lambda,
     int image_size,
     double cell_size,
-    double support,
-    const std::experimental::optional<int>& oversampling,
+    int support,
+    bool kernel_exact = true,
+    int oversampling = 1,
     bool normalize = true)
 {
+    assert(kernel_exact || (oversampling >= 1));
+
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * image_size));
     arma::mat uvw_in_pixels = uvw_lambda / grid_pixel_width_lambda;
@@ -49,7 +51,7 @@ std::pair<arma::cx_mat, arma::cx_mat> image_visibilities(
     uv_in_pixels.col(0) = uvw_in_pixels.col(0);
     uv_in_pixels.col(1) = uvw_in_pixels.col(1);
 
-    return process_image_visibilities(kernel_creator, support, image_size, uv_in_pixels, vis, oversampling, normalize);
+    return process_image_visibilities(kernel_creator, support, image_size, uv_in_pixels, vis, kernel_exact, oversampling, normalize);
 }
 
 template <typename T>
@@ -59,10 +61,11 @@ std::pair<arma::cx_mat, arma::cx_mat> process_image_visibilities(
     int image_size,
     arma::mat& uv_in_pixels,
     arma::cx_mat& vis,
-    const std::experimental::optional<int>& oversampling,
+    bool kernel_exact,
+    int oversampling,
     bool normalize = true)
 {
-    std::pair<arma::cx_mat, arma::cx_mat> result = convolve_to_grid(kernel_creator, support, image_size, uv_in_pixels, vis, oversampling);
+    std::pair<arma::cx_mat, arma::cx_mat> result = convolve_to_grid(kernel_creator, support, image_size, uv_in_pixels, vis, kernel_exact, oversampling);
 
     arma::cx_mat shifted_image = fftshift(result.first, false);
     arma::cx_mat shifted_beam = fftshift(result.second, false);
