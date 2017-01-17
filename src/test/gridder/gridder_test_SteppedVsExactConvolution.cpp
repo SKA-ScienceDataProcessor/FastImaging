@@ -26,7 +26,7 @@ void run()
         arma::mat x_offset = { steps[i], 0.0 };
         arma::mat aligned_exact_kernel = make_kernel_array(triangle, support, x_offset, oversampling_kernel, pad, normalize);
         arma::mat aligned_cache_idx = calculate_oversampled_kernel_indices(x_offset, oversampling_cache);
-        arma::mat cached_kernel = kernel_cache(aligned_cache_idx.at(0, 0) + (oversampling_cache / 2), aligned_cache_idx.at(0, 1) + (oversampling_cache / 2));
+        arma::mat cached_kernel = kernel_cache(aligned_cache_idx.at(0, 1) + (oversampling_cache / 2), aligned_cache_idx.at(0, 0) + (oversampling_cache / 2));
 
         EXPECT_TRUE(arma::approx_equal(aligned_exact_kernel, cached_kernel, "absdiff", tolerance));
 
