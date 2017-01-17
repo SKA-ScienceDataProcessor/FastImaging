@@ -1,19 +1,22 @@
-#include "../auxiliary/load_data.h"
+#include "load_data.h"
 #include <gtest/gtest.h>
 #include <stp.h>
+
+// Cmake variable
+#ifndef _CNPYTESTPATH
+#define _CNPYTESTPATH 0
+#endif
 
 using namespace stp;
 
 // Cnpy test file locations
-const std::string FLOAT_1D_PATH("../data/cnpy_test/float_1d.npy");
-const std::string FLOAT_2D_PATH("../data/cnpy_test/float_2d.npy");
+const std::string float_1D("float_1d.npy");
+const std::string float_2D("float_2d.npy");
+const std::string cnpy_data_path(_CNPYTESTPATH);
 
 TEST(CnpyLoadFloat, float1d)
 {
-    std::string location = __FILE__;
-    location = location.substr(0, location.size() - strlen("cnpy_func_float.cpp"));
-
-    cnpy::NpyArray float1d_npy = cnpy::npy_load(location.append(FLOAT_1D_PATH));
+    cnpy::NpyArray float1d_npy = cnpy::npy_load(cnpy_data_path + float_1D);
     arma::mat float1d = load_npy_double_array(float1d_npy);
 
     arma::mat expected_results
@@ -24,10 +27,7 @@ TEST(CnpyLoadFloat, float1d)
 
 TEST(CnpyLoadFloat, float2d)
 {
-    std::string location = __FILE__;
-    location = location.substr(0, location.size() - strlen("cnpy_func_float.cpp"));
-
-    cnpy::NpyArray float2d_npy = cnpy::npy_load(location.append(FLOAT_2D_PATH));
+    cnpy::NpyArray float2d_npy = cnpy::npy_load(cnpy_data_path + float_2D);
     arma::mat float2d = load_npy_double_array(float2d_npy);
 
     arma::mat expected_results

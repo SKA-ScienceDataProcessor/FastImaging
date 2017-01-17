@@ -94,6 +94,7 @@ arma::vec negative_find_local_extrema(arma::mat& data, arma::imat& label_map, ar
 
 struct island_params {
     arma::mat data;
+    int label_idx;
     double extremum_val;
     double extremum_x_idx;
     double extremum_y_idx;
@@ -110,7 +111,7 @@ public:
      * Initialized with parent image, label index, and peak-pixel value.
      *
      * @param[in] input_data (arma::mat): Image data.
-     * @param[in] label_idx (int): Index of region in label-map of source image.
+     * @param[in] label (int): Index of region in label-map of source image.
      * @param[in] label_map (arma::imat): image representing connected components with label values
      * @param[in] l_extremum (double): the extremum value
      * @param[in] xgrid (arma::imat): X grid coordinates
@@ -119,7 +120,7 @@ public:
     */
     island_params(
         arma::mat& input_data,
-        int label_idx,
+        int label,
         arma::imat& label_map,
         double l_extremum,
         arma::mat& xgrid,
@@ -127,6 +128,9 @@ public:
         : data(input_data)
         , extremum_val(l_extremum)
     {
+        // Index of region in label-map of source image.
+        label_idx = label;
+
         // Determine if the label index is positive or negative
         sign = (label_idx < 0) ? -1 : 1;
 

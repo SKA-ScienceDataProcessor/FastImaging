@@ -12,11 +12,11 @@
 
 using namespace stp;
 
-const int support(1);
-const double half_base_width(0.7);
-const std::experimental::optional<int> oversampling{ 3 };
-const bool pad(false);
-const bool normalize(false);
+const int support = 1;
+const double half_base_width = 0.7;
+const int oversampling = 3;
+const bool pad = false;
+const bool normalize = false;
 
 // Test 2D kernel convolution method in an oversampled pillbox, without offset.
 TEST(KernelGenerationOversampledPillbox, NoOffset)

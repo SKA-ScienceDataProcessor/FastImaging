@@ -7,7 +7,7 @@
  *  @bug No known bugs.
  */
 
-#include "../auxiliary/load_json_imager.h"
+#include "load_json_imager.h"
 #include <gtest/gtest.h>
 #include <stp.h>
 
@@ -38,11 +38,7 @@ public:
         // Loads the expected results to a arma::mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(image_array)), std::move(load_npy_complex_array(beam_array)));
 
-        std::experimental::optional<int> oversampling;
-        if (use_oversampling == true) {
-            oversampling = oversampling_val;
-        }
-        result = image_visibilities(Gaussian(width_normalization, threshold), vis, uvw_lambda, image_size, cell_size, support, oversampling);
+        result = image_visibilities(Gaussian(width_normalization, threshold), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
     }
 };
 

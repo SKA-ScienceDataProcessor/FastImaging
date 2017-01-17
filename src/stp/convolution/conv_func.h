@@ -255,10 +255,11 @@ private:
 *
 *  Function (template + functor) to create a Kernel array with some specs.
 *
+*  @param[in] kernel_creator: functor used for kernel generation
 *  @param[in] support (int): Defines the 'radius' of the bounding box within which convolution takes place.
 *  @param[in] offset (arma::mat): 2-vector subpixel offset from the sampling position of the
 *                                central pixel to the origin of the kernel function.
-*  @param[in] oversampling (optional<int>): Oversampling ratio
+*  @param[in] oversampling (int): Controls kernel-generation.
 *  @param[in] pad (bool): Whether to pad the array by an extra pixel-width. This is used when generating an
 *                          oversampled kernel that will be used for interpolation.
 *  @param[in] normalize (bool): Whether or not the returned image should be normalized
@@ -266,20 +267,20 @@ private:
 *  @return Result kernel
 */
 template <typename T>
-arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::mat& offset, const std::experimental::optional<int>& oversampling = std::experimental::nullopt, bool pad = false, bool normalize = true)
+arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::mat& offset, int oversampling = 1, bool pad = false, bool normalize = true)
 {
     assert(support >= 1);
     assert(offset.n_elem == 2);
     assert(fabs(offset[0]) <= 0.5);
     assert(fabs(offset[1]) <= 0.5);
+    assert(oversampling >= 1);
 
-    int localOversampling = (oversampling) ? (*oversampling) : 1;
     int localPad = (pad == true) ? 1 : 0;
 
-    int array_size = 2 * (support + localPad) * localOversampling + 1;
-    int centre_idx = (support + localPad) * localOversampling;
+    int array_size = 2 * (support + localPad) * oversampling + 1;
+    int centre_idx = (support + localPad) * oversampling;
 
-    arma::mat distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / localOversampling);
+    arma::mat distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
 
     // Call the functor's operator ()
     arma::vec x_kernel_coeffs = kernel_creator(distance_vec - offset[0]);
@@ -287,6 +288,40 @@ arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::ma
 
     // Multiply the two vectors obtained with convolution function to obtain the 2D kernel.
     arma::mat result = y_kernel_coeffs * x_kernel_coeffs.st();
+
+    return (normalize == true) ? (result / arma::accu(result)) : result;
+}
+
+/** @brief Make 1D Kernel Array
+*
+*  Function (template + functor) to create 1D Kernel array with some specs.
+*
+*  @param[in] kernel_creator: functor used for kernel generation
+*  @param[in] support (int): Defines the 'radius' of the bounding box within which convolution takes place.
+*  @param[in] offset (double): subpixel offset from the sampling position of the central pixel to the origin of the kernel function.
+*  @param[in] oversampling (int): Controls kernel-generation.
+*  @param[in] pad (bool): Whether to pad the array by an extra pixel-width. This is used when generating an
+*                          oversampled kernel that will be used for interpolation.
+*  @param[in] normalize (bool): Whether or not the returned image should be normalized
+*
+*  @return (arma::vec) Result 1D kernel
+*/
+template <typename T>
+arma::vec make_1D_kernel(const T& kernel_creator, int support, const double offset, int oversampling = 1, bool pad = false, bool normalize = true)
+{
+    assert(support >= 1);
+    assert(fabs(offset) <= 0.5);
+    assert(oversampling >= 1);
+
+    int localPad = (pad == true) ? 1 : 0;
+
+    int array_size = 2 * (support + localPad) * oversampling + 1;
+    int centre_idx = (support + localPad) * oversampling;
+
+    arma::mat distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+
+    // Call the functor's operator ()
+    arma::vec result = kernel_creator(distance_vec - offset);
 
     return (normalize == true) ? (result / arma::accu(result)) : result;
 }

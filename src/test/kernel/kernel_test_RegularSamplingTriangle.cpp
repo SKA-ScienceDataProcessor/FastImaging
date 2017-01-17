@@ -12,12 +12,12 @@
 
 using namespace stp;
 
-const int support(2);
-const double half_base_width(1.5);
-const std::experimental::optional<int> oversampling{ 1 };
-const double triangle_value(1.0);
-const bool pad(false);
-const bool normalize(false);
+const int support = 2;
+const double half_base_width = 1.5;
+const int oversampling = 1;
+const double triangle_value = 1.0;
+const bool pad = false;
+const bool normalize = false;
 
 const double kv1(1. - 1. / 1.5);
 const double kv1sq(kv1* kv1);

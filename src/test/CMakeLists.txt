@@ -1,6 +1,13 @@
 # --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Library Unit Tests
 
+# Dependency: Armadillo
+find_package(Armadillo REQUIRED)
+add_definitions(-DARMA_NO_DEBUG)
+
+# Dependency: Threads (required by google test)
+find_package(Threads)
+
 # External dependency: RapidJSON
 find_path(RAPIDJSON rapidjson)
 if(NOT RAPIDJSON)
@@ -9,19 +16,25 @@ endif()
 
 # For convenience all link libraries required by
 # the tests are put in one variable
-set(TEST_LINK_LIBRARIES stp ${CMAKE_THREAD_LIBS_INIT} cnpy-static gtest gtest_main benchmark)
+set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main benchmark ${CMAKE_THREAD_LIBS_INIT})
 
 # Copy configuration files to the binary directory
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/imager_data/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../test-data/imager-data/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
 
-# Configures the imager_func.h on the location of the test data
-get_filename_component(IMAGER_PATH "data/imager_data/" ABSOLUTE)
+# Configures the location of the test data
+get_filename_component(IMAGER_PATH "../../test-data/imager-data" ABSOLUTE)
 add_definitions ( -D_TESTPATH="${IMAGER_PATH}/")
+
+# Configures the location of the cnpy test data
+get_filename_component(CNPY_DATA_PATH "../../test-data/cnpy-data" ABSOLUTE)
+add_definitions ( -D_CNPYTESTPATH="${CNPY_DATA_PATH}/")
 
 # Helper function for test target specification
 function(add_unit_test unit_test_name unit_test_source)
-    add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/load_data.cpp ../auxiliary/load_json_imager.cpp)
+    add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/load_data.cpp imager/load_json_imager.cpp)
     add_dependencies(${unit_test_name} stp cnpy-static gtest gtest_main benchmark)
+    target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
+        ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${ARMADILLO_INCLUDE_DIRS})
     target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
 endfunction()
 
