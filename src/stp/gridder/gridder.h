@@ -187,30 +187,18 @@ std::pair<arma::cx_mat, arma::cx_mat> convolve_to_grid(const T& kernel_creator, 
             });
         });
     } else {
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&good_vis_idx, &kernel_centre_on_grid, &uv_frac, &pad, &normalize, &kernel_creator, &support, &kernel_size, &vis, &vis_grid, &sampling_grid](const tbb::blocked_range<size_t>& r) {
+        good_vis_idx.for_each([&kernel_centre_on_grid, &support, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid](arma::uvec::elem_type& val) {
+            arma::uword gc_x = kernel_centre_on_grid(val, 0);
+            arma::uword gc_y = kernel_centre_on_grid(val, 1);
 
-            good_vis_idx.for_each([&kernel_centre_on_grid, &support, &kernel_size, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid, &r](arma::uvec::elem_type& val) {
-                arma::uword gc_x = kernel_centre_on_grid(val, 0);
-                arma::uword gc_y = kernel_centre_on_grid(val, 1);
+            arma::span xrange = arma::span(gc_x - support, gc_x + support);
+            arma::span yrange = arma::span(gc_y - support, gc_y + support);
 
-                // Exact gridding is used, i.e. the kernel is recalculated for each visibility, with
-                // precise sub-pixel offset according to that visibility's UV co-ordinates.
-                arma::vec normed_1Dkernel_x = make_1D_kernel(kernel_creator, support, uv_frac.row(val)(0));
-                arma::vec normed_1Dkernel_y = make_1D_kernel(kernel_creator, support, uv_frac.row(val)(1));
-
-                int conv_col = ((gc_x - r.begin() + kernel_size) % kernel_size);
-                if (conv_col > support)
-                    conv_col -= kernel_size;
-                int grid_col = gc_x - conv_col;
-
-                assert(abs(conv_col) <= support);
-                assert((grid_col % kernel_size) == (int)r.begin());
-
-                arma::span yrange = arma::span(gc_y - support, gc_y + support);
-
-                vis_grid(yrange, grid_col) += vis[val] * normed_1Dkernel_y * normed_1Dkernel_x(support - conv_col);
-                sampling_grid(yrange, grid_col) += normed_1Dkernel_y * normed_1Dkernel_x(support - conv_col);
-            });
+            // Exact gridding is used, i.e. the kernel is recalculated for each visibility, with
+            // precise sub-pixel offset according to that visibility's UV co-ordinates.
+            arma::mat normed_kernel_array = make_kernel_array(kernel_creator, support, uv_frac.row(val));
+            vis_grid(yrange, xrange) += vis[val] * normed_kernel_array;
+            sampling_grid(yrange, xrange) += normed_kernel_array;
         });
     }
 
