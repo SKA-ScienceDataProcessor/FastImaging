@@ -23,6 +23,12 @@
       src: "../src"
       dest: "{{ fastimg_dir }}"
 
+  - name: "Copy test-data directory"
+    synchronize:
+      src: "../test-data"
+      dest: "{{ fastimg_dir }}"
+
+
   - name: "Create build dir"
     file:
       path: "{{ fastimg_dir }}/build/debug"
