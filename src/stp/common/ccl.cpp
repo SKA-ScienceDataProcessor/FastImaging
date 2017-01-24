@@ -75,6 +75,9 @@ arma::sword labeling(const arma::imat& I, arma::imat& L)
     const int rows = L.n_cols;
     const int cols = L.n_rows;
 
+    // Initialize L (label map)
+    L.zeros();
+
     // A quick and dirty upper bound for the maximimum number of labels.  The 4 comes from
     // the fact that a 3x3 block can never have more than 4 unique labels for both 4 & 8-way
     const size_t Plength = 4 * (size_t(rows + 3 - 1) / 3) * (size_t(cols + 3 - 1) / 3);

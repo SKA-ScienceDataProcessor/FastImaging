@@ -24,6 +24,7 @@
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
 - [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
+- [OpenBLAS](http://www.openblas.net) [0.2.19]
 
 #### In Source (third-party)
 - [Google Test](https://github.com/google/googletest) [1.8.0]
@@ -31,45 +32,97 @@
 - [cnpy](https://github.com/rogersce/cnpy) [repository head]
 - [FFTW3](http://www.fftw.org/) [3.3.5]
 - [pybind11](https://github.com/pybind/pybind11) [2.0.0]
+- [TBB](https://www.threadingbuildingblocks.org/) [2017 Update 3]
 
 ### Build
 
 #### Using a build script (Includes tests execution)
-- cd to the project's top-level directory
-- chmod +x build.sh
-- ./build.sh (add 'r' option to build in release mode)
+```sh
+$ cd <project directory>
+$ chmod +x build.sh
+$ ./build.sh    #(add 'r' option to build in release mode)
+```
 
 #### Manually
-- Create a build directory: mkdir -p path/to/build/directory
-- cd path/to/build/directory
-- cmake path/to/project/src
-- make
+```sh
+$ mkdir -p path/to/build/directory
+$ cd path/to/build/directory
+$ cmake path/to/project/src
+$ make
+```
 
 ## Tests Execution
 ### Using CMake (after successful build)
-- cd path/to/build/directory
-- make test
+```sh
+$ cd path/to/build/directory
+$ make test
+```
 
 ### Running on the Command Line (all tests)
-- cd path/to/build/directory
-- run-parts ./libstp/tests
+```sh
+$ cd path/to/build/directory
+$ run-parts ./libstp/tests
+```
 
 ## Benchmark Execution
-- cd path/to/build/directory
-- make benchmarking
+```sh
+$ cd path/to/build/directory
+$ make benchmarking
+```
 
 ## STP Execution using Reduce module
-- cd build folder
-- ./reduce/reduce
-- receives two mandatory arguments:
+- cd into reduce folder located in path/to/build/directory
+- run reduce binary using two mandatory arguments:
    - REQUIRED input filename (-f):
       - path/to/input/data: must be a npz file
    - REQUIRED json configuration filename (-c):
-      - path/to/input/config: must be a json file (see example: projectroot/config/fastimg_config.json)
+      - path/to/input/config: must be a json file 
+- Example:
+```sh
+$ ./reduce -f projectroot/test-data/pipeline-data/simdata_small.npz -c  projectroot/config/pipeline-config/fastimg_oversampling_config2.json
+```
 
-- *Example:* ./bin/reduce/reduce -f ./mock_uvw_vis.npz -c ./fastimg_config.json
+## Code profiling
+ - Valgrind framework and kcachegrind GUI application can be used to profile STP library. We recommend to run the reduce binary with callgrind tool of valgrind (e.g.: valgrind --tool=callgrind ./reduce ...).
+ - STP and reduce shall be compiled in Release mode for realistic profiling. However, if detailed profiling of source code is desired, debug info (-g option of gcc) shall be added. This can be accomplished "Release With Debug Information" mode (CMAKE_BUILD_TYPE=RelWithDebInfo) as this mode keeps compiling optimizations while adding debug information.
+ - When running valgrind with callgrind tool, add --separate-threads=yes if you want to profile all threads.
+ - Results of callgrind tool are outputted to callgrind.out.* files, which can ne analyzed using kcachegrind.
+ - Remove existing callgrind.out.* files in current directory before starting a new profiling test.
+ - Example:
+```sh
+$ mkdir -p path/to/build/directory
+$ cd path/to/build/directory
+$ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
+$ make
+$ cd reduce
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce -f projectroot/test-data/pipeline-data/simdata_small.npz -c  projectroot/config/pipeline-config/fastimg_oversampling_config2.json
+$ kcachegrind callgrind.out.*
+```
 
 ## Release Notes
+### 24 January 2017
+- Removed visibility and pipeline header files
+- Created new tests for pipeline
+- Created new benchmarks for source-find, imager, fft
+- Moved JSON functions to auxiliary directory
+- Added new simulation data for benchmarking and tests
+- Removed WITH_ARMAFFT cmake option
+- Fixed source find bug: computed bg_level based on median
+- Moved fixtures and gaussian 2D to auxiliary folder
+- Removed data image from island parameters
+- Moved searching of the extremum value index from island constructor to label dectection functions
+- Added new vector math functions with TBB parallelization
+- Improved implementation of estimate RMS using TBB parallelization
+- Improved implementation of islands constructor
+- Added separate functions for finding positive and negative sources
+- Added several improvements and fixes, mostly for gridder and source find
+- Parallelized accumulate, mean, stddev and shift operations
+- Disabled Armadillo runtime linking library (now links directly to OpenBLAS)
+- Added OpenBLAS function to perform inplace division of a matrix by a constant
+- Parallelized several functions of source find and image visibilities
+- Added config folder
+- Added test-data as git sub-module
+
 ### 17 January 2017
 - Created three branchs:
   - master: optimized multithreaded version
@@ -77,15 +130,13 @@
   - reference-unopt: non-optimized single-threaded version
 - Fixed bug in kernel bound checking code
 - Added new kernel_exact parameter to disable oversampling
-- Significantly improved populate_kernel_cache function
 - Added new JSON parameters for reduce
-- Implementated new benchmarks: populate_kernel_cache, gridder and pipeline
+- Implemented new benchmarks: populate_kernel_cache, gridder and pipeline
 - Added TBB library to third-party
 - Parallelized gridder (oversampling case) using TBB
 - Enabled multithreaded FFTW
 - Disabled armadillo DEBUG flag 
 - Added gnuplot scripts to generate benchmark speedup plots
-- Performed several other improvements 
 
 ### 5 January 2017
 - Renamed libstp to stp

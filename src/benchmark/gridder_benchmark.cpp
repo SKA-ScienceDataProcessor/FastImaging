@@ -6,37 +6,21 @@
 #include <armadillo>
 #include <benchmark/benchmark.h>
 #include <load_data.h>
+#include <load_json_config.h>
 #include <stp.h>
 
-// Cmake variable
-#ifndef _TESTPATH
-#define _TESTPATH 0
-#endif
-
-std::string path_file(_TESTPATH);
+std::string data_path(_PIPELINE_DATAPATH);
 std::string input_npz("simdata.npz");
-int image_size = 2048;
-double cell_size = 0.1;
-int support = 5;
+std::string config_path(_PIPELINE_CONFIGPATH);
+std::string config_file_exact("fastimg_exact_config2.json");
+std::string config_file_oversampling("fastimg_oversampling_config2.json");
 
-void load_input_data(arma::mat& input_uvw, arma::cx_mat& input_model, arma::cx_mat& input_vis)
+void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size)
 {
-    cnpy::NpyArray input_uvw1(cnpy::npz_load(path_file + input_npz, "uvw_lambda"));
-    cnpy::NpyArray input_model1(cnpy::npz_load(path_file + input_npz, "model"));
-    cnpy::NpyArray input_vis1(cnpy::npz_load(path_file + input_npz, "vis"));
-
     //Load simulated data from input_npz
-    input_uvw = load_npy_double_array(input_uvw1);
-    input_model = load_npy_complex_array(input_model1);
-    input_vis = load_npy_complex_array(input_vis1);
-}
-
-void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis)
-{
     arma::mat input_uvw;
-    arma::cx_mat input_model;
-    arma::cx_mat input_vis;
-    load_input_data(input_uvw, input_model, input_vis);
+    arma::cx_mat input_model, input_vis;
+    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
 
     // Subtract model-generated visibilities from incoming data
     residual_vis = input_vis - input_model;
@@ -50,32 +34,36 @@ void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis)
     uv_in_pixels.col(1) = uvw_in_pixels.col(1);
 }
 
-static void gridder_kernel_oversampling_benchmark(benchmark::State& state)
-{
-    int kernel_exact = false;
-
-    stp::GaussianSinc kernel_func(support);
-    arma::mat uv_in_pixels;
-    arma::cx_mat residual_vis;
-
-    prepare_gridder(uv_in_pixels, residual_vis);
-
-    while (state.KeepRunning())
-        std::pair<arma::cx_mat, arma::cx_mat> result = convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, kernel_exact, state.range(0));
-}
-
 static void gridder_kernel_exact_benchmark(benchmark::State& state)
 {
-    int kernel_exact = true;
+    // Load all configurations from json configuration file
+    ConfigurationFile cfg(config_path + config_file_exact);
 
-    stp::GaussianSinc kernel_func(support);
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
+    prepare_gridder(uv_in_pixels, residual_vis, cfg.image_size, cfg.cell_size);
 
-    prepare_gridder(uv_in_pixels, residual_vis);
+    stp::GaussianSinc kernel_func(cfg.kernel_support);
+    std::pair<arma::cx_mat, arma::cx_mat> result;
 
     while (state.KeepRunning())
-        std::pair<arma::cx_mat, arma::cx_mat> result = convolve_to_grid(kernel_func, state.range(0), image_size, uv_in_pixels, residual_vis, kernel_exact, 1);
+        benchmark::DoNotOptimize(result = convolve_to_grid(kernel_func, state.range(0), cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, 1));
+}
+
+static void gridder_kernel_oversampling_benchmark(benchmark::State& state)
+{
+    // Load all configurations from json configuration file
+    ConfigurationFile cfg(config_path + config_file_oversampling);
+
+    arma::mat uv_in_pixels;
+    arma::cx_mat residual_vis;
+    prepare_gridder(uv_in_pixels, residual_vis, cfg.image_size, cfg.cell_size);
+
+    stp::GaussianSinc kernel_func(cfg.kernel_support);
+    std::pair<arma::cx_mat, arma::cx_mat> result;
+
+    while (state.KeepRunning())
+        benchmark::DoNotOptimize(result = convolve_to_grid(kernel_func, state.range(1), cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, state.range(0)));
 }
 
 BENCHMARK(gridder_kernel_oversampling_benchmark)
@@ -83,14 +71,20 @@ BENCHMARK(gridder_kernel_oversampling_benchmark)
     ->Args({ 5, 3 })
     ->Args({ 7, 3 })
     ->Args({ 9, 3 })
+    ->Args({ 3, 5 })
+    ->Args({ 5, 5 })
+    ->Args({ 7, 5 })
+    ->Args({ 9, 5 })
     ->Args({ 3, 7 })
     ->Args({ 5, 7 })
     ->Args({ 7, 7 })
-    ->Args({ 9, 7 });
+    ->Args({ 9, 7 })
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(gridder_kernel_exact_benchmark)
     ->Args({ 3 })
     ->Args({ 5 })
-    ->Args({ 7 });
+    ->Args({ 7 })
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

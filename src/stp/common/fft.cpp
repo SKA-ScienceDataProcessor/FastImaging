@@ -1,4 +1,6 @@
 #include "fft.h"
+#include "vector_math.h"
+#include <cblas.h>
 #include <fftw3.h>
 #include <thread>
 
@@ -30,7 +32,7 @@ arma::cx_mat fft_fftw(arma::cx_mat& input, bool inverse)
     // In order to match Numpy's inverse FFT, the result must
     // be divided by the number of elements in the matrix.
     if (inverse == true) {
-        output /= input.n_cols * input.n_rows; // in-place division
+        cblas_zdscal(output.n_elem, 1.0 / (double)(input.n_cols * input.n_rows), output.memptr(), 1); // in-place division by (input.n_cols * input.n_rows)
     }
 
     return output;
@@ -59,13 +61,13 @@ arma::cx_mat fftshift(const arma::cx_mat& m, bool is_forward)
     // Shift rows
     if (m.n_rows > 1) {
         arma::uword yy = arma::uword(ceil(m.n_rows / 2.0));
-        result = arma::shift(m, direction * yy, 0);
+        result = matrix_shift(m, direction * yy, 0);
     }
 
     // Shift columns
     if (m.n_cols > 1) {
         arma::uword xx = arma::uword(ceil(m.n_cols / 2.0));
-        result = arma::shift(result, direction * xx, 1);
+        result = matrix_shift(result, direction * xx, 1);
     }
 
     return result;

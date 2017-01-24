@@ -53,18 +53,24 @@ set_target_properties(${FFTW_TARGET_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORI
 set_target_properties(${FFTW_THREADS_TARGET_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FFTW_INCLUDE_DIR})
 
 # Dependency: TBB (2017 Update3)
-set(TBB_TARGET_NAME tbb)
-set(TBB_PROJECT_NAME ${TBB_TARGET_NAME}_project)
-set(TBB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${TBB_TARGET_NAME})
+set(TBB_NAME tbb)
+set(TBB_TARGET_NAME tbb-static)
+set(TBB_MALLOC_TARGET_NAME tbbmalloc-static)
+set(TBB_PROJECT_NAME ${TBB_NAME}_project)
+set(TBB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${TBB_NAME})
 set(TBB_INCLUDE_DIR ${TBB_SOURCE_DIR}/include)
-set(TBB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${TBB_TARGET_NAME})
+set(TBB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${TBB_NAME})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(TBB_BUILD_DIR ${TBB_SOURCE_DIR}/build/${TBB_TARGET_NAME}_debug)
-    set(TBB_LIBS ${TBB_INSTALL_DIR}/libtbb_debug.a)
+    set(TBB_BUILD_DIR ${TBB_SOURCE_DIR}/build/${TBB_NAME}_debug)
+    set(TBB_LIB ${TBB_INSTALL_DIR}/libtbb_debug.a)
+    set(TBB_MALLOC_LIB ${TBB_INSTALL_DIR}/libtbbmalloc_debug.a)
+
 else()
-    set(TBB_BUILD_DIR ${TBB_SOURCE_DIR}/build/${TBB_TARGET_NAME}_release)
-    set(TBB_LIBS ${TBB_INSTALL_DIR}/libtbb.a)
+    set(TBB_BUILD_DIR ${TBB_SOURCE_DIR}/build/${TBB_NAME}_release)
+    set(TBB_LIB ${TBB_INSTALL_DIR}/libtbb.a)
+    set(TBB_MALLOC_LIB ${TBB_INSTALL_DIR}/libtbbmalloc.a)
+
 endif()
 
 # Build from source using the classical approach of make.
@@ -73,16 +79,20 @@ ExternalProject_Add(
     ${TBB_PROJECT_NAME}
     SOURCE_DIR ${TBB_SOURCE_DIR}
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND make tbb_build_prefix=${TBB_TARGET_NAME} extra_inc=big_iron.inc
+    BUILD_COMMAND make tbb_build_prefix=${TBB_NAME} extra_inc=big_iron.inc
     BUILD_IN_SOURCE 1
-    INSTALL_COMMAND cp -r ${TBB_BUILD_DIR} ${TBB_INSTALL_DIR} && make tbb_build_prefix=${TBB_TARGET_NAME} clean
+    INSTALL_COMMAND cp -r ${TBB_BUILD_DIR} ${TBB_INSTALL_DIR} && make tbb_build_prefix=${TBB_NAME} clean
 )
 
 # Specify the target for the external library
 # Note: GLOBAL must be used to extend the visibility of imported libraries
 add_library(${TBB_TARGET_NAME} STATIC IMPORTED GLOBAL)
-set_property(TARGET ${TBB_TARGET_NAME} PROPERTY IMPORTED_LOCATION ${TBB_LIBS})
+add_library(${TBB_MALLOC_TARGET_NAME} STATIC IMPORTED GLOBAL)
+set_property(TARGET ${TBB_TARGET_NAME} PROPERTY IMPORTED_LOCATION ${TBB_LIB})
+set_property(TARGET ${TBB_MALLOC_TARGET_NAME} PROPERTY IMPORTED_LOCATION ${TBB_MALLOC_LIB})
 add_dependencies(${TBB_TARGET_NAME} ${TBB_PROJECT_NAME})
+add_dependencies(${TBB_MALLOC_TARGET_NAME} ${TBB_PROJECT_NAME})
 # Make sure targets linking against the library get the include directory
 set_target_properties(${TBB_TARGET_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${TBB_INCLUDE_DIR})
+set_target_properties(${TBB_MALLOC_TARGET_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${TBB_INCLUDE_DIR})
 

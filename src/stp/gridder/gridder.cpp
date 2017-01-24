@@ -2,14 +2,18 @@
 
 namespace stp {
 
-arma::uvec bounds_check_kernel_centre_locations(arma::mat& kernel_centre_indices, int support, int image_size)
+arma::uvec bounds_check_kernel_centre_locations(arma::imat& kernel_centre_indices, int support, int image_size)
 {
-    arma::vec out_of_bounds_bool = arma::zeros<arma::vec>(kernel_centre_indices.n_rows);
+    arma::uvec out_of_bounds_bool(kernel_centre_indices.n_rows);
 
     int col = 0;
-    kernel_centre_indices.each_row([&out_of_bounds_bool, &image_size, &support, &col](arma::mat& r) {
-        if (r[0] - support < 0 || r[1] - support < 0 || r[0] + support >= image_size || r[1] + support >= image_size) {
+    kernel_centre_indices.each_row([&out_of_bounds_bool, &image_size, &support, &col](arma::imat& r) {
+        const int kc_x = r[0];
+        const int kc_y = r[1];
+        if (kc_x - support < 0 || kc_y - support < 0 || kc_x + support >= image_size || kc_y + support >= image_size) {
             out_of_bounds_bool[col] = 1;
+        } else {
+            out_of_bounds_bool[col] = 0;
         }
         col++;
     });
@@ -17,22 +21,27 @@ arma::uvec bounds_check_kernel_centre_locations(arma::mat& kernel_centre_indices
     return arma::find(out_of_bounds_bool == 0);
 }
 
-arma::mat calculate_oversampled_kernel_indices(arma::mat subpixel_coord, int oversampling)
+arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling)
 {
-
     assert(arma::uvec(arma::find(arma::abs(subpixel_coord) > 0.5)).is_empty());
 
-    subpixel_coord = subpixel_coord * oversampling;
-    subpixel_coord.transform([](arma::mat::elem_type& val) {
-        return rint(val);
-    });
+    arma::imat oversampled_coord(arma::size(subpixel_coord));
 
     int range_max = oversampling / 2;
     int range_min = -1 * range_max;
 
-    subpixel_coord.elem(find(subpixel_coord == (range_max + 1))).fill(range_max);
-    subpixel_coord.elem(find(subpixel_coord == (range_min - 1))).fill(range_min);
+    for (uint i = 0; i < subpixel_coord.n_elem; i++) {
+        int val = rint(subpixel_coord.at(i) * oversampling);
+        if (val > range_max) {
+            val = range_max;
+        } else {
+            if (val < range_min) {
+                val = range_min;
+            }
+        }
+        oversampled_coord.at(i) = val;
+    }
 
-    return subpixel_coord;
+    return oversampled_coord;
 }
 }

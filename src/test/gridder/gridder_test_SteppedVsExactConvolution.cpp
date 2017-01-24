@@ -25,7 +25,7 @@ void run()
     for (arma::uword i(0); i < steps.n_elem; ++i) {
         arma::mat x_offset = { steps[i], 0.0 };
         arma::mat aligned_exact_kernel = make_kernel_array(triangle, support, x_offset, oversampling_kernel, pad, normalize);
-        arma::mat aligned_cache_idx = calculate_oversampled_kernel_indices(x_offset, oversampling_cache);
+        arma::imat aligned_cache_idx = calculate_oversampled_kernel_indices(x_offset, oversampling_cache);
         arma::mat cached_kernel = kernel_cache(aligned_cache_idx.at(0, 1) + (oversampling_cache / 2), aligned_cache_idx.at(0, 0) + (oversampling_cache / 2));
 
         EXPECT_TRUE(arma::approx_equal(aligned_exact_kernel, cached_kernel, "absdiff", tolerance));
@@ -33,9 +33,8 @@ void run()
         for (arma::uword j(0); j < substeps.n_elem; ++j) {
             arma::mat offset = { x_offset[0] + substeps[j], 0.0 };
             if (substeps[j] < 0.0 || 0.0 < substeps[j]) {
-                arma::mat unaligned_cache_idx = calculate_oversampled_kernel_indices(offset, oversampling_cache);
-
-                EXPECT_TRUE(arma::approx_equal(unaligned_cache_idx, aligned_cache_idx, "absdiff", tolerance));
+                arma::imat unaligned_cache_idx = calculate_oversampled_kernel_indices(offset, oversampling_cache);
+                EXPECT_TRUE(arma::accu(unaligned_cache_idx != aligned_cache_idx) == 0);
             }
         }
     }

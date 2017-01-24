@@ -43,14 +43,14 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculation)
         col++;
     });
 
-    arma::mat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
+    arma::imat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
 
     col = 0;
     io_pairs.each_row([&aux, &col](arma::mat& r) {
         aux[col] = r[1];
         col++;
     });
-    EXPECT_TRUE(arma::approx_equal(aux, outputs, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(aux, arma::conv_to<arma::mat>::from(outputs), "absdiff", tolerance));
 }
 
 TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
@@ -66,7 +66,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
         col++;
     });
 
-    arma::mat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
+    arma::imat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
 
     col = 0;
     io_pairs.each_row([&aux, &col](arma::mat& r) {
@@ -74,12 +74,13 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
         col++;
     });
 
-    EXPECT_TRUE(arma::approx_equal(aux, outputs, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(aux, arma::conv_to<arma::mat>::from(outputs), "absdiff", tolerance));
 }
 
 TEST(GridderFractionalCoordToOversampledIndexMath, CoOrdinatePairs)
 {
     arma::mat inputs = { { 0.3, 0.3 } };
-    arma::mat outputs = { { 2, 2 } };
-    EXPECT_TRUE(arma::approx_equal(calculate_oversampled_kernel_indices(inputs, oversampling_kernel_indices), outputs, "absdiff", tolerance));
+    arma::imat outputs = { { 2, 2 } };
+    arma::imat oversampled_indices = calculate_oversampled_kernel_indices(inputs, oversampling_kernel_indices);
+    EXPECT_TRUE(arma::accu(oversampled_indices != outputs) == 0);
 }

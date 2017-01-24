@@ -18,7 +18,7 @@
 
 namespace stp {
 
-const double tolerance(1.0e-14);
+const double tolerance = 1.0e-14;
 
 /**
  * @brief The TopHat functor class

@@ -2,9 +2,6 @@
 #define GAUSSIAN2D_H
 
 #include <armadillo>
-#include <math.h>
-
-namespace stp {
 
 class Gaussian2D {
 
@@ -34,18 +31,16 @@ public:
     /**
      * @brief Computes gaussian 2D model
      *
-     * Receives xgrid and ygrid matrices with (x,y) coordinates to be used.
-     * Gaussian 2D model is stored in model matrix.
+     * Receives n_rows and n_cols of the Gaussian 2D model matrix to be generated.
      *
-     * @param[in] xgrid (arma::mat): X grid coordinates
-     * @param[in] ygrid (arma::mat): Y grid coordinates
+     * @param[in] n_rows (arma::uword): number of rows
+     * @param[in] n_cols (arma::uword): number of columns
      *
-     * @return The calculated model
+     * @return (arma::mat) The calculated model
      */
-    arma::mat operator()(arma::mat& xgrid, arma::mat& ygrid) const;
+    arma::mat operator()(arma::uword n_rows, arma::uword n_cols) const;
 };
 
 typedef Gaussian2D gaussian_point_source;
-}
 
 #endif /* GAUSSIAN2D_H */

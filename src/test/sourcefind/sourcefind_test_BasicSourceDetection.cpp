@@ -5,6 +5,8 @@
  *  @bug No known bugs.
  */
 
+#include <fixtures.h>
+#include <gaussian2d.h>
 #include <gtest/gtest.h>
 #include <stp.h>
 
@@ -65,10 +67,10 @@ public:
 
         total_islands0 = sf.islands.size();
 
-        absolute_x_idx = abs(found_src.extremum_x_idx - bright_src.x_mean);
-        absolute_y_idx = abs(found_src.extremum_y_idx - bright_src.y_mean);
-        absolute_xbar = abs(found_src.xbar - bright_src.x_mean);
-        absolute_ybar = abs(found_src.ybar - bright_src.y_mean);
+        absolute_x_idx = std::abs(found_src.extremum_x_idx - bright_src.x_mean);
+        absolute_y_idx = std::abs(found_src.extremum_y_idx - bright_src.y_mean);
+        absolute_xbar = std::abs(found_src.xbar - bright_src.x_mean);
+        absolute_ybar = std::abs(found_src.ybar - bright_src.y_mean);
 
         img += evaluate_model_on_pixel_grid(ydim, xdim, faint_src);
         sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);

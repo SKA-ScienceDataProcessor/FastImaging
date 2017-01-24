@@ -7,7 +7,11 @@ set(CXX_STANDARD_REQUIRED ON)
 
 # Dependency: Armadillo
 find_package(Armadillo REQUIRED)
-add_definitions(-DARMA_NO_DEBUG)
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DARMA_NO_DEBUG)
+endif()
+add_definitions(-DARMA_USE_TBB_ALLOC)
+add_definitions(-DARMA_DONT_USE_WRAPPER)
 
 # Turn on useful compiler flags
 add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstrict-aliasing -march=native)
@@ -34,8 +38,8 @@ endif()
 set(REDUCE_TARGET_NAME "reduce")
 
 # Build the target
-add_executable(${REDUCE_TARGET_NAME} reduce.cpp ../auxiliary/load_data.cpp)
+add_executable(${REDUCE_TARGET_NAME} reduce.cpp ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp)
 add_dependencies(${STP_TARGET_NAME} stp cnpy-static)
 target_include_directories(${REDUCE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
     ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${ARMADILLO_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_PATH}, ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
-target_link_libraries(${REDUCE_TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} stp cnpy-static ${ARMADILLO_LIBRARIES})
+target_link_libraries(${REDUCE_TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} stp cnpy-static)

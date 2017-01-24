@@ -1,4 +1,5 @@
 #include "gaussian2d.h"
+#include <math.h>
 
 namespace stp {
 

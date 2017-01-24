@@ -109,3 +109,15 @@ arma::cx_mat load_npy_complex_array(cnpy::NpyArray& npy) throw(std::invalid_argu
 
     throw std::invalid_argument("Invalid data type. Must be float or complex!");
 }
+
+void load_npz_simdata(std::string file_path, arma::mat& input_uvw, arma::cx_mat& input_model, arma::cx_mat& input_vis)
+{
+    cnpy::NpyArray c_input_uvw(cnpy::npz_load(file_path, "uvw_lambda"));
+    cnpy::NpyArray c_input_model(cnpy::npz_load(file_path, "model"));
+    cnpy::NpyArray c_input_vis(cnpy::npz_load(file_path, "vis"));
+
+    //Load simulated data from cnpy objects
+    input_uvw = load_npy_double_array(c_input_uvw);
+    input_model = load_npy_complex_array(c_input_model);
+    input_vis = load_npy_complex_array(c_input_vis);
+}

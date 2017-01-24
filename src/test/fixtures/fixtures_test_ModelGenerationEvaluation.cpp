@@ -1,7 +1,6 @@
+#include <fixtures.h>
+#include <gaussian2d.h>
 #include <gtest/gtest.h>
-#include <stp.h>
-
-using namespace stp;
 
 class FixturesModelGenerationEvaluation : public ::testing::Test {
 private:

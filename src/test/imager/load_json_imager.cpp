@@ -22,8 +22,8 @@ rapidjson::Value set_up_json(const std::string& typeConvolution, const std::stri
     doc_aux.Parse(str.c_str());
 
     std::string path_file;
-    if (_TESTPATH) {
-        path_file = _TESTPATH;
+    if (_IMAGER_TESTPATH) {
+        path_file = _IMAGER_TESTPATH;
     } else {
         path_file = doc_aux["path"].GetString();
     }

@@ -13,8 +13,8 @@
 #include <rapidjson/filereadstream.h>
 
 // Cmake variable
-#ifndef _TESTPATH
-#define _TESTPATH 0
+#ifndef _IMAGER_TESTPATH
+#define _IMAGER_TESTPATH 0
 #endif
 
 rapidjson::Value set_up_json(const std::string& typeConvolution, const std::string& typeTest);

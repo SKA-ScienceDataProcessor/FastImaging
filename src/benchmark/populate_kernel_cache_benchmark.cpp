@@ -6,19 +6,16 @@
 #include <benchmark/benchmark.h>
 #include <stp.h>
 
-bool pad = false;
-bool normalize = true;
-stp::GaussianSinc gaussiansinc;
-
-void run(int oversampling_cache = 9, int support = 3)
-{
-    arma::field<arma::mat> kernel_cache = stp::populate_kernel_cache(gaussiansinc, support, oversampling_cache, pad, normalize);
-}
-
 static void populate_kernel_cache_benchmark(benchmark::State& state)
 {
+    bool pad = false;
+    bool normalize = true;
+    stp::GaussianSinc gaussiansinc;
+    int oversampling = state.range(0);
+    int kernel_support = state.range(1);
+
     while (state.KeepRunning())
-        run(state.range(0), state.range(1));
+        benchmark::DoNotOptimize(stp::populate_kernel_cache(gaussiansinc, kernel_support, oversampling, pad, normalize));
 }
 
 BENCHMARK(populate_kernel_cache_benchmark)

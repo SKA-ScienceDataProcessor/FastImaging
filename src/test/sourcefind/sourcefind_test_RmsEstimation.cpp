@@ -5,6 +5,8 @@
  *  @bug No known bugs.
  */
 
+#include <fixtures.h>
+#include <gaussian2d.h>
 #include <gtest/gtest.h>
 #include <stp.h>
 

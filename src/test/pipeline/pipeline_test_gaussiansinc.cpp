@@ -1,41 +1,105 @@
-#include "../auxiliary/load_data.h"
 #include <gtest/gtest.h>
+#include <load_data.h>
+#include <load_json_config.h>
 #include <stp.h>
-
-// Cmake variable
-#ifndef _TESTPATH
-#define _TESTPATH 0
-#endif
 
 using namespace stp;
 
-TEST(PipelineGaussianSincFunc, test_gaussian_sinc)
+std::string data_path(_PIPELINE_DATAPATH);
+std::string input_npz("simdata_small.npz");
+std::string config_path(_PIPELINE_CONFIGPATH);
+std::string config_file_exact("fastimg_exact_config1.json");
+std::string config_file_oversampling("fastimg_oversampling_config1.json");
+
+const double dtolerance(1.0e-10);
+
+stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis, arma::cx_mat data_vis, int image_size, double cell_size, double detection_n_sigma, double analysis_n_sigma, int kernel_support = 3, bool kernel_exact = true, int oversampling = 1)
 {
-    const double width_normalization_gaussian = 2.52;
-    const double width_normalization_sinc = 1.55;
-    const double trunc = 3.0;
-    const double kernel_support = 3;
-    const double vis_noise_level = 0.001;
-    const double image_size = 1024;
-    const double cell_size = 3;
-    const double detection_n_sigma = 50;
-    const double analysis_n_sigma = 25;
+    // Subtract model-generated visibilities from incoming data
+    arma::cx_mat residual_vis = data_vis - model_vis;
 
-    std::string path_file(_TESTPATH);
-    cnpy::NpyArray uvw_npy(cnpy::npz_load(path_file + "mock_uvw_vis.npz", "uvw"));
-    arma::mat uvw_lambda = load_npy_double_array(uvw_npy);
+    stp::GaussianSinc kernel_func(kernel_support);
+    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
 
-    source_find_image pipeline = generate_pipeline(
-        uvw_lambda,
-        vis_noise_level,
-        image_size,
-        cell_size,
-        detection_n_sigma,
-        analysis_n_sigma,
-        kernel_support,
-        GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc));
+    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
+}
 
-    int total_islands = pipeline.islands.size();
+TEST(PipelineGaussianSincExact, test_gaussian_sinc)
+{
+    //Load simulated data from input_npz
+    arma::mat input_uvw;
+    arma::cx_mat input_model, input_vis;
+    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    // Load all configurations from json configuration file
+    ConfigurationFile cfg(config_path + config_file_exact);
 
-    EXPECT_EQ(total_islands, 0);
+    stp::source_find_image sfimage = run_pipeline(input_uvw, input_model, input_vis, cfg.image_size, cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+
+    int total_islands = sfimage.islands.size();
+    int expected_total_islands = 1;
+    EXPECT_EQ(total_islands, expected_total_islands);
+
+    int label_idx = sfimage.islands[0].label_idx;
+    int sign = sfimage.islands[0].sign;
+    double extremum_val = sfimage.islands[0].extremum_val;
+    int extremum_x_idx = sfimage.islands[0].extremum_x_idx;
+    int extremum_y_idx = sfimage.islands[0].extremum_y_idx;
+    double xbar = sfimage.islands[0].xbar;
+    double ybar = sfimage.islands[0].ybar;
+
+    int expected_label_idx = 1;
+    int expected_sign = 1;
+    double expected_extremum_val = 0.11044656115547172;
+    int expected_extremum_x_idx = 824;
+    int expected_extremum_y_idx = 872;
+    double expected_xbar = 823.48705108625256;
+    double expected_ybar = 871.63927768390715;
+
+    EXPECT_EQ(label_idx, expected_label_idx);
+    EXPECT_EQ(sign, expected_sign);
+    EXPECT_DOUBLE_EQ(extremum_val, expected_extremum_val);
+    EXPECT_EQ(extremum_x_idx, expected_extremum_x_idx);
+    EXPECT_EQ(extremum_y_idx, expected_extremum_y_idx);
+    EXPECT_DOUBLE_EQ(xbar, expected_xbar);
+    EXPECT_DOUBLE_EQ(ybar, expected_ybar);
+}
+
+TEST(PipelineGaussianSincOversampling, test_gaussian_sinc)
+{
+    //Load simulated data from input_npz
+    arma::mat input_uvw;
+    arma::cx_mat input_model, input_vis;
+    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    // Load all configurations from json configuration file
+    ConfigurationFile cfg(config_path + config_file_oversampling);
+
+    stp::source_find_image sfimage = run_pipeline(input_uvw, input_model, input_vis, cfg.image_size, cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+
+    int total_islands = sfimage.islands.size();
+    int expected_total_islands = 1;
+    EXPECT_EQ(total_islands, expected_total_islands);
+
+    int label_idx = sfimage.islands[0].label_idx;
+    int sign = sfimage.islands[0].sign;
+    double extremum_val = sfimage.islands[0].extremum_val;
+    int extremum_x_idx = sfimage.islands[0].extremum_x_idx;
+    int extremum_y_idx = sfimage.islands[0].extremum_y_idx;
+    double xbar = sfimage.islands[0].xbar;
+    double ybar = sfimage.islands[0].ybar;
+
+    int expected_label_idx = 1;
+    int expected_sign = 1;
+    double expected_extremum_val = 0.11010496366579756;
+    int expected_extremum_x_idx = 824;
+    int expected_extremum_y_idx = 872;
+    double expected_xbar = 823.48710510938361;
+    double expected_ybar = 871.63972539949111;
+
+    EXPECT_EQ(label_idx, expected_label_idx);
+    EXPECT_EQ(sign, expected_sign);
+    EXPECT_TRUE(std::abs(extremum_val - expected_extremum_val) < dtolerance);
+    EXPECT_EQ(extremum_x_idx, expected_extremum_x_idx);
+    EXPECT_EQ(extremum_y_idx, expected_extremum_y_idx);
+    EXPECT_TRUE(std::abs(xbar - expected_xbar) < dtolerance);
+    EXPECT_TRUE(std::abs(ybar - expected_ybar) < dtolerance);
 }

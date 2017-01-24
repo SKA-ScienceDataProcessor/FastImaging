@@ -3,7 +3,11 @@
 
 # Dependency: Armadillo
 find_package(Armadillo REQUIRED)
-add_definitions(-DARMA_NO_DEBUG)
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DARMA_NO_DEBUG)
+endif()
+add_definitions(-DARMA_USE_TBB_ALLOC)
+add_definitions(-DARMA_DONT_USE_WRAPPER)
 
 # Dependency: Threads (required by google test)
 find_package(Threads)
@@ -22,8 +26,14 @@ set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main benchmark ${CMAKE_THREA
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../test-data/imager-data/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
 
 # Configures the location of the test data
-get_filename_component(IMAGER_PATH "../../test-data/imager-data" ABSOLUTE)
-add_definitions ( -D_TESTPATH="${IMAGER_PATH}/")
+get_filename_component(IMAGER_DATAPATH "../../test-data/imager-data" ABSOLUTE)
+add_definitions ( -D_IMAGER_TESTPATH="${IMAGER_DATAPATH}/")
+get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-data" ABSOLUTE)
+add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
+
+# Configures the location of the configuration files
+get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-config" ABSOLUTE)
+add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # Configures the location of the cnpy test data
 get_filename_component(CNPY_DATA_PATH "../../test-data/cnpy-data" ABSOLUTE)
@@ -31,12 +41,16 @@ add_definitions ( -D_CNPYTESTPATH="${CNPY_DATA_PATH}/")
 
 # Helper function for test target specification
 function(add_unit_test unit_test_name unit_test_source)
-    add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/load_data.cpp imager/load_json_imager.cpp)
+    add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/fixtures.h ../auxiliary/gaussian2d.cpp ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp imager/load_json_imager.cpp)
     add_dependencies(${unit_test_name} stp cnpy-static gtest gtest_main benchmark)
     target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
-        ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${ARMADILLO_INCLUDE_DIRS})
+        ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${ARMADILLO_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_PATH})
     target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
 endfunction()
+
+# Test Cases: Vector Math Functions ------------------------------------------------------------------------------------
+
+add_unit_test(test_vector_math_funcs vectormath/test_vector_math_funcs.cpp)
 
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
@@ -138,16 +152,14 @@ add_unit_test(test_sourcefind_negative_source_detection sourcefind/sourcefind_te
 # RmsEstimation
 add_unit_test(test_sourcefind_rms_estimation sourcefind/sourcefind_test_RmsEstimation.cpp)
 
-# Test Cases: Visibilities Functions -----------------------------------------------------------------------------------
-
-# VisibilityNoiseGeneration
-add_unit_test(test_visibility_noise_generation visibility/visibility_test_noise_generation.cpp)
-
 # Test Cases: Pipeline Functions ---------------------------------------------------------------------------------------
 add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp)
 
 # Pass the test cases to CTest
 # Note: for practicality each unit test has its own executable.
+
+#Vector math
+add_test(NAME VectorMathFunctions COMMAND test_vector_math_funcs)
 
 # Convolution
 add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle_func)
@@ -191,9 +203,6 @@ add_test(NAME FixturesModelGenerationEvaluation COMMAND test_fixtures_model_gene
 add_test(NAME SourceFindBasicSourceDetection COMMAND test_sourcefind_basic_source_detection)
 add_test(NAME SourceFindNegativeSourceDetection COMMAND test_sourcefind_negative_source_detection)
 add_test(NAME SourceFindRmsEstimation COMMAND test_sourcefind_rms_estimation)
-
-# Visibilities Functions
-add_test(NAME VisibilityNoiseGeneration COMMAND test_visibility_noise_generation)
 
 # Pipeline Functions
 add_test(NAME PipelineGaussianSincFunc COMMAND test_pipeline_gaussiansinc)

@@ -68,7 +68,7 @@ arma::field<arma::mat> populate_kernel_cache(const T& kernel_creator, const int 
  *
  *  Vectorized bounds check.
  *
- *  @param[in] kernel_centre_indices(arma::mat): Corresponding array of
+ *  @param[in] kernel_centre_indices(arma::imat): Corresponding array of
  *              nearest-pixel grid-locations, which will be the centre position
  *              of a kernel placement.
  *  @param[in] support (int): Kernel support size in regular pixels.
@@ -76,7 +76,7 @@ arma::field<arma::mat> populate_kernel_cache(const T& kernel_creator, const int 
  *
  *  @return (uvec): List of indices for 'good' (in-bounds) positions. Note this is a list of integer index values.
  */
-arma::uvec bounds_check_kernel_centre_locations(arma::mat& kernel_centre_indices, int support, int image_size);
+arma::uvec bounds_check_kernel_centre_locations(arma::imat& kernel_centre_indices, int support, int image_size);
 
 /** @brief calculate_oversampled_kernel_indices function
  *
@@ -86,10 +86,9 @@ arma::uvec bounds_check_kernel_centre_locations(arma::mat& kernel_centre_indices
                subpixel offsets from nearest pixel on the regular grid.
  *  @param[in] oversampling (int). How many oversampled pixels to one regular pixel.
  *
- *  @return oversampled_kernel_idx (arma::mat): Corresponding oversampled pixel
-        indexes
+ *  @return oversampled_kernel_idx (arma::imat): Corresponding oversampled pixel indexes
  */
-arma::mat calculate_oversampled_kernel_indices(arma::mat subpixel_coord, int oversampling);
+arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling);
 
 /** @brief convolve_to_grid function
  *
@@ -146,50 +145,48 @@ std::pair<arma::cx_mat, arma::cx_mat> convolve_to_grid(const T& kernel_creator, 
     });
 
     arma::mat uv_frac = uv - uv_rounded;
-    double image_size_int = image_size / 2;
-    arma::mat kernel_centre_on_grid = uv_rounded + image_size_int;
+    arma::imat kernel_centre_on_grid = arma::conv_to<arma::imat>::from(uv_rounded) + (image_size / 2);
     arma::uvec good_vis_idx = bounds_check_kernel_centre_locations(kernel_centre_on_grid, support, image_size);
 
     arma::cx_mat vis_grid = arma::zeros<arma::cx_mat>(image_size, image_size);
     arma::mat sampling_grid = arma::zeros<arma::mat>(image_size, image_size);
+
     int kernel_size = support * 2 + 1;
 
     if (kernel_exact == false) {
         // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
         arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, pad, normalize);
-        arma::mat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling);
+        arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
         tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&good_vis_idx, &kernel_centre_on_grid, &support, &kernel_size, &oversampling, &kernel_cache, &oversampled_offset, &uv_frac, &kernel_creator, &vis, &vis_grid, &sampling_grid](const tbb::blocked_range<size_t>& r) {
 
             good_vis_idx.for_each([&kernel_centre_on_grid, &support, &kernel_size, &oversampling, &kernel_cache, &oversampled_offset, &uv_frac, &kernel_creator, &vis, &vis_grid, &sampling_grid, &r](arma::uvec::elem_type& val) {
-                arma::uword gc_x = kernel_centre_on_grid(val, 0);
-                arma::uword gc_y = kernel_centre_on_grid(val, 1);
-                arma::uword cp_x = oversampled_offset.at(val, 0) + (oversampling / 2);
-                arma::uword cp_y = oversampled_offset.at(val, 1) + (oversampling / 2);
+                const int gc_x = kernel_centre_on_grid(val, 0);
+                const int gc_y = kernel_centre_on_grid(val, 1);
+                const arma::uword cp_x = oversampled_offset.at(val, 0);
+                const arma::uword cp_y = oversampled_offset.at(val, 1);
 
                 int conv_col = ((gc_x - r.begin() + kernel_size) % kernel_size);
                 if (conv_col > support)
                     conv_col -= kernel_size;
-                int grid_col = (gc_x - conv_col);
+                const arma::uword grid_col = (gc_x - conv_col);
 
-                assert(abs(conv_col) <= support);
-                assert((grid_col % kernel_size) == (int)r.begin());
-
-                //arma::span yrange = arma::span(gc_y - support, gc_y + support);
+                assert(std::abs(conv_col) <= support);
+                assert(arma::uword(grid_col % kernel_size) == r.begin());
 
                 // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
-                //vis_grid(yrange, grid_col) += vis[val] * kernel_cache(cp_y, cp_x).col(support - conv_col);
-                //sampling_grid(yrange, grid_col) += kernel_cache(cp_y, cp_x).col(support - conv_col);
                 for (int i = 0; i < kernel_size; i++) {
-                    vis_grid.at(gc_y - support + i, grid_col) += vis[val] * kernel_cache(cp_y, cp_x).at(i, support - conv_col);
-                    sampling_grid.at(gc_y - support + i, grid_col) += kernel_cache(cp_y, cp_x).at(i, support - conv_col);
+                    const double kernel_val = kernel_cache(cp_y, cp_x).at(i, support - conv_col);
+                    const arma::uword grid_row = gc_y - support + i;
+                    vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
+                    sampling_grid.at(grid_row, grid_col) += kernel_val;
                 }
             });
         });
     } else {
         good_vis_idx.for_each([&kernel_centre_on_grid, &support, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid](arma::uvec::elem_type& val) {
-            arma::uword gc_x = kernel_centre_on_grid(val, 0);
-            arma::uword gc_y = kernel_centre_on_grid(val, 1);
+            const int gc_x = kernel_centre_on_grid(val, 0);
+            const int gc_y = kernel_centre_on_grid(val, 1);
 
             arma::span xrange = arma::span(gc_x - support, gc_x + support);
             arma::span yrange = arma::span(gc_y - support, gc_y + support);
