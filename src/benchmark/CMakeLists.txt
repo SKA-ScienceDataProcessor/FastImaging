@@ -1,6 +1,7 @@
 ﻿# --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Library Benchmarking Tests
 
+set(CMAKE_CXX_STANDARD 14)
 # Dependency: Armadillo
 find_package(Armadillo REQUIRED)
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
