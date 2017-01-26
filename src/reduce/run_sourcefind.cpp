@@ -1,11 +1,14 @@
 /**
-* @file reduce.cpp
-* Main file of reduce
+* @file run sourcefind.cpp
+* Main file for run source find function
 * Contains the main function. Creates and configures the TCLAP interface.
-* Calls pipeline funtion and saves the results.
+* Calls source find funtion and saves the results.
 */
 
-#include "reduce.h"
+#include "run_sourcefind.h"
+
+// STP library
+#include <stp.h>
 
 // Load NPZ simulation data
 #include <load_data.h>
@@ -38,15 +41,6 @@ void createFlags()
     _cmd.add(_outNpzFileArg);
 }
 
-stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support, bool kernel_exact, int oversampling, double detection_n_sigma, double analysis_n_sigma)
-{
-    // Run image_visibilities
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(kernel_support), residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
-
-    // Run source find
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
-}
-
 int main(int argc, char** argv)
 {
     // Adds the flags to the parser
@@ -67,30 +61,24 @@ int main(int argc, char** argv)
         _logger->info("Loading data");
     }
 
-    //Load simulated data from input_npz
-    arma::mat input_uvw;
-    arma::cx_mat input_model, input_vis;
-    load_npz_simdata(_inNpzFileArg.getValue(), input_uvw, input_model, input_vis);
+    //Load simulated data from input npz file
+    cnpy::NpyArray c_image(cnpy::npz_load(_inNpzFileArg.getValue(), "image"));
+
+    //Load simulated data from cnpy objects
+    arma::cx_mat image = load_npy_complex_array(c_image);
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
 
     if (use_logger) {
         _logger->info("Configuration parameters:");
-        _logger->info(" - image_size={}", cfg.image_size);
-        _logger->info(" - cell_size={}", cfg.cell_size);
-        _logger->info(" - kernel_support={}", cfg.kernel_support);
-        _logger->info(" - kernel_exact={}", cfg.kernel_exact);
-        _logger->info(" - oversampling={}", cfg.oversampling);
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
-        _logger->info("Running pipeline");
+        _logger->info("Running source find");
     }
 
-    // Subtract model-generated visibilities from incoming data
-    arma::cx_mat residual_vis = input_vis - input_model;
-    // Runs pipeline
-    stp::source_find_image sfimage = run_pipeline(input_uvw, residual_vis, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, cfg.detection_n_sigma, cfg.analysis_n_sigma);
+    // Run source find
+    stp::source_find_image sfimage = stp::source_find_image(arma::real(image), cfg.detection_n_sigma, cfg.analysis_n_sigma, std::experimental::nullopt, true);
 
     if (use_logger) {
         _logger->info("Finished");

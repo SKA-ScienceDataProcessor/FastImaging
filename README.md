@@ -6,7 +6,7 @@
 - src: source code files (.cpp and .h)
   - stp: the STP library code
   - stp-python: python bindings for STP library
-  - reduce: command-line tool for the execution of the STP on arbitrary numpy data
+  - reduce: command-line tools for the execution of the STP on arbitrary numpy data
   - test: unit tests for the STP library
   - benchmark: functions for benchmarking of STP library
   - auxiliary: external functions to auxiliate tests, benchmark and reduce module
@@ -100,6 +100,11 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 26 January 2017
+- Improved matrix shift implementation
+- Re-implemented reduce target
+- Implemented new run_imagevis and run_sourcefind targets
+
 ### 24 January 2017
 - Removed visibility and pipeline header files
 - Created new tests for pipeline

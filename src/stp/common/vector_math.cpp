@@ -3,6 +3,8 @@
 #include <tbb/tbb.h>
 #include <thread>
 
+#define MIN_ELEMS_FOR_PARSHIFT 8192
+
 namespace stp {
 
 struct SumMean {
@@ -279,7 +281,7 @@ arma::cx_mat matrix_shift(const arma::cx_mat& in, const int length, const int di
     arma::cx_mat out(arma::size(in));
 
     // Use arma shift if the number of elements is not large enough for parallelization
-    if (in.n_elem < 8192) {
+    if (in.n_elem < MIN_ELEMS_FOR_PARSHIFT) {
         return arma::shift(in, length, dim);
     }
 
@@ -295,16 +297,8 @@ arma::cx_mat matrix_shift(const arma::cx_mat& in, const int length, const int di
                     arma::cx_double* out_ptr = out.colptr(col);
                     const arma::cx_double* in_ptr = in.colptr(col);
 
-                    for (uint out_row = len, row = 0; row < (n_rows - len); ++row, ++out_row) {
-                        out_ptr[out_row] = in_ptr[row];
-                    }
-
-                    for (uint out_row = 0, row = (n_rows - len); row < n_rows; ++row, ++out_row) {
-                        out_ptr[out_row] = in_ptr[row];
-                    }
-
-                    //std::memcpy(out_ptr + len, in_ptr, (n_rows - len) * sizeof(arma::cx_double));
-                    //std::memcpy(out_ptr, in_ptr + (n_rows - len), len * sizeof(arma::cx_double));
+                    std::memcpy(out_ptr + len, in_ptr, (n_rows - len) * sizeof(arma::cx_double));
+                    std::memcpy(out_ptr, in_ptr + (n_rows - len), len * sizeof(arma::cx_double));
                 }
             });
         } else if (neg == 1) {
@@ -313,16 +307,8 @@ arma::cx_mat matrix_shift(const arma::cx_mat& in, const int length, const int di
                     arma::cx_double* out_ptr = out.colptr(col);
                     const arma::cx_double* in_ptr = in.colptr(col);
 
-                    for (uint out_row = 0, row = len; row < n_rows; ++row, ++out_row) {
-                        out_ptr[out_row] = in_ptr[row];
-                    }
-
-                    for (uint out_row = (n_rows - len), row = 0; row < len; ++row, ++out_row) {
-                        out_ptr[out_row] = in_ptr[row];
-                    }
-
-                    //std::memcpy(out_ptr, in_ptr + len, (n_rows - len) * sizeof(arma::cx_double));
-                    //std::memcpy(out_ptr + (n_rows - len), in_ptr, len * sizeof(arma::cx_double));
+                    std::memcpy(out_ptr, in_ptr + len, (n_rows - len) * sizeof(arma::cx_double));
+                    std::memcpy(out_ptr + (n_rows - len), in_ptr, len * sizeof(arma::cx_double));
                 }
             });
         }
@@ -332,70 +318,40 @@ arma::cx_mat matrix_shift(const arma::cx_mat& in, const int length, const int di
                 arma::cx_double* out_ptr = out.memptr();
                 const arma::cx_double* in_ptr = in.memptr();
 
-                for (uint out_col = len, col = 0; col < (n_cols - len); ++col, ++out_col) {
-                    out_ptr[out_col] = in_ptr[col];
-                }
+                std::memcpy(out_ptr + len, in_ptr, (n_cols - len) * sizeof(arma::cx_double));
+                std::memcpy(out_ptr, in_ptr + (n_cols - len), len * sizeof(arma::cx_double));
 
-                for (uint out_col = 0, col = (n_cols - len); col < n_cols; ++col, ++out_col) {
-                    out_ptr[out_col] = in_ptr[col];
-                }
             } else {
-                // Only parallelize if len >= std::thread::hardware_concurrency()*2
-                if (len < std::thread::hardware_concurrency() * 2) {
-                    for (uint out_col = len, col = 0; col < (n_cols - len); ++col, ++out_col) {
+                tbb::parallel_for(tbb::blocked_range<size_t>(0, (n_cols - len)), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                    for (uint out_col = r.begin() + len, col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
                     }
-
-                    for (uint out_col = 0, col = (n_cols - len); col < n_cols; ++col, ++out_col) {
+                });
+                tbb::parallel_for(tbb::blocked_range<size_t>((n_cols - len), n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                    for (uint out_col = r.begin() - (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
                     }
-                } else {
-                    tbb::parallel_for(tbb::blocked_range<size_t>(0, (n_cols - len)), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                        for (uint out_col = r.begin() + len, col = r.begin(); col != r.end(); ++col, ++out_col) {
-                            std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                        }
-                    });
-                    tbb::parallel_for(tbb::blocked_range<size_t>((n_cols - len), n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                        for (uint out_col = r.begin() - (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
-                            std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                        }
-                    });
-                }
+                });
             }
         } else if (neg == 1) {
             if (n_rows == 1) {
                 arma::cx_double* out_ptr = out.memptr();
                 const arma::cx_double* in_ptr = in.memptr();
 
-                for (uint out_col = 0, col = len; col < n_cols; ++col, ++out_col) {
-                    out_ptr[out_col] = in_ptr[col];
-                }
+                std::memcpy(out_ptr, in_ptr + len, (n_cols - len) * sizeof(arma::cx_double));
+                std::memcpy(out_ptr + (n_cols - len), in_ptr, len * sizeof(arma::cx_double));
 
-                for (uint out_col = (n_cols - len), col = 0; col < len; ++col, ++out_col) {
-                    out_ptr[out_col] = in_ptr[col];
-                }
             } else {
-                // Only parallelize if len >= std::thread::hardware_concurrency()*2
-                if (len < std::thread::hardware_concurrency() * 2) {
-                    for (uint out_col = 0, col = len; col < n_cols; ++col, ++out_col) {
+                tbb::parallel_for(tbb::blocked_range<size_t>(len, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                    for (uint out_col = r.begin() - len, col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
                     }
-
-                    for (uint out_col = (n_cols - len), col = 0; col < len; ++col, ++out_col) {
+                });
+                tbb::parallel_for(tbb::blocked_range<size_t>(0, len), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                    for (uint out_col = r.begin() + (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
                     }
-                } else {
-                    tbb::parallel_for(tbb::blocked_range<size_t>(len, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                        for (uint out_col = r.begin() - len, col = r.begin(); col != r.end(); ++col, ++out_col) {
-                            std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                        }
-                    });
-                    tbb::parallel_for(tbb::blocked_range<size_t>(0, len), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                        for (uint out_col = r.begin() + (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
-                            std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                        }
-                    });
-                }
+                });
             }
         }
     }

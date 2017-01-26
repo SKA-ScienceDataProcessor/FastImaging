@@ -154,7 +154,8 @@ arma::cx_vec generate_cx_vector_data(int image_size)
 
 int main(int argc, char** argv)
 {
-    arma::vec v = generate_vector_data(2048);
+    int image_size = 2048;
+    arma::vec v = generate_vector_data(image_size);
 
     benchmark::RegisterBenchmark("armadillo_accumulate_benchmark", armadillo_accumulate_benchmark, v)->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("vector_accumulate_benchmark", vector_accumulate_benchmark, v)->Unit(benchmark::kMicrosecond);
@@ -171,7 +172,7 @@ int main(int argc, char** argv)
     benchmark::RegisterBenchmark("vector_stddev_robust_parallel_benchmark", vector_stddev_robust_parallel_benchmark, v)->Unit(benchmark::kMicrosecond);
 
     double a = 0.03549;
-    arma::cx_vec cv = generate_cx_vector_data(2048);
+    arma::cx_vec cv = generate_cx_vector_data(image_size);
 
     benchmark::RegisterBenchmark("matrix_arma_inplace_div_benchmark", matrix_arma_inplace_div_benchmark, cv, a)->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("matrix_tbb_inplace_div_benchmark", matrix_tbb_inplace_div_benchmark, cv, a)->Unit(benchmark::kMicrosecond);
@@ -179,12 +180,16 @@ int main(int argc, char** argv)
 
     benchmark::RegisterBenchmark("arma_shift_benchmark", arma_shift_benchmark)
         ->Unit(benchmark::kMicrosecond)
-        ->Args({ 2048, 1024, 0 })
-        ->Args({ 2048, 1024, 1 });
+        ->Args({ image_size, -image_size / 2, 0 })
+        ->Args({ image_size, -image_size / 2, 1 })
+        ->Args({ image_size, image_size / 2, 0 })
+        ->Args({ image_size, image_size / 2, 1 });
     benchmark::RegisterBenchmark("matrix_shift_benchmark", matrix_shift_benchmark)
         ->Unit(benchmark::kMicrosecond)
-        ->Args({ 2048, 1024, 0 })
-        ->Args({ 2048, 1024, 1 });
+        ->Args({ image_size, -image_size / 2, 0 })
+        ->Args({ image_size, -image_size / 2, 1 })
+        ->Args({ image_size, image_size / 2, 0 })
+        ->Args({ image_size, image_size / 2, 1 });
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

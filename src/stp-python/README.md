@@ -1,4 +1,4 @@
-# Python Bidings for Slow Transients Pipeline Prototype
+# Python Bindings for Slow Transients Pipeline Prototype
 ## Procedure for calling image_visibilities function
 - Add the location of the stp_python.so shared library to the python path
 - Import stp_python, as well as other important modules such as numpy

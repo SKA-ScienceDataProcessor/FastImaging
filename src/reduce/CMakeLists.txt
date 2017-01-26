@@ -37,9 +37,29 @@ endif()
 # Target: reduce
 set(REDUCE_TARGET_NAME "reduce")
 
-# Build the target
-add_executable(${REDUCE_TARGET_NAME} reduce.cpp ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp)
+# Build the reduce target
+add_executable(${REDUCE_TARGET_NAME} reduce.cpp ../auxiliary/load_data.cpp ../auxiliary/save_data.h ../auxiliary/load_json_config.cpp ../auxiliary/save_json_sf_output.cpp)
 add_dependencies(${STP_TARGET_NAME} stp cnpy-static)
 target_include_directories(${REDUCE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
     ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${ARMADILLO_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_PATH}, ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
 target_link_libraries(${REDUCE_TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} stp cnpy-static)
+
+# Target: run_imagevis
+set(IMGVIS_TARGET_NAME "run_imagevis")
+
+# Build the reduce target
+add_executable(${IMGVIS_TARGET_NAME} run_imagevis.cpp ../auxiliary/load_data.cpp ../auxiliary/save_data.h ../auxiliary/load_json_config.cpp ../auxiliary/save_json_sf_output.cpp)
+add_dependencies(${STP_TARGET_NAME} stp cnpy-static)
+target_include_directories(${IMGVIS_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
+    ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${ARMADILLO_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_PATH}, ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
+target_link_libraries(${IMGVIS_TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} stp cnpy-static)
+
+# Target: run_sourcefind
+set(SOURCEFIND_TARGET_NAME "run_sourcefind")
+
+# Build the reduce target
+add_executable(${SOURCEFIND_TARGET_NAME} run_sourcefind.cpp ../auxiliary/load_data.cpp ../auxiliary/save_data.h ../auxiliary/load_json_config.cpp ../auxiliary/save_json_sf_output.cpp)
+add_dependencies(${STP_TARGET_NAME} stp cnpy-static)
+target_include_directories(${SOURCEFIND_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
+    ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${ARMADILLO_INCLUDE_DIRS} ${RAPIDJSON_INCLUDE_PATH}, ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
+target_link_libraries(${SOURCEFIND_TARGET_NAME} ${CMAKE_THREAD_LIBS_INIT} stp cnpy-static)

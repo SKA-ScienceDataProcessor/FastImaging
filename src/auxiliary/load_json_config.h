@@ -27,13 +27,13 @@ load_json_configuration(std::string& cfg);
 struct ConfigurationFile {
     rapidjson::Document config_document;
 
-    int image_size;
-    double cell_size;
-    int kernel_support;
-    bool kernel_exact;
-    int oversampling;
-    double detection_n_sigma;
-    double analysis_n_sigma;
+    int image_size = 0;
+    double cell_size = 0.0;
+    int kernel_support = 0;
+    bool kernel_exact = false;
+    int oversampling = 0;
+    double detection_n_sigma = 0.0;
+    double analysis_n_sigma = 0.0;
 
 public:
     ConfigurationFile() = delete;
@@ -42,13 +42,20 @@ public:
     {
         config_document = load_json_configuration(cfg);
 
-        image_size = config_document["image_size_pix"].GetInt();
-        cell_size = config_document["cell_size_arcsec"].GetDouble();
-        kernel_support = config_document["kernel_support"].GetInt();
-        kernel_exact = config_document["kernel_exact"].GetBool();
-        oversampling = config_document["oversampling"].GetInt();
-        detection_n_sigma = config_document["sourcefind_detection"].GetDouble();
-        analysis_n_sigma = config_document["sourcefind_analysis"].GetDouble();
+        if (config_document.HasMember("image_size_pix"))
+            image_size = config_document["image_size_pix"].GetInt();
+        if (config_document.HasMember("cell_size_arcsec"))
+            cell_size = config_document["cell_size_arcsec"].GetDouble();
+        if (config_document.HasMember("kernel_support"))
+            kernel_support = config_document["kernel_support"].GetInt();
+        if (config_document.HasMember("kernel_exact"))
+            kernel_exact = config_document["kernel_exact"].GetBool();
+        if (config_document.HasMember("oversampling"))
+            oversampling = config_document["oversampling"].GetInt();
+        if (config_document.HasMember("sourcefind_detection"))
+            detection_n_sigma = config_document["sourcefind_detection"].GetDouble();
+        if (config_document.HasMember("sourcefind_analysis"))
+            analysis_n_sigma = config_document["sourcefind_analysis"].GetDouble();
     }
 };
 

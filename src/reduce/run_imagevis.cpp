@@ -1,11 +1,14 @@
 /**
-* @file reduce.cpp
-* Main file of reduce
+* @file run_imagevis.cpp
+* Main file for run image visibilities function
 * Contains the main function. Creates and configures the TCLAP interface.
-* Calls pipeline funtion and saves the results.
+* Calls image visibilities funtion and savess the results.
 */
 
-#include "reduce.h"
+#include "run_imagevis.h"
+
+// STP library
+#include <stp.h>
 
 // Load NPZ simulation data
 #include <load_data.h>
@@ -15,9 +18,6 @@
 
 // Save NPZ output file
 #include <save_data.h>
-
-// Save JSON for source find output
-#include <save_json_sf_output.h>
 
 void initLogger()
 {
@@ -34,17 +34,7 @@ void createFlags()
     _cmd.add(_enableLoggerArg);
     _cmd.add(_inJsonFileArg);
     _cmd.add(_inNpzFileArg);
-    _cmd.add(_outJsonFileArg);
     _cmd.add(_outNpzFileArg);
-}
-
-stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support, bool kernel_exact, int oversampling, double detection_n_sigma, double analysis_n_sigma)
-{
-    // Run image_visibilities
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(kernel_support), residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
-
-    // Run source find
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
 }
 
 int main(int argc, char** argv)
@@ -82,41 +72,24 @@ int main(int argc, char** argv)
         _logger->info(" - kernel_support={}", cfg.kernel_support);
         _logger->info(" - kernel_exact={}", cfg.kernel_exact);
         _logger->info(" - oversampling={}", cfg.oversampling);
-        _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
-        _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
-        _logger->info("Running pipeline");
+        _logger->info("Running image visibilities");
     }
 
     // Subtract model-generated visibilities from incoming data
     arma::cx_mat residual_vis = input_vis - input_model;
-    // Runs pipeline
-    stp::source_find_image sfimage = run_pipeline(input_uvw, residual_vis, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, cfg.detection_n_sigma, cfg.analysis_n_sigma);
+
+    // Run image_visibilities
+    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(cfg.kernel_support), residual_vis, input_uvw, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
 
     if (use_logger) {
         _logger->info("Finished");
         _logger->info("Saving output data");
     }
 
-    // Save detected island parameters in JSON file
-    if (_outJsonFileArg.isSet()) {
-        save_json_sourcefind_output(_outJsonFileArg.getValue(), sfimage);
-    }
-
-    // Save label_map matrix in NPZ file
+    // Save image and beam matrices in NPZ file
     if (_outNpzFileArg.isSet()) {
-        npz_save(_outNpzFileArg.getValue(), "label_map", sfimage.label_map, "w");
-    }
-
-    // Output island parameters if logger is enabled
-    if (use_logger) {
-        int total_islands = sfimage.islands.size();
-        _logger->info("Number of found islands: {} ", total_islands);
-
-        for (int i = 0; i < total_islands; i++) {
-            _logger->info(" * Island {}: label={}, sign={}, extremum_val={}, extremum_x_idx={}, extremum_y_idy={}, xbar={}, ybar={}",
-                i, sfimage.islands[i].label_idx, sfimage.islands[i].sign, sfimage.islands[i].extremum_val, sfimage.islands[i].extremum_x_idx, sfimage.islands[i].extremum_y_idx,
-                sfimage.islands[i].xbar, sfimage.islands[i].ybar);
-        }
+        npz_save(_outNpzFileArg.getValue(), "image", result.first, "w");
+        npz_save(_outNpzFileArg.getValue(), "beam", result.second, "a");
     }
 
     return 0;

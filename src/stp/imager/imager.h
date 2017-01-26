@@ -47,7 +47,10 @@ std::pair<arma::cx_mat, arma::cx_mat> image_visibilities(
     bool normalize = true,
     fft_function_type f_fft = FFTW)
 {
-    assert(kernel_exact || (oversampling >= 1));
+    assert(kernel_exact || (oversampling >= 1)); // If kernel exact is false, then oversampling must be >= 1
+    assert(image_size > 0);
+    assert(support > 0);
+    assert(cell_size > 0.0);
 
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * image_size));
