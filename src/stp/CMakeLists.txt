@@ -49,5 +49,5 @@ set(STP_SOURCE_FILES
 add_library(${STP_TARGET_NAME} STATIC ${STP_SOURCE_FILES})
 add_dependencies(${STP_TARGET_NAME} fftw fftw_threads tbb-static tbbmalloc-static)
 target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${ARMADILLO_INCLUDE_DIRS})
-target_link_libraries(${STP_TARGET_NAME} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} tbb-static tbbmalloc-static fftw fftw_threads ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${STP_TARGET_NAME} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} armadillo tbb-static tbbmalloc-static fftw fftw_threads ${CMAKE_THREAD_LIBS_INIT})
 
