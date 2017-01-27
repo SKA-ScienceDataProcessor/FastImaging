@@ -88,13 +88,13 @@ source_find_image::source_find_image(
     arma::mat input_data,
     double input_detection_n_sigma,
     double input_analysis_n_sigma,
-    const std::experimental::optional<double>& input_rms_est,
+    double input_rms_est,
     bool input_find_negative_sources)
     : data(input_data)
     , detection_n_sigma(input_detection_n_sigma)
     , analysis_n_sigma(input_analysis_n_sigma)
 {
-    rms_est = input_rms_est ? (*input_rms_est) : estimate_rms(data);
+    rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(data);
 
     bg_level = arma::median(arma::vectorise(input_data));
 

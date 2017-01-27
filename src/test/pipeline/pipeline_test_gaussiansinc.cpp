@@ -21,10 +21,10 @@ stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis
     stp::GaussianSinc kernel_func(kernel_support);
     std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
 
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
+    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, 0.0, true);
 }
 
-TEST(PipelineGaussianSincExact, test_gaussian_sinc)
+TEST(PipelineGaussianSincExact, test_gaussian_sinc_exact)
 {
     //Load simulated data from input_npz
     arma::mat input_uvw;
@@ -64,7 +64,7 @@ TEST(PipelineGaussianSincExact, test_gaussian_sinc)
     EXPECT_DOUBLE_EQ(ybar, expected_ybar);
 }
 
-TEST(PipelineGaussianSincOversampling, test_gaussian_sinc)
+TEST(PipelineGaussianSincOversampling, test_gaussian_sinc_oversampling)
 {
     //Load simulated data from input_npz
     arma::mat input_uvw;

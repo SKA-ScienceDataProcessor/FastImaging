@@ -110,8 +110,14 @@ add_unit_test(test_gridder_triangle gridder/gridder_test_Triangle.cpp)
 # FractionalCoordToOversampledIndexMath
 add_unit_test(test_gridder_fractional_coord_to_oversampled_index gridder/gridder_test_FractionalCoordToOversampledIndexMath.cpp)
 
-# SteppedVsExactConvolution
-add_unit_test(test_gridder_stepped_vs_exact_convolution gridder/gridder_test_SteppedVsExactConvolution.cpp)
+# FractionalCoordIn2DCase
+add_unit_test(test_gridder_fractional_coord_in_2d_case gridder/gridder_test_FractionalCoordIn2DCase.cpp)
+
+# KernelCaching
+add_unit_test(test_gridder_kernel_caching gridder/gridder_test_KernelCaching.cpp)
+
+# Oversampled Gridding
+add_unit_test(test_gridder_oversampled_gridding gridder/gridder_test_OversampledGridding.cpp)
 
 # Test Cases: Imager Functions -----------------------------------------------------------------------------------------
 
@@ -184,7 +190,9 @@ add_test(NAME GridderSinglePixelOverlapPillbox COMMAND test_gridder_single_pixel
 add_test(NAME GridderSmallPillbox COMMAND test_gridder_small_pillbox)
 add_test(NAME GridderTriangle COMMAND test_gridder_triangle)
 add_test(NAME GridderFractionalCoordToOversampledIndexMath COMMAND test_gridder_fractional_coord_to_oversampled_index)
-add_test(NAME GridderSteppedVsExactconvolution COMMAND test_gridder_stepped_vs_exact_convolution)
+add_test(NAME GridderFractionalCoordIn2DCase COMMAND test_gridder_fractional_coord_in_2d_case)
+add_test(NAME GridderKernelCaching COMMAND test_gridder_kernel_caching)
+add_test(NAME GridderOversampledGridding COMMAND test_gridder_oversampled_gridding)
 
 # Imager
 add_test(NAME ImagerTopHat COMMAND test_imager_tophat)

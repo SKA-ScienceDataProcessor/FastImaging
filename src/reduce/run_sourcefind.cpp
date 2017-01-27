@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     }
 
     // Run source find
-    stp::source_find_image sfimage = stp::source_find_image(arma::real(image), cfg.detection_n_sigma, cfg.analysis_n_sigma, std::experimental::nullopt, true);
+    stp::source_find_image sfimage = stp::source_find_image(arma::real(image), cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true);
 
     if (use_logger) {
         _logger->info("Finished");

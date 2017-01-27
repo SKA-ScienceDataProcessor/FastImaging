@@ -6,7 +6,7 @@ namespace stp {
 arma::mat Triangle::operator()(const arma::mat& radius_in_pix) const
 {
     // Calculate the max between triangle_value - (radius_in_pix / half_base_width) and a array of zeros with radius_in_pix size
-    return arma::max((_triangle_value - arma::abs(radius_in_pix) / _half_base_width), arma::zeros(arma::size(radius_in_pix)));
+    return arma::max((1.0 - arma::abs(radius_in_pix) / _half_base_width), arma::zeros(arma::size(radius_in_pix)));
 }
 
 // Symmetric about the origin. Valued 1.0 from origin to **half_base_width**, zero thereafter.

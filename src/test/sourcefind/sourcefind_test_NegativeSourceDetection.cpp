@@ -20,7 +20,7 @@ private:
 
     double detection_n_sigma;
     double analysis_n_sigma;
-    std::experimental::optional<double> rms_est;
+    double rms_est;
     bool find_negative_sources;
 
     double bright_x_centre;
@@ -37,14 +37,7 @@ private:
 
     island_params found_src;
 
-    Gaussian2D bright_src;
-    Gaussian2D faint_src;
-    Gaussian2D negative_src;
-
     arma::mat img;
-
-    std::vector<island_params> positive_islands;
-    std::vector<island_params> negative_islands;
 
 public:
     void SetUp()
@@ -106,6 +99,13 @@ public:
 
         same_island = (found_src == negative_islands[0]);
     }
+
+    Gaussian2D bright_src;
+    Gaussian2D faint_src;
+    Gaussian2D negative_src;
+
+    std::vector<island_params> positive_islands;
+    std::vector<island_params> negative_islands;
 
     double total_islands0;
     double total_islands1;
@@ -173,4 +173,13 @@ TEST_F(SourceFindNegativeSourceDetection, Negative_same_island)
 {
     run();
     EXPECT_TRUE(same_island);
+}
+
+TEST_F(SourceFindNegativeSourceDetection, Positive_islands_bright_src_differences)
+{
+    run();
+    EXPECT_TRUE(positive_islands[0].extremum_x_idx - bright_src.x_mean < 0.5);
+    EXPECT_TRUE(positive_islands[0].xbar - bright_src.x_mean < 0.1);
+    EXPECT_TRUE(positive_islands[0].extremum_y_idx - bright_src.y_mean < 0.5);
+    EXPECT_TRUE(positive_islands[0].ybar - bright_src.y_mean < 0.1);
 }

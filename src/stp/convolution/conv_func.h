@@ -13,7 +13,6 @@
 #include <armadillo>
 #include <cassert>
 #include <complex>
-#include <experimental/optional>
 #include <utility>
 
 namespace stp {
@@ -56,11 +55,9 @@ public:
      * Generate Triangle convolution with an array input or scalar input.
      *
      * @param[in] half_base_width (double)
-     * @param[in] triangle_value (double)
      */
-    Triangle(double half_base_width, double triangle_value)
+    Triangle(double half_base_width)
         : _half_base_width(half_base_width)
-        , _triangle_value(triangle_value)
     {
     }
 
@@ -73,7 +70,6 @@ public:
 
 private:
     const double _half_base_width;
-    const double _triangle_value;
 };
 
 /**
@@ -122,7 +118,6 @@ public:
 private:
     bool _truncate;
     double _threshold;
-
     double _width_normalization;
 };
 
@@ -174,7 +169,6 @@ public:
 private:
     bool _truncate;
     double _threshold;
-
     double _width_normalization;
 };
 

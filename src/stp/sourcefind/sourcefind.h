@@ -9,7 +9,6 @@
 #include "../common/ccl.h"
 #include <cassert>
 #include <cfloat>
-#include <experimental/optional>
 #include <functional>
 #include <map>
 #include <utility>
@@ -170,14 +169,14 @@ public:
      * @param[in] data (arma::mat): Image data.
      * @param[in] detection_n_sigma (double): Detection threshold as multiple of RMS
      * @param[in] analysis_n_sigma (double): Analysis threshold as multiple of RMS
-     * @param[in] rms_est (RMS_est): RMS estimate
+     * @param[in] rms_est (RMS_est): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
      * @param[in] input_find_negative_sources (bool): Determine if the signal is -1 or 1 (negative/positive sources)
     */
     source_find_image(
         arma::mat input_data,
         double input_detection_n_sigma,
         double input_analysis_n_sigma,
-        const std::experimental::optional<double>& input_rms_est = std::experimental::nullopt,
+        double input_rms_est = 0.0,
         bool input_find_negative_sources = true);
 
 private:

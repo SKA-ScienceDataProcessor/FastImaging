@@ -17,7 +17,7 @@ private:
     double ydim;
     double xdim;
     double rms;
-    std::experimental::optional<double> rms_est;
+    double rms_est;
     double detection_n_sigma;
     double analysis_n_sigma;
     double bright_x_centre;

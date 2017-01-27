@@ -44,7 +44,7 @@ stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residua
     std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(kernel_support), residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
 
     // Run source find
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
+    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, 0.0, true);
 }
 
 int main(int argc, char** argv)

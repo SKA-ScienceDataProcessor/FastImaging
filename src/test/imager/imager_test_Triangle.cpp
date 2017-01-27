@@ -15,7 +15,6 @@ using namespace stp;
 
 struct imager_test_triangle : public ImagerHandler {
     double half_base_width;
-    double triangle_value;
 
 public:
     imager_test_triangle() = default;
@@ -23,7 +22,6 @@ public:
         : ImagerHandler(typeConvolution, typeTest)
     {
         half_base_width = val["half_base_width"].GetDouble();
-        triangle_value = val["triangle_value"].GetDouble();
 
         cnpy::NpyArray vis_npy(cnpy::npz_load(val["input_file"].GetString(), "vis"));
         cnpy::NpyArray uvw_npy(cnpy::npz_load(val["input_file"].GetString(), "uvw"));
@@ -38,7 +36,7 @@ public:
         // Loads the expected results to a arma::mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(image_array)), std::move(load_npy_complex_array(beam_array)));
 
-        result = image_visibilities(Triangle(half_base_width, triangle_value), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+        result = image_visibilities(Triangle(half_base_width), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
     }
 };
 

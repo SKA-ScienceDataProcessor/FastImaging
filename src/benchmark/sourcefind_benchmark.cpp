@@ -32,7 +32,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, input_uvw, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::source_find_image(arma::real(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, std::experimental::nullopt, true));
+        benchmark::DoNotOptimize(stp::source_find_image(arma::real(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true));
     }
 }
 

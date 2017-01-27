@@ -11,6 +11,5 @@
 #include "gridder/gridder.h"
 #include "imager/imager.h"
 #include "sourcefind/sourcefind.h"
-#include <experimental/optional>
 
 #endif /* STP_H */

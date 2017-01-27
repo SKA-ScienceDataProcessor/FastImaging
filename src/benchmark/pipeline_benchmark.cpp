@@ -28,7 +28,7 @@ stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis
     stp::GaussianSinc kernel_func(support);
     std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
 
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, std::experimental::nullopt, true);
+    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, 0.0, true);
 }
 
 static void pipeline_kernel_exact_benchmark(benchmark::State& state)

@@ -72,14 +72,15 @@ $ make benchmarking
 
 ## STP Execution using Reduce module
 - cd into reduce folder located in path/to/build/directory
-- run reduce binary using two mandatory arguments:
-   - REQUIRED input filename (-f):
-      - path/to/input/data: must be a npz file
-   - REQUIRED json configuration filename (-c):
-      - path/to/input/config: must be a json file 
+- run reduce binary using the following arguments:
+   <input-file-json> : (required)  Input JSON filename with configuration parameters.
+   <input-file-npz> : (required)  Input NPZ filename with simulation data (uvw_lambda, model, vis).
+   <output-file-json> : (required)  Output JSON filename for detected islands.
+   <output-file-npz> : (optional)  Output NPZ filename for label map matrix (label_map).
+   -l,  --log : (optional)  Enable logger.
 - Example:
 ```sh
-$ ./reduce -f projectroot/test-data/pipeline-data/simdata_small.npz -c  projectroot/config/pipeline-config/fastimg_oversampling_config2.json
+$ ./reduce projectroot/config/pipeline-config/fastimg_oversampling_config2.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json -l
 ```
 
 ## Code profiling
@@ -95,11 +96,17 @@ $ cd path/to/build/directory
 $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
 $ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce -f projectroot/test-data/pipeline-data/simdata_small.npz -c  projectroot/config/pipeline-config/fastimg_oversampling_config2.json
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce projectroot/config/pipeline-config/fastimg_oversampling_config2.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json
 $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 27 January 2017
+- Added new python binding over source_find_image function
+- Improved existing python binding over image_visibilities function
+- Removed std::optional for rms_est 
+- Implemented new unitary tests
+
 ### 26 January 2017
 - Improved matrix shift implementation
 - Re-implemented reduce target
