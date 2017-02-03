@@ -19,7 +19,7 @@ TEST(ConvGaussianSincFunc, test_conv_funcs_test_gaussian_sinc)
     const double width_normalization_sinc(1.55);
     const double trunc(5.0);
 
-    arma::mat input = {
+    arma::vec input = {
         0.0,
         width_normalization_sinc * 0.5,
         width_normalization_sinc,
@@ -29,7 +29,7 @@ TEST(ConvGaussianSincFunc, test_conv_funcs_test_gaussian_sinc)
         5.5
     };
 
-    arma::mat output = {
+    arma::vec output = {
         1.0,
         exp(-1. * pow((0.5 * width_normalization_sinc / width_normalization_gaussian), 2.0)) * 1. / (0.5 * arma::datum::pi),
         0.0,

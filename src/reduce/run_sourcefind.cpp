@@ -62,10 +62,7 @@ int main(int argc, char** argv)
     }
 
     //Load simulated data from input npz file
-    cnpy::NpyArray c_image(cnpy::npz_load(_inNpzFileArg.getValue(), "image"));
-
-    //Load simulated data from cnpy objects
-    arma::cx_mat image = load_npy_complex_array(c_image);
+    arma::mat image = arma::real(load_npy_complex_array(_inNpzFileArg.getValue(), "image"));
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
@@ -78,7 +75,7 @@ int main(int argc, char** argv)
     }
 
     // Run source find
-    stp::source_find_image sfimage = stp::source_find_image(arma::real(image), cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true);
+    stp::source_find_image sfimage = stp::source_find_image(image, cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true);
 
     if (use_logger) {
         _logger->info("Finished");
@@ -97,13 +94,13 @@ int main(int argc, char** argv)
 
     // Output island parameters if logger is enabled
     if (use_logger) {
-        int total_islands = sfimage.islands.size();
-        _logger->info("Number of found islands: {} ", total_islands);
+        _logger->info("Number of found islands: {} ", sfimage.islands.size());
 
-        for (int i = 0; i < total_islands; i++) {
+        std::size_t island_num = 0;
+        for (auto&& i : sfimage.islands) {
             _logger->info(" * Island {}: label={}, sign={}, extremum_val={}, extremum_x_idx={}, extremum_y_idy={}, xbar={}, ybar={}",
-                i, sfimage.islands[i].label_idx, sfimage.islands[i].sign, sfimage.islands[i].extremum_val, sfimage.islands[i].extremum_x_idx, sfimage.islands[i].extremum_y_idx,
-                sfimage.islands[i].xbar, sfimage.islands[i].ybar);
+                island_num, i.label_idx, i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar);
+            island_num++;
         }
     }
 

@@ -32,6 +32,7 @@ void initLogger()
 void createFlags()
 {
     _cmd.add(_enableLoggerArg);
+    _cmd.add(_useDiffArg);
     _cmd.add(_inJsonFileArg);
     _cmd.add(_inNpzFileArg);
     _cmd.add(_outNpzFileArg);
@@ -51,6 +52,12 @@ int main(int argc, char** argv)
         use_logger = true;
     }
 
+    // Check if use residual visibilities
+    bool use_residual = false;
+    if (_useDiffArg.isSet()) {
+        use_residual = true;
+    }
+
     if (use_logger) {
         // Creates and initializes the logger
         initLogger();
@@ -58,9 +65,14 @@ int main(int argc, char** argv)
     }
 
     //Load simulated data from input_npz
-    arma::mat input_uvw;
-    arma::cx_mat input_model, input_vis;
-    load_npz_simdata(_inNpzFileArg.getValue(), input_uvw, input_model, input_vis);
+    arma::mat input_uvw = load_npy_double_array(_inNpzFileArg.getValue(), "uvw_lambda");
+    arma::cx_mat input_vis = load_npy_complex_array(_inNpzFileArg.getValue(), "vis");
+    if (use_residual) {
+        arma::cx_mat input_model = load_npy_complex_array(_inNpzFileArg.getValue(), "model");
+        // Subtract model-generated visibilities from incoming data
+        input_vis -= input_model;
+        _logger->info("Use residual visibilities - input visibilities subtracted from model visibilities");
+    }
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
@@ -75,11 +87,8 @@ int main(int argc, char** argv)
         _logger->info("Running image visibilities");
     }
 
-    // Subtract model-generated visibilities from incoming data
-    arma::cx_mat residual_vis = input_vis - input_model;
-
     // Run image_visibilities
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(cfg.kernel_support), residual_vis, input_uvw, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(cfg.kernel_support), input_vis, input_uvw, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
 
     if (use_logger) {
         _logger->info("Finished");

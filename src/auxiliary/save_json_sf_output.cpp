@@ -12,19 +12,19 @@ void save_json_sourcefind_output(std::string& filename, stp::source_find_image& 
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
     doc.SetObject();
 
-    rapidjson::Value island_vector(rapidjson::kArrayType);
+    rapidjson::Value rj_islands(rapidjson::kArrayType);
 
-    for (uint i = 0; i < sf.islands.size(); i++) {
+    for (auto&& i : sf.islands) {
         rapidjson::Value island(rapidjson::kObjectType);
-        island.AddMember("sign", rapidjson::Value().SetInt(sf.islands[i].sign), allocator);
-        island.AddMember("val", rapidjson::Value().SetDouble(sf.islands[i].extremum_val), allocator);
-        island.AddMember("x_idx", rapidjson::Value().SetInt(sf.islands[i].extremum_x_idx), allocator);
-        island.AddMember("y_idx", rapidjson::Value().SetInt(sf.islands[i].extremum_y_idx), allocator);
-        island.AddMember("xbar", rapidjson::Value().SetDouble(sf.islands[i].xbar), allocator);
-        island.AddMember("ybar", rapidjson::Value().SetDouble(sf.islands[i].ybar), allocator);
-        island_vector.PushBack(island, allocator);
+        island.AddMember("sign", rapidjson::Value().SetInt(i.sign), allocator);
+        island.AddMember("val", rapidjson::Value().SetDouble(i.extremum_val), allocator);
+        island.AddMember("x_idx", rapidjson::Value().SetInt(i.extremum_x_idx), allocator);
+        island.AddMember("y_idx", rapidjson::Value().SetInt(i.extremum_y_idx), allocator);
+        island.AddMember("xbar", rapidjson::Value().SetDouble(i.xbar), allocator);
+        island.AddMember("ybar", rapidjson::Value().SetDouble(i.ybar), allocator);
+        rj_islands.PushBack(island, allocator);
     }
-    doc.AddMember("Islands", island_vector, allocator);
+    doc.AddMember("Islands", rj_islands, allocator);
 
     // Write to file
     FILE* fp = fopen(filename.c_str(), "w");

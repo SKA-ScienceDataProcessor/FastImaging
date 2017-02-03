@@ -16,8 +16,7 @@ const std::string cnpy_data_path(_CNPYTESTPATH);
 
 TEST(CnpyLoadFloat, float1d)
 {
-    cnpy::NpyArray float1d_npy = cnpy::npy_load(cnpy_data_path + float_1D);
-    arma::mat float1d = load_npy_double_array(float1d_npy);
+    arma::mat float1d = load_npy_double_array(cnpy_data_path + float_1D);
 
     arma::mat expected_results
         = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
@@ -27,8 +26,7 @@ TEST(CnpyLoadFloat, float1d)
 
 TEST(CnpyLoadFloat, float2d)
 {
-    cnpy::NpyArray float2d_npy = cnpy::npy_load(cnpy_data_path + float_2D);
-    arma::mat float2d = load_npy_double_array(float2d_npy);
+    arma::mat float2d = load_npy_double_array(cnpy_data_path + float_2D);
 
     arma::mat expected_results
         = {

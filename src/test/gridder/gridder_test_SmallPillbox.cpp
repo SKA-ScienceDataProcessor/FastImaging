@@ -36,7 +36,7 @@ public:
 
     arma::mat uv;
     arma::cx_mat vis;
-    std::pair<arma::cx_mat, arma::cx_mat> result;
+    std::pair<arma::cx_mat, arma::mat> result;
     arma::mat expected_result = {
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },

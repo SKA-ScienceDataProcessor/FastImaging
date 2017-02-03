@@ -6,38 +6,29 @@
 #include <memory>
 
 /**
-*   @brief Loads a complex array
+*   @brief Loads a complex array from NPZ or NPY file
 *
-*   Reads an npy struct and loads the data array into an armadillo complex matrix
+*   Loads a matrix data array from a NPZ or NPY file into an armadillo complex matrix.
+*   If var_name is empty, NPY file is assumed. Otherwise reads var_name matrix from a NPZ file.
 *
-*   @param[in] npy array that contains the data to be read
+*   @param[in] file_path (string) npz file path that contains the numpy data
+*   @param[in] var_name (string) variable name of matrix data to be read
+*
+*   @return Armadillo complex matrix with npy values
+*/
+arma::cx_mat load_npy_complex_array(std::string file_path, std::string var_name = std::string()) throw(std::invalid_argument);
+
+/**
+*   @brief Loads a double array from NPZ or NPY file
+*
+*   Loads a matrix data array from a NPZ or NPY file into an armadillo double matrix.
+*   If var_name is empty, NPY file is assumed. Otherwise reads var_name matrix from a NPZ file.
+*
+*   @param[in] file_path (string) npz file path that contains the numpy data
+*   @param[in] var_name (string) variable name of matrix data to be read
 *
 *   @return Armadillo matrix with npy values
 */
-arma::cx_mat load_npy_complex_array(cnpy::NpyArray& npy) throw(std::invalid_argument);
-
-/**
-*   @brief Loads a double array
-*
-*   Reads an npy struct and loads the data array into an armadillo double matrix
-*
-*   @param[in] npy array that contains the data to be read
-*
-*   @return Armadillo matrix with npy values
-*/
-arma::mat load_npy_double_array(cnpy::NpyArray& npy) throw(std::invalid_argument);
-
-/**
-*   @brief Loads simulation data from NPZ file into armadillo matrices
-*
-*   Reads an NPZ file with uvw_lambda, model and vis arrays and loads these arrays into distinct armadillo matrices
-*
-*   @param[in] file_path (string): Input filename with simulation data to be read
-*   @param[out] input_uvw (arma::mat): Armadillo matrix with input uvw lambda values
-*   @param[out] input_model (arma::cx_mat): Armadillo matrix with input model values
-*   @param[out] input_vis (arma::cx_mat): Armadillo matrix with input vis values
-*
-*/
-void load_npz_simdata(std::string file_path, arma::mat& input_uvw, arma::cx_mat& input_model, arma::cx_mat& input_vis);
+arma::mat load_npy_double_array(std::string file_path, std::string var_name = std::string()) throw(std::invalid_argument);
 
 #endif /* LOAD_DATA_H */

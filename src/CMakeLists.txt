@@ -25,6 +25,41 @@ endif()
 # Options
 option(BUILD_TESTS "Builds the unit tests" ON)
 option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
+option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
+
+# Global dependency: Armadillo (7.600.2)
+# Armadillo is used as a pure template library, so only include_directories needs to be updated
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third-party/armadillo/include)
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DARMA_NO_DEBUG)
+endif()
+add_definitions(-DARMA_DONT_USE_WRAPPER)
+add_definitions(-DARMA_USE_TBB_ALLOC)
+
+# Check libstdc++ parallel mode
+# This needs to be done here, otherwise reduce, tests and benchmark fail linking
+if(USE_GLIBCXX_PARALLEL)
+    INCLUDE (CheckIncludeFileCXX)
+    CHECK_INCLUDE_FILE_CXX("parallel/parallel.h" HAS_GLIBCXX_PARALLEL)
+    if(HAS_GLIBCXX_PARALLEL)
+        # Dependency: OPENMP
+        find_package(OpenMP)
+        if (OPENMP_FOUND)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+            # Enable libstdc++ parallel mode
+            add_definitions(-D_GLIBCXX_PARALLEL)
+            message(STATUS "libstdc++ parallel mode enabled")
+        else()
+            message(STATUS "OPENMP not found. libstdc++ parallel mode disabled")
+        endif()
+    else()
+        message(STATUS "libstdc++ parallel mode not available")
+    endif()
+else()
+    message(STATUS "libstdc++ parallel mode disabled")
+endif()
 
 # Sub-project: third-party dependencies (Google Test, Google Benchmark)
 set(THIRD_PARTY_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party)

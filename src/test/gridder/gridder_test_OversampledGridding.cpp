@@ -28,7 +28,7 @@ TEST(GridderOversampledGridding, equal)
 
     // Let's grid a triangle function
     Triangle triangle(2.0);
-    std::pair<arma::cx_mat, arma::cx_mat> result = convolve_to_grid(triangle, support, image_size, uv, vis, kernel_exact, oversampling);
+    std::pair<arma::cx_mat, arma::mat> result = convolve_to_grid(triangle, support, image_size, uv, vis, kernel_exact, oversampling);
 
     EXPECT_TRUE(arma::accu(arma::real(result.first)) - arma::accu(arma::real(vis)) < tolerance);
 }

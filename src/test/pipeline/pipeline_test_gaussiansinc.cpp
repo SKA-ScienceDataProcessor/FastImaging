@@ -29,7 +29,9 @@ TEST(PipelineGaussianSincExact, test_gaussian_sinc_exact)
     //Load simulated data from input_npz
     arma::mat input_uvw;
     arma::cx_mat input_model, input_vis;
-    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
+    input_model = load_npy_complex_array(data_path + input_npz, "model");
+    input_vis = load_npy_complex_array(data_path + input_npz, "vis");
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_exact);
 
@@ -69,7 +71,9 @@ TEST(PipelineGaussianSincOversampling, test_gaussian_sinc_oversampling)
     //Load simulated data from input_npz
     arma::mat input_uvw;
     arma::cx_mat input_model, input_vis;
-    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
+    input_model = load_npy_complex_array(data_path + input_npz, "model");
+    input_vis = load_npy_complex_array(data_path + input_npz, "vis");
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_oversampling);
 

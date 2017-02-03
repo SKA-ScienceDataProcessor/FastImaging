@@ -37,7 +37,7 @@ public:
 
     arma::mat uv;
     arma::cx_mat vis;
-    std::pair<arma::cx_mat, arma::cx_mat> result;
+    std::pair<arma::cx_mat, arma::mat> result;
     arma::cx_mat expected_vis_grid = {
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
@@ -65,5 +65,5 @@ TEST_F(GridderNearbyComplexVis, vis_grid)
 TEST_F(GridderNearbyComplexVis, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, std::get<sampling_grid_index>(result), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::real(expected_vis_grid), std::get<sampling_grid_index>(result), "absdiff", tolerance));
 }

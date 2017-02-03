@@ -124,19 +124,13 @@ std::vector<std::tuple<int, double, int, int, double, double> > source_find_wrap
     stp::source_find_image sfimage = stp::source_find_image(image_data_arma, detection_n_sigma, analysis_n_sigma, rms_est, true);
 
     // Convert 'vector of stp::island' to 'vector of tuples'
-    std::vector<std::tuple<int, double, int, int, double, double> > islands_list;
-    islands_list.reserve(sfimage.islands.size());
-    for (uint i = 0; i < sfimage.islands.size(); i++) {
-        int sign = sfimage.islands[i].sign;
-        double val = sfimage.islands[i].extremum_val;
-        int x_idx = sfimage.islands[i].extremum_x_idx;
-        int y_idx = sfimage.islands[i].extremum_y_idx;
-        double xbar = sfimage.islands[i].xbar;
-        double ybar = sfimage.islands[i].ybar;
-        islands_list.push_back(std::move(std::make_tuple(sign, val, x_idx, y_idx, xbar, ybar)));
+    std::vector<std::tuple<int, double, int, int, double, double> > v_islands;
+    v_islands.reserve(sfimage.islands.size());
+    for (auto&& i : sfimage.islands) {
+        v_islands.push_back(std::move(std::make_tuple(i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar)));
     }
 
-    return islands_list;
+    return v_islands;
 }
 
 PYBIND11_PLUGIN(stp_python)

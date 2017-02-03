@@ -34,9 +34,9 @@ stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis
 static void pipeline_kernel_exact_benchmark(benchmark::State& state)
 {
     //Load simulated data from input_npz
-    arma::mat input_uvw;
-    arma::cx_mat input_model, input_vis;
-    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
+    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_exact);
 
@@ -48,9 +48,9 @@ static void pipeline_kernel_exact_benchmark(benchmark::State& state)
 static void pipeline_kernel_oversampling_benchmark(benchmark::State& state)
 {
     //Load simulated data from input_npz
-    arma::mat input_uvw;
-    arma::cx_mat input_model, input_vis;
-    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
+    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_oversampling);
 
@@ -60,14 +60,14 @@ static void pipeline_kernel_oversampling_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(pipeline_kernel_oversampling_benchmark)
-    ->Args({ 2048, 3 })
-    ->Args({ 2048, 5 })
-    ->Args({ 2048, 7 })
-    ->Args({ 2048, 9 })
+    ->Args({ 4096, 3 })
+    ->Args({ 4096, 5 })
+    ->Args({ 4096, 7 })
+    ->Args({ 4096, 9 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(pipeline_kernel_exact_benchmark)
-    ->Args({ 2048 })
+    ->Args({ 4096 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

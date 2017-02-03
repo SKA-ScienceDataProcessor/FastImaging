@@ -30,7 +30,7 @@ public:
 
     const int image_size = 8;
     const int support = 2;
-    std::pair<arma::cx_mat, arma::cx_mat> result;
+    std::pair<arma::cx_mat, arma::mat> result;
     arma::mat kernel;
     arma::cx_mat vis;
     arma::mat uv;

@@ -16,8 +16,7 @@ const std::string cnpy_data_path(_CNPYTESTPATH);
 
 TEST(CnpyLoadComplex, complex1d)
 {
-    cnpy::NpyArray complex1d_npy = cnpy::npy_load(cnpy_data_path + complex_1D);
-    arma::cx_mat complex1d = load_npy_complex_array(complex1d_npy);
+    arma::cx_mat complex1d = load_npy_complex_array(cnpy_data_path + complex_1D);
 
     arma::cx_mat expected_results
         = {
@@ -38,8 +37,7 @@ TEST(CnpyLoadComplex, complex1d)
 
 TEST(CnpyLoadComplex, complex2d)
 {
-    cnpy::NpyArray complex2d_npy = cnpy::npy_load(cnpy_data_path + complex_2D);
-    arma::cx_mat complex2d = load_npy_complex_array(complex2d_npy);
+    arma::cx_mat complex2d = load_npy_complex_array(cnpy_data_path + complex_2D);
 
     arma::cx_mat expected_results
         = {

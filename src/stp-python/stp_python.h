@@ -53,7 +53,6 @@ using np_double_array = pybind11::array_t<double, pybind11::array::f_style | pyb
  *                          Default = true.
  *
  * @return (pybind11::tuple): Tuple of numpy.ndarrays representing the image map and beam model (image, beam).
- *                          These are 2D arrays of same dtype as 'vis', shape=(image_size, image_size).
  */
 pybind11::tuple image_visibilities_wrapper(
     np_complex_array vis, // numpy.ndarray<np.complex_>

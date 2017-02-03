@@ -32,19 +32,11 @@ void initLogger()
 void createFlags()
 {
     _cmd.add(_enableLoggerArg);
+    _cmd.add(_useDiffArg);
     _cmd.add(_inJsonFileArg);
     _cmd.add(_inNpzFileArg);
     _cmd.add(_outJsonFileArg);
     _cmd.add(_outNpzFileArg);
-}
-
-stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support, bool kernel_exact, int oversampling, double detection_n_sigma, double analysis_n_sigma)
-{
-    // Run image_visibilities
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(kernel_support), residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
-
-    // Run source find
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, 0.0, true);
 }
 
 int main(int argc, char** argv)
@@ -61,6 +53,12 @@ int main(int argc, char** argv)
         use_logger = true;
     }
 
+    // Check if use residual visibilities
+    bool use_residual = false;
+    if (_useDiffArg.isSet()) {
+        use_residual = true;
+    }
+
     if (use_logger) {
         // Creates and initializes the logger
         initLogger();
@@ -68,9 +66,14 @@ int main(int argc, char** argv)
     }
 
     //Load simulated data from input_npz
-    arma::mat input_uvw;
-    arma::cx_mat input_model, input_vis;
-    load_npz_simdata(_inNpzFileArg.getValue(), input_uvw, input_model, input_vis);
+    arma::mat input_uvw = load_npy_double_array(_inNpzFileArg.getValue(), "uvw_lambda");
+    arma::cx_mat input_vis = load_npy_complex_array(_inNpzFileArg.getValue(), "vis");
+    if (use_residual) {
+        arma::cx_mat input_model = load_npy_complex_array(_inNpzFileArg.getValue(), "model");
+        // Subtract model-generated visibilities from incoming data
+        input_vis -= input_model;
+        _logger->info("Use residual visibilities - input visibilities subtracted from model visibilities");
+    }
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
@@ -87,10 +90,16 @@ int main(int argc, char** argv)
         _logger->info("Running pipeline");
     }
 
-    // Subtract model-generated visibilities from incoming data
-    arma::cx_mat residual_vis = input_vis - input_model;
-    // Runs pipeline
-    stp::source_find_image sfimage = run_pipeline(input_uvw, residual_vis, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, cfg.detection_n_sigma, cfg.analysis_n_sigma);
+    // Run image_visibilities
+    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(cfg.kernel_support), input_vis, input_uvw,
+        cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+
+    result.second.set_size(0); // Destroy unused matrix
+    arma::mat image = arma::real(result.first);
+    result.first.set_size(0); // Destroy unused matrix
+
+    // Run source find
+    stp::source_find_image sfimage = stp::source_find_image(image, cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true);
 
     if (use_logger) {
         _logger->info("Finished");
@@ -109,13 +118,13 @@ int main(int argc, char** argv)
 
     // Output island parameters if logger is enabled
     if (use_logger) {
-        int total_islands = sfimage.islands.size();
-        _logger->info("Number of found islands: {} ", total_islands);
+        _logger->info("Number of found islands: {} ", sfimage.islands.size());
 
-        for (int i = 0; i < total_islands; i++) {
+        std::size_t island_num = 0;
+        for (auto&& i : sfimage.islands) {
             _logger->info(" * Island {}: label={}, sign={}, extremum_val={}, extremum_x_idx={}, extremum_y_idy={}, xbar={}, ybar={}",
-                i, sfimage.islands[i].label_idx, sfimage.islands[i].sign, sfimage.islands[i].extremum_val, sfimage.islands[i].extremum_x_idx, sfimage.islands[i].extremum_y_idx,
-                sfimage.islands[i].xbar, sfimage.islands[i].ybar);
+                island_num, i.label_idx, i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar);
+            island_num++;
         }
     }
 

@@ -18,9 +18,9 @@ std::string config_file_oversampling("fastimg_oversampling_config2.json");
 void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size)
 {
     //Load simulated data from input_npz
-    arma::mat input_uvw;
-    arma::cx_mat input_model, input_vis;
-    load_npz_simdata(data_path + input_npz, input_uvw, input_model, input_vis);
+    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
+    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
 
     // Subtract model-generated visibilities from incoming data
     residual_vis = input_vis - input_model;
@@ -44,7 +44,7 @@ static void gridder_kernel_exact_benchmark(benchmark::State& state)
     prepare_gridder(uv_in_pixels, residual_vis, cfg.image_size, cfg.cell_size);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::cx_mat> result;
+    std::pair<arma::cx_mat, arma::mat> result;
 
     while (state.KeepRunning())
         benchmark::DoNotOptimize(result = convolve_to_grid(kernel_func, state.range(0), cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, 1));
@@ -60,7 +60,7 @@ static void gridder_kernel_oversampling_benchmark(benchmark::State& state)
     prepare_gridder(uv_in_pixels, residual_vis, cfg.image_size, cfg.cell_size);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::cx_mat> result;
+    std::pair<arma::cx_mat, arma::mat> result;
 
     while (state.KeepRunning())
         benchmark::DoNotOptimize(result = convolve_to_grid(kernel_func, state.range(1), cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, state.range(0)));

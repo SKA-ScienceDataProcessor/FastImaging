@@ -22,27 +22,27 @@ namespace stp {
  * Based on sigma_clip function of astropy.stats.
  *
  * @param[in] data (arma::vec): Input data to be sigma clipped.
- * @param[in] sigma (double): The number of standard deviations to use for both the lower and upper clipping limit. Defaults to 3.
+ * @param[in] sigma (uint): The number of standard deviations to use for both the lower and upper clipping limit. Defaults to 3.
  * @param[in] iters (int): The number of iterations to perform sigma clipping. Defaults to 5.
  *
  * @return (arma::uvec): An uvec array with the input data indexes accepted by the algorithm (i.e. not clipped indexes).
  *                       Indexes with non-finite data are also excluded.
 */
-arma::uvec sigma_clip(arma::vec& data, double sigma = 3, int iters = 5);
+arma::uvec sigma_clip(const arma::vec& data, double sigma = 3, uint iters = 5);
 
 /**
- * @brief estimate_rms function
+ * @brief Perform sigma-clip and estimate RMS of input matrix
  *
  * Compute Root mean square of input data after sigma-clipping (combines RMS and sigma clip for better computational performance).
  * Sigma clip is based on the sigma_clip function of astropy.stats.
  *
- * @param[in] img (arma::mat): Input array.
+ * @param[in] data (arma::vec): Input array.
  * @param[in] sigma (double): The number of standard deviations to use for both the lower and upper clipping limit. Defaults to 3.
  * @param[in] iters (uint): The number of iterations to perform sigma clipping. Defaults to 5.
  *
  * @return (double): Root mean square value.
 */
-double estimate_rms(arma::mat& img, double sigma = 3, uint iters = 5);
+double estimate_rms(const arma::vec& data, double sigma = 3, uint iters = 5);
 
 /**
  * @brief positive_comp function
@@ -54,7 +54,7 @@ double estimate_rms(arma::mat& img, double sigma = 3, uint iters = 5);
  *
  * @return (arma::imat): Binary array with "true" when (data > analysis_thresh) and "false" otherwise.
 */
-arma::imat positive_comp(arma::mat& data, double analysis_thresh);
+arma::imat positive_comp(const arma::mat& data, const double analysis_thresh);
 
 /**
  * @brief negative_comp function
@@ -66,7 +66,7 @@ arma::imat positive_comp(arma::mat& data, double analysis_thresh);
  *
  * @return (arma::imat): Binary array with "true" when (data < analysis_thresh) and "false" otherwise.
 */
-arma::imat negative_comp(arma::mat& data, double analysis_thresh);
+arma::imat negative_comp(const arma::mat& data, const double analysis_thresh);
 
 /**
  * @brief positive_find_local_extrema function
@@ -79,7 +79,7 @@ arma::imat negative_comp(arma::mat& data, double analysis_thresh);
  *
  * @return (std::pair<arma::vec, arma::uvec>): Two vector arrays with maximum values found for each label (vector index = label - 1) and respective linear indices.
 */
-std::pair<arma::vec, arma::uvec> positive_find_local_extrema(arma::mat& data, arma::imat& label_map, arma::sword n_labels);
+std::pair<arma::vec, arma::uvec> positive_find_local_extrema(const arma::mat& data, const arma::imat& label_map, arma::sword n_labels);
 
 /**
  * @brief negative_find_local_extrema function
@@ -92,7 +92,7 @@ std::pair<arma::vec, arma::uvec> positive_find_local_extrema(arma::mat& data, ar
  *
  * @return (std::pair<arma::vec, arma::uvec>): Two vector arrays with minimum values found for each label (vector index = label - 1) and respective linear indices.
 */
-std::pair<arma::vec, arma::uvec> negative_find_local_extrema(arma::mat& data, arma::imat& label_map, arma::sword n_labels);
+std::pair<arma::vec, arma::uvec> negative_find_local_extrema(const arma::mat& data, const arma::imat& label_map, arma::sword n_labels);
 
 /**
  * @brief island_params struct
@@ -122,7 +122,7 @@ struct island_params {
      * @param[in] l_extremum_linear_idx (double): the linear index of the extremum value
      *
     */
-    island_params(arma::mat& input_data, arma::imat& label_map, int label, double l_extremum, uint l_extremum_linear_idx);
+    island_params(const arma::mat& input_data, const arma::imat& label_map, const int label, const double l_extremum, const uint l_extremum_linear_idx);
 
     /**
      * @brief Compare two island_params objects
@@ -173,7 +173,7 @@ public:
      * @param[in] input_find_negative_sources (bool): Determine if the signal is -1 or 1 (negative/positive sources)
     */
     source_find_image(
-        arma::mat input_data,
+        const arma::mat& input_data,
         double input_detection_n_sigma,
         double input_analysis_n_sigma,
         double input_rms_est = 0.0,

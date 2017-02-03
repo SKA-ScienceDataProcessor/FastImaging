@@ -5,16 +5,8 @@
 set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
 
-# Dependency: Armadillo
-find_package(Armadillo REQUIRED)
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions(-DARMA_NO_DEBUG)
-endif()
-add_definitions(-DARMA_USE_TBB_ALLOC)
-add_definitions(-DARMA_DONT_USE_WRAPPER)
-
 # Dependency: Threads (required because TBB is static)
-find_package(Threads)
+find_package(Threads REQUIRED)
 
 # Dependency: OpenBLAS
 find_package(BLAS)
@@ -38,16 +30,20 @@ set(STP_TARGET_NAME "stp")
 # For convenience, all source files are grouped into one variable
 # Note: adding single headers to the list of sources is required
 # so that IDEs will notice them, but it's otherwise innocuous.
-
 set(STP_SOURCE_FILES
     stp.h
     common/fft.cpp common/ccl.cpp common/vector_math.cpp
     convolution/conv_func.cpp gridder/gridder.cpp sourcefind/sourcefind.cpp imager/imager.h
+    # The following third-party include files are added just to be noticed by IDE
+    ../third-party/armadillo/include/armadillo ../third-party/fftw/api/fftw3.h ../third-party/tbb/include/tbb/tbb.h
 )
 
 # Create the library as static
 add_library(${STP_TARGET_NAME} STATIC ${STP_SOURCE_FILES})
 add_dependencies(${STP_TARGET_NAME} fftw fftw_threads tbb-static tbbmalloc-static)
-target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${ARMADILLO_INCLUDE_DIRS})
-target_link_libraries(${STP_TARGET_NAME} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} tbb-static tbbmalloc-static fftw fftw_threads ${CMAKE_THREAD_LIBS_INIT})
+# Note: since armadillo is being used purely as a template library, its include directory
+# must be explicitly added to the stp target
+target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(${STP_TARGET_NAME} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} tbb-static tbbmalloc-static
+    fftw fftw_threads Threads::Threads)
 

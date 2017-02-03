@@ -1,15 +1,6 @@
 # --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Python Bindings
 
-# Dependency: Armadillo
-find_package(Armadillo REQUIRED)
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions(-DARMA_NO_DEBUG)
-endif()
-
-add_definitions(-DARMA_USE_TBB_ALLOC)
-add_definitions(-DARMA_DONT_USE_WRAPPER)
-
 # Dependency: OpenBLAS
 find_package(BLAS)
 if(NOT BLAS_FOUND)

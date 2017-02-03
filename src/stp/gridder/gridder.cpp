@@ -30,7 +30,7 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
     int range_max = oversampling / 2;
     int range_min = -1 * range_max;
 
-    for (uint i = 0; i < subpixel_coord.n_elem; i++) {
+    for (arma::uword i = 0; i < subpixel_coord.n_elem; i++) {
         int val = rint(subpixel_coord.at(i) * oversampling);
         if (val > range_max) {
             val = range_max;

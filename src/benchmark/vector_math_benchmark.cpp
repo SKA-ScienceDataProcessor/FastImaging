@@ -154,7 +154,7 @@ arma::cx_vec generate_cx_vector_data(int image_size)
 
 int main(int argc, char** argv)
 {
-    int image_size = 2048;
+    int image_size = 4096;
     arma::vec v = generate_vector_data(image_size);
 
     benchmark::RegisterBenchmark("armadillo_accumulate_benchmark", armadillo_accumulate_benchmark, v)->Unit(benchmark::kMicrosecond);

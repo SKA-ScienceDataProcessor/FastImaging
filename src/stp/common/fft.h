@@ -1,6 +1,7 @@
 #ifndef FFT_H
 #define FFT_H
 
+#include "vector_math.h"
 #include <armadillo>
 
 namespace stp {
@@ -32,15 +33,30 @@ arma::cx_mat fft_arma(arma::cx_mat& input, bool inverse = false);
 arma::cx_mat fft_fftw(arma::cx_mat& m, bool inverse = false);
 
 /**
- * @brief fftshift
+ * @brief Performs matrix circular shift as needed for iFFT
  *
  * Shift the zero-frequency component to the centre of the spectrum.
  *
- * @param[in] m (cx_mat) : The matrix to be shifted
+ * @param[in] m (arma::Mat<T>) : The matrix to be shifted (shifted matrix is also stored here)
  * @param[in] is_forward (bool) Shifts forward if true (default), backward otherwise
- * @return The shifted matrix
  */
-arma::cx_mat fftshift(const arma::cx_mat& m, bool is_forward = true);
+template <typename T>
+void fftshift(arma::Mat<T>& m, bool is_forward = true)
+{
+    arma::sword direction = (is_forward == true) ? -1 : 1;
+
+    // Shift rows
+    if (m.n_rows > 1) {
+        arma::uword yy = arma::uword(ceil(m.n_rows / 2.0));
+        m = matrix_shift(m, direction * yy, 0);
+    }
+
+    // Shift columns
+    if (m.n_cols > 1) {
+        arma::uword xx = arma::uword(ceil(m.n_cols / 2.0));
+        m = matrix_shift(m, direction * xx, 1);
+    }
+}
 }
 
 #endif /* FFT_H */

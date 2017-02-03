@@ -35,10 +35,10 @@ public:
 
     /**
      * @brief operator ()
-     * @param radius_in_pix (arma::mat)
+     * @param radius_in_pix (arma::vec)
      * @return TopHat mat
      */
-    arma::mat operator()(const arma::mat& radius_in_pix) const;
+    arma::vec operator()(const arma::vec& radius_in_pix) const;
 
 private:
     double _half_base_width;
@@ -63,10 +63,10 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::mat)
+     * @param[in] radius_in_pix (arma::vec)
      * @return Triangle mat
      */
-    arma::mat operator()(const arma::mat& radius_in_pix) const;
+    arma::vec operator()(const arma::vec& radius_in_pix) const;
 
 private:
     const double _half_base_width;
@@ -110,10 +110,10 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::mat&)
+     * @param[in] radius_in_pix (arma::vec&)
      * @return Convolution kernel
      */
-    arma::mat operator()(const arma::mat& radius_in_pix) const;
+    arma::vec operator()(const arma::vec& radius_in_pix) const;
 
 private:
     bool _truncate;
@@ -161,10 +161,10 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma:mat&)
+     * @param[in] radius_in_pix (arma::vec&)
      * @return Convolution kernel
      */
-    arma::mat operator()(const arma::mat& radius_in_pix) const;
+    arma::vec operator()(const arma::vec& radius_in_pix) const;
 
 private:
     bool _truncate;
@@ -229,10 +229,10 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma:mat&)
+     * @param[in] radius_in_pix (arma::vec&)
      * @return Convolution kernel
      */
-    arma::mat operator()(const arma::mat& radius_in_pix) const;
+    arma::vec operator()(const arma::vec& radius_in_pix) const;
 
 private:
     static constexpr double _default_width_normalization_gaussian = 2.52;
@@ -245,13 +245,13 @@ private:
     Sinc _sinc;
 };
 
-/** @brief Make Kernel Array
+/** @brief Make 2D Kernel Array
 *
 *  Function (template + functor) to create a Kernel array with some specs.
 *
 *  @param[in] kernel_creator: functor used for kernel generation
 *  @param[in] support (int): Defines the 'radius' of the bounding box within which convolution takes place.
-*  @param[in] offset (arma::mat): 2-vector subpixel offset from the sampling position of the
+*  @param[in] offset (arma::vec): 2-vector subpixel offset from the sampling position of the
 *                                central pixel to the origin of the kernel function.
 *  @param[in] oversampling (int): Controls kernel-generation.
 *  @param[in] pad (bool): Whether to pad the array by an extra pixel-width. This is used when generating an
@@ -274,7 +274,7 @@ arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::ma
     int array_size = 2 * (support + localPad) * oversampling + 1;
     int centre_idx = (support + localPad) * oversampling;
 
-    arma::mat distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+    arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
 
     // Call the functor's operator ()
     arma::vec x_kernel_coeffs = kernel_creator(distance_vec - offset[0]);
@@ -312,7 +312,7 @@ arma::vec make_1D_kernel(const T& kernel_creator, int support, const double offs
     int array_size = 2 * (support + localPad) * oversampling + 1;
     int centre_idx = (support + localPad) * oversampling;
 
-    arma::mat distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+    arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
 
     // Call the functor's operator ()
     arma::vec result = kernel_creator(distance_vec - offset);

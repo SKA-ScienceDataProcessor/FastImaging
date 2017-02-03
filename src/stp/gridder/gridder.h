@@ -126,11 +126,11 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *             This is used when generating an oversampled kernel that will be used for interpolation. Default is false.
  *  @param[in] normalize (bool). Whether to normalize generated kernel functions. Default is true.
  *
- *  @return (std::pair<arma::cx_mat, arma::cx_mat>) 2 slices: vis_grid and sampling_grid; representing
+ *  @return (std::pair<arma::cx_mat, arma::mat>) 2 slices: vis_grid and sampling_grid; representing
  *            the gridded visibilities and the sampling weights.
  */
 template <typename T>
-std::pair<arma::cx_mat, arma::cx_mat> convolve_to_grid(const T& kernel_creator, const int support, int image_size, arma::mat uv, arma::cx_mat vis, bool kernel_exact = true, int oversampling = 1, bool pad = false, bool normalize = true)
+std::pair<arma::cx_mat, arma::mat> convolve_to_grid(const T& kernel_creator, const int support, int image_size, const arma::mat& uv, const arma::cx_mat& vis, bool kernel_exact = true, int oversampling = 1, bool pad = false, bool normalize = true)
 {
     assert(uv.n_cols == 2);
     assert(uv.n_rows == vis.n_rows);
@@ -155,7 +155,7 @@ std::pair<arma::cx_mat, arma::cx_mat> convolve_to_grid(const T& kernel_creator, 
 
     if (kernel_exact == false) {
         // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
-        arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, pad, normalize);
+        const arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, pad, normalize);
         arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
         tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&good_vis_idx, &kernel_centre_on_grid, &support, &kernel_size, &oversampling, &kernel_cache, &oversampled_offset, &uv_frac, &kernel_creator, &vis, &vis_grid, &sampling_grid](const tbb::blocked_range<size_t>& r) {
@@ -199,7 +199,7 @@ std::pair<arma::cx_mat, arma::cx_mat> convolve_to_grid(const T& kernel_creator, 
         });
     }
 
-    return std::make_pair(std::move(vis_grid), std::move(arma::conv_to<arma::cx_mat>::from(sampling_grid)));
+    return std::make_pair(std::move(vis_grid), std::move(sampling_grid));
 }
 }
 

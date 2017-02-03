@@ -26,6 +26,8 @@ TCLAP::UnlabeledValueArg<std::string> _inJsonFileArg("input-file-json", "Input J
 TCLAP::UnlabeledValueArg<std::string> _inNpzFileArg("input-file-npz", "Input NPZ filename with simulation data (uvw_lambda, model, vis).", true, "", "input-file-npz");
 // Output Npz filename
 TCLAP::UnlabeledValueArg<std::string> _outNpzFileArg("output-file-npz", "(optional)  Output NPZ filename for image and beam matrices (image, beam).", false, "", "output-file-npz");
+// Use residual visibilities - difference between 'input_vis' and 'model' visibilities
+TCLAP::SwitchArg _useDiffArg("d", "diff", "Use residual visibilities - difference between 'input_vis' and 'model' visibilities. Input NPZ must contain 'model' data.", false);
 // Enable logger
 TCLAP::SwitchArg _enableLoggerArg("l", "log", "Enable logger.", false);
 

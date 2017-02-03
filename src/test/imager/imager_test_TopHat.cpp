@@ -23,18 +23,13 @@ public:
     {
         half_base_width = val["half_base_width"].GetDouble();
 
-        cnpy::NpyArray vis_npy(cnpy::npz_load(val["input_file"].GetString(), "vis"));
-        cnpy::NpyArray uvw_npy(cnpy::npz_load(val["input_file"].GetString(), "uvw"));
         std::string expected_results_path = val["expected_results"].GetString();
 
-        arma::cx_mat vis(load_npy_complex_array(vis_npy));
-        arma::mat uvw_lambda(load_npy_double_array(uvw_npy));
-
-        cnpy::NpyArray image_array(cnpy::npz_load(expected_results_path, "image"));
-        cnpy::NpyArray beam_array(cnpy::npz_load(expected_results_path, "beam"));
+        arma::cx_mat vis(load_npy_complex_array(val["input_file"].GetString(), "vis"));
+        arma::mat uvw_lambda(load_npy_double_array(val["input_file"].GetString(), "uvw"));
 
         // Loads the expected results to a arma::mat pair
-        expected_result = std::make_pair(std::move(load_npy_complex_array(image_array)), std::move(load_npy_complex_array(beam_array)));
+        expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
 
         result = image_visibilities(TopHat(half_base_width), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
     }

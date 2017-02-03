@@ -1,5 +1,4 @@
 #include "fft.h"
-#include "vector_math.h"
 #include <cblas.h>
 #include <fftw3.h>
 #include <thread>
@@ -50,26 +49,6 @@ arma::cx_mat fft_arma(arma::cx_mat& m, bool inverse)
 
     // Armadillo normalises the FFT, so there's no
     // need for any division.
-    return result;
-}
-
-arma::cx_mat fftshift(const arma::cx_mat& m, bool is_forward)
-{
-    arma::cx_mat result(arma::size(m));
-    arma::sword direction = (is_forward == true) ? -1 : 1;
-
-    // Shift rows
-    if (m.n_rows > 1) {
-        arma::uword yy = arma::uword(ceil(m.n_rows / 2.0));
-        result = matrix_shift(m, direction * yy, 0);
-    }
-
-    // Shift columns
-    if (m.n_cols > 1) {
-        arma::uword xx = arma::uword(ceil(m.n_cols / 2.0));
-        result = matrix_shift(result, direction * xx, 1);
-    }
-
     return result;
 }
 }

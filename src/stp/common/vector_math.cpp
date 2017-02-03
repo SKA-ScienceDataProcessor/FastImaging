@@ -3,21 +3,19 @@
 #include <tbb/tbb.h>
 #include <thread>
 
-#define MIN_ELEMS_FOR_PARSHIFT 8192
-
 namespace stp {
 
 struct SumMean {
     double acc;
-    uint n_elem;
+    arma::uword n_elem;
 
     SumMean()
-        : acc(0)
+        : acc(0.0)
         , n_elem(0)
     {
     }
 
-    SumMean(double a, uint ne)
+    SumMean(double a, arma::uword ne)
         : acc(a)
         , n_elem(ne)
     {
@@ -27,11 +25,11 @@ struct SumMean {
 struct SumStdDev {
     double acc1;
     double acc2;
-    uint n_elem;
+    arma::uword n_elem;
 
     SumStdDev()
-        : acc1(0)
-        , acc2(0)
+        : acc1(0.0)
+        , acc2(0.0)
         , n_elem(0)
     {
     }
@@ -43,7 +41,7 @@ struct SumStdDev {
     {
     }
 
-    SumStdDev(double a1, double a2, uint num)
+    SumStdDev(double a1, double a2, arma::uword num)
         : acc1(a1)
         , acc2(a2)
         , n_elem(num)
@@ -53,13 +51,13 @@ struct SumStdDev {
 
 double vector_accumulate(arma::vec& v)
 {
-    double accu = 0;
-    uint v_size = v.n_elem;
+    double accu = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 0) {
-        double acc1 = 0;
-        double acc2 = 0;
-        uint i;
+        double acc1 = 0.0;
+        double acc2 = 0.0;
+        arma::uword i;
         for (i = 0; i < (v_size - 1); i += 2) {
             acc1 += v.at(i);
             acc2 += v.at(i + 1);
@@ -74,12 +72,12 @@ double vector_accumulate(arma::vec& v)
 
 double vector_accumulate_parallel(arma::vec& v)
 {
-    double accu = 0;
-    uint v_size = v.n_elem;
+    double accu = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 0) {
-        accu = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, v_size), double(0), [&v](const tbb::blocked_range<size_t>& r, double sum) {
-            for (uint i = r.begin(); i != r.end(); i++) {
+        accu = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, v_size), double(0.0), [&v](const tbb::blocked_range<size_t>& r, double sum) {
+            for (size_t i = r.begin(); i != r.end(); i++) {
                 sum += v.at(i);
             }
             return sum; },
@@ -90,8 +88,8 @@ double vector_accumulate_parallel(arma::vec& v)
 
 double vector_mean(arma::vec& v)
 {
-    double mean = 0;
-    uint v_size = v.n_elem;
+    double mean = 0.0;
+    double v_size = v.n_elem;
 
     if (v_size > 0) {
         mean = vector_accumulate(v) / v_size;
@@ -101,14 +99,14 @@ double vector_mean(arma::vec& v)
 
 double vector_mean_robust(arma::vec& v)
 {
-    double mean = 0;
-    uint v_size = v.n_elem;
+    double mean = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 0) {
-        uint n_elem = 0;
-        double acc1 = 0;
-        double acc2 = 0;
-        uint i;
+        arma::uword n_elem = 0;
+        double acc1 = 0.0;
+        double acc2 = 0.0;
+        arma::uword i;
         for (i = 0; i < (v_size - 1); i += 2) {
             if (arma::is_finite(v.at(i))) {
                 acc1 += v.at(i);
@@ -125,16 +123,16 @@ double vector_mean_robust(arma::vec& v)
                 n_elem++;
             }
         }
-        mean = (acc1 + acc2) / n_elem;
+        mean = (acc1 + acc2) / double(n_elem);
     }
     return mean;
 }
 
 double vector_mean_parallel(arma::vec& v)
 {
-    double mean = 0;
-    double accu = 0;
-    uint v_size = v.n_elem;
+    double mean = 0.0;
+    double accu = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 0) {
         accu = vector_accumulate_parallel(v);
@@ -145,14 +143,14 @@ double vector_mean_parallel(arma::vec& v)
 
 double vector_mean_robust_parallel(arma::vec& v)
 {
-    double mean = 0;
-    uint v_size = v.n_elem;
+    double mean = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 0) {
         SumMean total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, v_size), SumMean(0, 0), [&v](const tbb::blocked_range<size_t>& r, SumMean sum) {
             double acc = sum.acc;
-            uint n_elem = sum.n_elem;
-            for (uint i = r.begin(); i != r.end(); i++) {
+            arma::uword n_elem = sum.n_elem;
+            for (size_t i = r.begin(); i != r.end(); i++) {
                 if (arma::is_finite(v.at(i))) {
                     acc += v.at(i);
                     n_elem++;
@@ -160,7 +158,7 @@ double vector_mean_robust_parallel(arma::vec& v)
             }
             return SumMean(acc, n_elem); },
             [](SumMean x, SumMean y) { return SumMean(x.acc + y.acc, x.n_elem + y.n_elem); });
-        mean = total.acc / total.n_elem;
+        mean = total.acc / double(total.n_elem);
     }
     return mean;
 }
@@ -168,7 +166,7 @@ double vector_mean_robust_parallel(arma::vec& v)
 double vector_stddev(arma::vec& v, double mean)
 {
     double std;
-    uint v_size = v.n_elem;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 1) {
         if (!arma::is_finite(mean)) {
@@ -176,14 +174,14 @@ double vector_stddev(arma::vec& v, double mean)
         }
         double acc1 = 0;
         double acc2 = 0;
-        for (uint i = 0; i < v_size; i++) {
+        for (arma::uword i = 0; i < v_size; i++) {
             const double tmp = v.at(i) - mean;
             acc1 += tmp * tmp;
             acc2 += tmp;
         }
-        std = std::sqrt((acc1 - acc2 * acc2 / v_size) / v_size);
+        std = std::sqrt((acc1 - acc2 * acc2 / double(v_size)) / double(v_size));
     } else {
-        std = 0;
+        std = 0.0;
     }
 
     return std;
@@ -191,17 +189,17 @@ double vector_stddev(arma::vec& v, double mean)
 
 double vector_stddev_robust(arma::vec& v, double mean)
 {
-    double std;
-    uint v_size = v.n_elem;
+    double std = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 1) {
         if (!arma::is_finite(mean)) {
             mean = vector_mean_robust(v);
         }
-        uint n_elem = 0;
-        double acc1 = 0;
-        double acc2 = 0;
-        for (uint i = 0; i < v_size; i++) {
+        arma::uword n_elem = 0;
+        double acc1 = 0.0;
+        double acc2 = 0.0;
+        for (arma::uword i = 0; i < v_size; i++) {
             if (arma::is_finite(v.at(i))) {
                 const double tmp = v.at(i) - mean;
                 acc1 += tmp * tmp;
@@ -209,9 +207,7 @@ double vector_stddev_robust(arma::vec& v, double mean)
                 n_elem++;
             }
         }
-        std = std::sqrt((acc1 - acc2 * acc2 / n_elem) / n_elem);
-    } else {
-        std = 0;
+        std = std::sqrt((acc1 - acc2 * acc2 / double(n_elem)) / double(n_elem));
     }
 
     return std;
@@ -219,8 +215,8 @@ double vector_stddev_robust(arma::vec& v, double mean)
 
 double vector_stddev_parallel(arma::vec& v, double mean)
 {
-    double std;
-    uint v_size = v.n_elem;
+    double std = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 1) {
         if (!arma::is_finite(mean)) {
@@ -229,16 +225,14 @@ double vector_stddev_parallel(arma::vec& v, double mean)
         SumStdDev total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, v_size), SumStdDev(0, 0), [&v, &mean](const tbb::blocked_range<size_t>& r, SumStdDev sum) {
             double acc1 = sum.acc1;
             double acc2 = sum.acc2;
-            for (uint i = r.begin(); i != r.end(); i++) {
+            for (size_t i = r.begin(); i != r.end(); i++) {
                 const double tmp = v.at(i) - mean;
                 acc1 += tmp * tmp;
                 acc2 += tmp;
             }
             return SumStdDev(acc1, acc2); },
             [](SumStdDev x, SumStdDev y) { return SumStdDev(x.acc1 + y.acc1, x.acc2 + y.acc2); });
-        std = std::sqrt((total.acc1 - total.acc2 * total.acc2 / v_size) / v_size);
-    } else {
-        std = 0;
+        std = std::sqrt((total.acc1 - total.acc2 * total.acc2 / double(v_size)) / double(v_size));
     }
 
     return std;
@@ -246,8 +240,8 @@ double vector_stddev_parallel(arma::vec& v, double mean)
 
 double vector_stddev_robust_parallel(arma::vec& v, double mean)
 {
-    double std;
-    uint v_size = v.n_elem;
+    double std = 0.0;
+    arma::uword v_size = v.n_elem;
 
     if (v_size > 1) {
         double l_mean = mean;
@@ -257,8 +251,8 @@ double vector_stddev_robust_parallel(arma::vec& v, double mean)
         SumStdDev total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, v_size), SumStdDev(0, 0, 0), [&v, &l_mean](const tbb::blocked_range<size_t>& r, SumStdDev sum) {
             double acc1 = sum.acc1;
             double acc2 = sum.acc2;
-            uint n_elem = sum.n_elem;
-            for (uint i = r.begin(); i != r.end(); i++) {
+            arma::uword  n_elem = sum.n_elem;
+            for (size_t i = r.begin(); i != r.end(); i++) {
                 if (arma::is_finite(v.at(i))) {
                     const double tmp = v.at(i) - l_mean;
                     acc1 += tmp * tmp;
@@ -268,93 +262,9 @@ double vector_stddev_robust_parallel(arma::vec& v, double mean)
             }
             return SumStdDev(acc1, acc2, n_elem); },
             [](SumStdDev x, SumStdDev y) { return SumStdDev(x.acc1 + y.acc1, x.acc2 + y.acc2, x.n_elem + y.n_elem); });
-        std = std::sqrt((total.acc1 - total.acc2 * total.acc2 / total.n_elem) / total.n_elem);
-    } else {
-        std = 0;
+        std = std::sqrt((total.acc1 - total.acc2 * total.acc2 / double(total.n_elem)) / double(total.n_elem));
     }
 
     return std;
-}
-
-arma::cx_mat matrix_shift(const arma::cx_mat& in, const int length, const int dim)
-{
-    arma::cx_mat out(arma::size(in));
-
-    // Use arma shift if the number of elements is not large enough for parallelization
-    if (in.n_elem < MIN_ELEMS_FOR_PARSHIFT) {
-        return arma::shift(in, length, dim);
-    }
-
-    const uint n_rows = in.n_rows;
-    const uint n_cols = in.n_cols;
-    const uint neg = length < 0 ? 1 : 0;
-    const uint len = length < 0 ? (-length) : length;
-
-    if (dim == 0) {
-        if (neg == 0) {
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                for (uint col = r.begin(); col != r.end(); ++col) {
-                    arma::cx_double* out_ptr = out.colptr(col);
-                    const arma::cx_double* in_ptr = in.colptr(col);
-
-                    std::memcpy(out_ptr + len, in_ptr, (n_rows - len) * sizeof(arma::cx_double));
-                    std::memcpy(out_ptr, in_ptr + (n_rows - len), len * sizeof(arma::cx_double));
-                }
-            });
-        } else if (neg == 1) {
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                for (uint col = r.begin(); col != r.end(); ++col) {
-                    arma::cx_double* out_ptr = out.colptr(col);
-                    const arma::cx_double* in_ptr = in.colptr(col);
-
-                    std::memcpy(out_ptr, in_ptr + len, (n_rows - len) * sizeof(arma::cx_double));
-                    std::memcpy(out_ptr + (n_rows - len), in_ptr, len * sizeof(arma::cx_double));
-                }
-            });
-        }
-    } else if (dim == 1) {
-        if (neg == 0) {
-            if (n_rows == 1) {
-                arma::cx_double* out_ptr = out.memptr();
-                const arma::cx_double* in_ptr = in.memptr();
-
-                std::memcpy(out_ptr + len, in_ptr, (n_cols - len) * sizeof(arma::cx_double));
-                std::memcpy(out_ptr, in_ptr + (n_cols - len), len * sizeof(arma::cx_double));
-
-            } else {
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, (n_cols - len)), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                    for (uint out_col = r.begin() + len, col = r.begin(); col != r.end(); ++col, ++out_col) {
-                        std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                    }
-                });
-                tbb::parallel_for(tbb::blocked_range<size_t>((n_cols - len), n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                    for (uint out_col = r.begin() - (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
-                        std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                    }
-                });
-            }
-        } else if (neg == 1) {
-            if (n_rows == 1) {
-                arma::cx_double* out_ptr = out.memptr();
-                const arma::cx_double* in_ptr = in.memptr();
-
-                std::memcpy(out_ptr, in_ptr + len, (n_cols - len) * sizeof(arma::cx_double));
-                std::memcpy(out_ptr + (n_cols - len), in_ptr, len * sizeof(arma::cx_double));
-
-            } else {
-                tbb::parallel_for(tbb::blocked_range<size_t>(len, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                    for (uint out_col = r.begin() - len, col = r.begin(); col != r.end(); ++col, ++out_col) {
-                        std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                    }
-                });
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, len), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
-                    for (uint out_col = r.begin() + (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
-                        std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(arma::cx_double));
-                    }
-                });
-            }
-        }
-    }
-    return out;
 }
 }

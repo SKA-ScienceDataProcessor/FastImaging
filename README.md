@@ -20,13 +20,14 @@
 ### Dependencies
 
 #### External (Debian-provided)
-- [Armadillo](http://arma.sourceforge.net/) [7.500.2]
+- [OpenBLAS](http://www.openblas.net) [0.2.19]
+- [LAPACK](http://www.netlib.org/lapack) [3.7.0]
+- [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
-- [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
-- [OpenBLAS](http://www.openblas.net) [0.2.19]
 
 #### In Source (third-party)
+- [Armadillo](http://arma.sourceforge.net/) [7.600.2]
 - [Google Test](https://github.com/google/googletest) [1.8.0]
 - [Google Benchmark](https://github.com/google/benchmark) [1.1.0]
 - [cnpy](https://github.com/rogersce/cnpy) [repository head]
@@ -84,12 +85,13 @@ $ ./reduce projectroot/config/pipeline-config/fastimg_oversampling_config2.json 
 ```
 
 ## Code profiling
- - Valgrind framework and kcachegrind GUI application can be used to profile STP library. We recommend to run the reduce binary with callgrind tool of valgrind (e.g.: valgrind --tool=callgrind ./reduce ...).
- - STP and reduce shall be compiled in Release mode for realistic profiling. However, if detailed profiling of source code is desired, debug info (-g option of gcc) shall be added. This can be accomplished "Release With Debug Information" mode (CMAKE_BUILD_TYPE=RelWithDebInfo) as this mode keeps compiling optimizations while adding debug information.
+ - Valgrind framework and kcachegrind GUI application can be used to profile STP library. 
+ - Recommended valgrind tools: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
+ - STP and reduce shall be compiled in Release mode for realistic profiling. However, if detailed profiling of source code is desired, debug info (-g option of gcc) shall be added. This can be accomplished "Release With Debug Information" mode (CMAKE_BUILD_TYPE=RelWithDebInfo) as this mode keeps compiling optimizations while adding debug symbols.
  - When running valgrind with callgrind tool, add --separate-threads=yes if you want to profile all threads.
- - Results of callgrind tool are outputted to callgrind.out.* files, which can ne analyzed using kcachegrind.
- - Remove existing callgrind.out.* files in current directory before starting a new profiling test.
- - Example:
+ - Results of these tools are written out to a file (default name: <tool>.out.<pid>).
+ - Callgrind and cachegrind output files can be analyzed using kcachegrind, while massif output file can be analyzed with massif-visualizer.
+ - Callgrind usage example:
 ```sh
 $ mkdir -p path/to/build/directory
 $ cd path/to/build/directory
@@ -101,6 +103,14 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 3 February 2017
+- Added armadillo to third-party libraries
+- Added support for GNU parallel mode of libstdc++ (useful for nth_element function used by arma::median)
+- Implemented new benchmark functions
+- Added new option in reduce to enable/disable usage of residual visibilities
+- Reduced maximum peak of memory usage (based on memory profiling)
+- Improved STP performance, code style and comments 
+
 ### 27 January 2017
 - Added new python binding over source_find_image function
 - Improved existing python binding over image_visibilities function

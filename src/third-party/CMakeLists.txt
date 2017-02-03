@@ -11,6 +11,12 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark lib
 add_subdirectory(benchmark)
 
 # Dependency: Cnpy
+# ZLIB is a dependency of cnpy which is missing in cnpy's CMakefile
+find_package(ZLIB)
+if(NOT ZLIB_FOUND)
+    message(FATAL_ERROR "ZLIB library was not found")
+endif()
+# Add cnpy subdirectory
 add_subdirectory(cnpy)
 # The cnpy CMake script does not export the interface include directory, so
 # it must be explicitly specified here.
