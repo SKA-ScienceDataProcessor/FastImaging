@@ -11,10 +11,10 @@
 #include <stp.h>
 
 std::string data_path(_PIPELINE_DATAPATH);
-std::string input_npz("simdata.npz");
+std::string input_npz("simdata_small.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
-std::string config_file_exact("fastimg_exact_config2.json");
-std::string config_file_oversampling("fastimg_oversampling_config2.json");
+std::string config_file_exact("fastimg_exact_config.json");
+std::string config_file_oversampling("fastimg_oversampling_config.json");
 int normalize = true;
 
 static void fft_test_benchmark(benchmark::State& state)

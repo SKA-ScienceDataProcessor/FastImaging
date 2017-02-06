@@ -72,7 +72,9 @@ int main(int argc, char** argv)
         arma::cx_mat input_model = load_npy_complex_array(_inNpzFileArg.getValue(), "model");
         // Subtract model-generated visibilities from incoming data
         input_vis -= input_model;
-        _logger->info("Use residual visibilities - input visibilities subtracted from model visibilities");
+        if (use_logger) {
+            _logger->info("Use residual visibilities - input visibilities subtracted from model visibilities");
+        }
     }
 
     // Load all configurations from json configuration file

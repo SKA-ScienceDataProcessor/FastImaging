@@ -15,10 +15,10 @@
 #endif
 
 std::string data_path(_PIPELINE_DATAPATH);
-std::string input_npz("simdata.npz");
+std::string input_npz("simdata_small.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
-std::string config_file_exact("fastimg_exact_config2.json");
-std::string config_file_oversampling("fastimg_oversampling_config2.json");
+std::string config_file_exact("fastimg_exact_config.json");
+std::string config_file_oversampling("fastimg_oversampling_config.json");
 
 stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis, arma::cx_mat data_vis, int image_size, double cell_size, double detection_n_sigma, double analysis_n_sigma, int support = 3, bool kernel_exact = true, int oversampling = 1)
 {

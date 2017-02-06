@@ -17,7 +17,7 @@ endif()
 set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main benchmark Threads::Threads)
 
 # Copy configuration files to the binary directory
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../test-data/imager-data/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../config/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
 
 # Configures the location of the test data
 get_filename_component(IMAGER_DATAPATH "../../test-data/imager-data" ABSOLUTE)
@@ -26,7 +26,7 @@ get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-data" ABSOLUT
 add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
 
 # Configures the location of the configuration files
-get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-config" ABSOLUTE)
+get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-tests" ABSOLUTE)
 add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # Configures the location of the cnpy test data

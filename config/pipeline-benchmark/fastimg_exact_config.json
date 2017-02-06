@@ -1,7 +1,7 @@
 {
 	"image_size_pix": 2048,
 	"cell_size_arcsec": 0.5,
-	"kernel_support" : 5,
+	"kernel_support" : 3,
 	"kernel_exact": true,
 	"oversampling": 1,
 	"sourcefind_detection": 50.0,

@@ -20,7 +20,7 @@ get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-data" ABSOLUT
 add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
 
 # Configures the location of the configuration files
-get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-config" ABSOLUTE)
+get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-benchmark" ABSOLUTE)
 add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # For convenience all link libraries required by

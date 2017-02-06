@@ -78,10 +78,11 @@ $ make benchmarking
    <input-file-npz> : (required)  Input NPZ filename with simulation data (uvw_lambda, model, vis).
    <output-file-json> : (required)  Output JSON filename for detected islands.
    <output-file-npz> : (optional)  Output NPZ filename for label map matrix (label_map).
+   -d,  --diff : (optional) Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
    -l,  --log : (optional)  Enable logger.
 - Example:
 ```sh
-$ ./reduce projectroot/config/pipeline-config/fastimg_oversampling_config2.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json -l
+$ ./reduce projectroot/config/pipeline-benchmark/fastimg_oversampling_config.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json -l
 ```
 
 ## Code profiling
@@ -98,11 +99,14 @@ $ cd path/to/build/directory
 $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
 $ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce projectroot/config/pipeline-config/fastimg_oversampling_config2.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce projectroot/config/pipeline-benchmark/fastimg_oversampling_config.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json
 $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 7 February 2017
+- Fixed minor bugs
+
 ### 3 February 2017
 - Added armadillo to third-party libraries
 - Added support for GNU parallel mode of libstdc++ (useful for nth_element function used by arma::median)

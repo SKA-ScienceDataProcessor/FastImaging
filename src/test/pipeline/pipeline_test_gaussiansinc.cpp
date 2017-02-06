@@ -8,8 +8,8 @@ using namespace stp;
 std::string data_path(_PIPELINE_DATAPATH);
 std::string input_npz("simdata_small.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
-std::string config_file_exact("fastimg_exact_config1.json");
-std::string config_file_oversampling("fastimg_oversampling_config1.json");
+std::string config_file_exact("fastimg_exact_config.json");
+std::string config_file_oversampling("fastimg_oversampling_config.json");
 
 const double dtolerance(1.0e-10);
 
