@@ -27,13 +27,6 @@ arma::cx_mat fft_fftw(arma::cx_mat& input, bool inverse)
 
     fftw_cleanup_threads();
 
-    // FFTW computes an unnormalized transform.
-    // In order to match Numpy's inverse FFT, the result must
-    // be divided by the number of elements in the matrix.
-    if (inverse == true) {
-        cblas_zdscal(output.n_elem, 1.0 / (double)(input.n_cols * input.n_rows), output.memptr(), 1); // in-place division by (input.n_cols * input.n_rows)
-    }
-
     return output;
 }
 

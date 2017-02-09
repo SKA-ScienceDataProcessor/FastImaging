@@ -21,6 +21,8 @@ static void fft_test_benchmark(benchmark::State& state)
 {
     stp::fft_function_type f_fft = (stp::fft_function_type)state.range(0);
 
+    int image_size = pow(2, state.range(1));
+
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
@@ -33,7 +35,7 @@ static void fft_test_benchmark(benchmark::State& state)
     arma::cx_mat residual_vis = input_vis - input_model;
 
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
-    double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cfg.cell_size) * cfg.image_size));
+    double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cfg.cell_size) * image_size));
     arma::mat uvw_in_pixels = input_uvw / grid_pixel_width_lambda;
 
     arma::mat uv_in_pixels(uvw_in_pixels.n_rows, 2);
@@ -41,14 +43,14 @@ static void fft_test_benchmark(benchmark::State& state)
     uv_in_pixels.col(1) = uvw_in_pixels.col(1);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::mat> result = convolve_to_grid(kernel_func, cfg.kernel_support, cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, cfg.oversampling);
+    std::pair<arma::cx_mat, arma::mat> result = convolve_to_grid(kernel_func, cfg.kernel_support, image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, cfg.oversampling);
 
     stp::fftshift(result.first, false);
     stp::fftshift(result.second, false);
+    arma::cx_mat result_beam = arma::conv_to<arma::cx_mat>::from(result.second);
 
     arma::cx_mat fft_result_image;
     arma::cx_mat fft_result_beam;
-    fft_result_beam = arma::conv_to<arma::cx_mat>::from(result.second);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(fft_result_image);
@@ -58,12 +60,12 @@ static void fft_test_benchmark(benchmark::State& state)
         case stp::FFTW:
             // FFTW implementation
             fft_result_image = stp::fft_fftw(result.first, true);
-            fft_result_beam = stp::fft_fftw(fft_result_beam, true);
+            fft_result_beam = stp::fft_fftw(result_beam, true);
             break;
         case stp::ARMAFFT:
             // Armadillo implementation
             fft_result_image = stp::fft_arma(result.first, true);
-            fft_result_beam = stp::fft_arma(fft_result_beam, true);
+            fft_result_beam = stp::fft_arma(result_beam, true);
             break;
         default:
             assert(0);
@@ -73,8 +75,16 @@ static void fft_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(fft_test_benchmark)
-    ->Args({ stp::FFTW })
-    ->Args({ stp::ARMAFFT })
+    ->Args({ stp::FFTW, 10 })
+    ->Args({ stp::FFTW, 11 })
+    ->Args({ stp::FFTW, 12 })
+    ->Args({ stp::FFTW, 13 })
+    ->Args({ stp::FFTW, 14 })
+    ->Args({ stp::ARMAFFT, 10 })
+    ->Args({ stp::ARMAFFT, 11 })
+    ->Args({ stp::ARMAFFT, 12 })
+    ->Args({ stp::ARMAFFT, 13 })
+    ->Args({ stp::ARMAFFT, 14 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

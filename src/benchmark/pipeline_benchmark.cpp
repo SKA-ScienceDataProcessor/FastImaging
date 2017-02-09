@@ -33,6 +33,8 @@ stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat model_vis
 
 static void pipeline_kernel_exact_benchmark(benchmark::State& state)
 {
+    int image_size = pow(2, state.range(0));
+
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
@@ -41,12 +43,14 @@ static void pipeline_kernel_exact_benchmark(benchmark::State& state)
     ConfigurationFile cfg(config_path + config_file_exact);
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(run_pipeline(input_uvw, input_model, input_vis, state.range(0), cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.kernel_support, cfg.kernel_exact));
+        benchmark::DoNotOptimize(run_pipeline(input_uvw, input_model, input_vis, image_size, cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.kernel_support, cfg.kernel_exact));
     }
 }
 
 static void pipeline_kernel_oversampling_benchmark(benchmark::State& state)
 {
+    int image_size = pow(2, state.range(0));
+
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
@@ -55,19 +59,24 @@ static void pipeline_kernel_oversampling_benchmark(benchmark::State& state)
     ConfigurationFile cfg(config_path + config_file_oversampling);
 
     while (state.KeepRunning()) {
-        stp::source_find_image sfimage = run_pipeline(input_uvw, input_model, input_vis, state.range(0), cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.kernel_support, cfg.kernel_exact, state.range(1));
+        benchmark::DoNotOptimize(run_pipeline(input_uvw, input_model, input_vis, image_size, cfg.cell_size, cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling));
     }
 }
 
 BENCHMARK(pipeline_kernel_oversampling_benchmark)
-    ->Args({ 4096, 3 })
-    ->Args({ 4096, 5 })
-    ->Args({ 4096, 7 })
-    ->Args({ 4096, 9 })
+    ->Args({ 10 })
+    ->Args({ 11 })
+    ->Args({ 12 })
+    ->Args({ 13 })
+    ->Args({ 14 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(pipeline_kernel_exact_benchmark)
-    ->Args({ 4096 })
+    ->Args({ 10 })
+    ->Args({ 11 })
+    ->Args({ 12 })
+    ->Args({ 13 })
+    ->Args({ 14 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

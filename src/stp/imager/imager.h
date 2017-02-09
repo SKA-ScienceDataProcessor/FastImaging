@@ -108,10 +108,17 @@ std::pair<arma::cx_mat, arma::cx_mat> image_visibilities(
         double beam_max = arma::real(fft_result_beam).max();
 
         // Use cblas for better performance
-        int n_elem = fft_result_beam.n_elem;
-        cblas_zdscal(n_elem, 1 / beam_max, fft_result_beam.memptr(), 1); // Equivalent to: fft_result_beam /= beam_max;
-        n_elem = fft_result_image.n_elem;
-        cblas_zdscal(n_elem, 1 / beam_max, fft_result_image.memptr(), 1); // Equivalent to: fft_result_image /= beam_max;
+        cblas_zdscal(fft_result_beam.n_elem, 1 / beam_max, fft_result_beam.memptr(), 1); // Equivalent to: fft_result_beam /= beam_max;
+        cblas_zdscal(fft_result_image.n_elem, 1 / beam_max, fft_result_image.memptr(), 1); // Equivalent to: fft_result_image /= beam_max;
+    } else {
+        // FFTW computes an unnormalized transform.
+        // In order to match Numpy's inverse FFT, the result must
+        // be divided by the number of elements in the matrix.
+        if (f_fft == FFTW) {
+            // Use cblas for better performance
+            cblas_zdscal(fft_result_beam.n_elem, 1.0 / (double)(fft_result_beam.n_cols * fft_result_beam.n_rows), fft_result_beam.memptr(), 1); // in-place division by (fft_result_beam.n_cols * fft_result_beam.n_rows)
+            cblas_zdscal(fft_result_image.n_elem, 1.0 / (double)(fft_result_image.n_cols * fft_result_image.n_rows), fft_result_image.memptr(), 1); // in-place division by (fft_result_image.n_cols * fft_result_image.n_rows)
+        }
     }
 
     return std::make_pair(std::move(fft_result_image), std::move(fft_result_beam));

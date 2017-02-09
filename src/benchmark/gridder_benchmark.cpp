@@ -36,55 +36,66 @@ void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int im
 
 static void gridder_kernel_exact_benchmark(benchmark::State& state)
 {
+    int image_size = pow(2, state.range(0));
+
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_exact);
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    prepare_gridder(uv_in_pixels, residual_vis, cfg.image_size, cfg.cell_size);
+    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size);
 
-    stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::mat> result;
+    stp::GaussianSinc kernel_func(state.range(1));
 
     while (state.KeepRunning())
-        benchmark::DoNotOptimize(result = convolve_to_grid(kernel_func, state.range(0), cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, 1));
+        benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, 1));
 }
 
 static void gridder_kernel_oversampling_benchmark(benchmark::State& state)
 {
+    int image_size = pow(2, state.range(0));
+
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_oversampling);
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    prepare_gridder(uv_in_pixels, residual_vis, cfg.image_size, cfg.cell_size);
+    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size);
 
-    stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::mat> result;
+    stp::GaussianSinc kernel_func(state.range(1));
 
     while (state.KeepRunning())
-        benchmark::DoNotOptimize(result = convolve_to_grid(kernel_func, state.range(1), cfg.image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, state.range(0)));
+        benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, state.range(2)));
 }
 
 BENCHMARK(gridder_kernel_oversampling_benchmark)
-    ->Args({ 3, 3 })
-    ->Args({ 5, 3 })
-    ->Args({ 7, 3 })
-    ->Args({ 9, 3 })
-    ->Args({ 3, 5 })
-    ->Args({ 5, 5 })
-    ->Args({ 7, 5 })
-    ->Args({ 9, 5 })
-    ->Args({ 3, 7 })
-    ->Args({ 5, 7 })
-    ->Args({ 7, 7 })
-    ->Args({ 9, 7 })
+    ->Args({ 11, 3, 9 })
+    ->Args({ 12, 3, 9 })
+    ->Args({ 13, 3, 9 })
+    ->Args({ 14, 3, 9 })
+    ->Args({ 11, 5, 9 })
+    ->Args({ 12, 5, 9 })
+    ->Args({ 13, 5, 9 })
+    ->Args({ 14, 5, 9 })
+    ->Args({ 11, 7, 9 })
+    ->Args({ 12, 7, 9 })
+    ->Args({ 13, 7, 9 })
+    ->Args({ 14, 7, 9 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(gridder_kernel_exact_benchmark)
-    ->Args({ 3 })
-    ->Args({ 5 })
-    ->Args({ 7 })
+    ->Args({ 11, 3 })
+    ->Args({ 12, 3 })
+    ->Args({ 13, 3 })
+    ->Args({ 14, 3 })
+    ->Args({ 11, 5 })
+    ->Args({ 12, 5 })
+    ->Args({ 13, 5 })
+    ->Args({ 14, 5 })
+    ->Args({ 11, 7 })
+    ->Args({ 12, 7 })
+    ->Args({ 13, 7 })
+    ->Args({ 14, 7 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

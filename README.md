@@ -22,9 +22,6 @@
 #### External (Debian-provided)
 - [OpenBLAS](http://www.openblas.net) [0.2.19]
 - [LAPACK](http://www.netlib.org/lapack) [3.7.0]
-- [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
-- [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
-- [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
 
 #### In Source (third-party)
 - [Armadillo](http://arma.sourceforge.net/) [7.600.2]
@@ -34,6 +31,9 @@
 - [FFTW3](http://www.fftw.org/) [3.3.5]
 - [pybind11](https://github.com/pybind/pybind11) [2.0.0]
 - [TBB](https://www.threadingbuildingblocks.org/) [2017 Update 3]
+- [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
+- [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
+- [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
 
 ### Build
 
@@ -90,7 +90,7 @@ $ ./reduce projectroot/config/pipeline-benchmark/fastimg_oversampling_config.jso
  - Recommended valgrind tools: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
  - STP and reduce shall be compiled in Release mode for realistic profiling. However, if detailed profiling of source code is desired, debug info (-g option of gcc) shall be added. This can be accomplished "Release With Debug Information" mode (CMAKE_BUILD_TYPE=RelWithDebInfo) as this mode keeps compiling optimizations while adding debug symbols.
  - When running valgrind with callgrind tool, add --separate-threads=yes if you want to profile all threads.
- - Results of these tools are written out to a file (default name: <tool>.out.<pid>).
+ - Results of these tools are written out to a file (default name: \<tool\>.out.\<pid\>).
  - Callgrind and cachegrind output files can be analyzed using kcachegrind, while massif output file can be analyzed with massif-visualizer.
  - Callgrind usage example:
 ```sh
@@ -104,6 +104,11 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 8 February 2017
+- Some minor improvements
+- Added RapidJSON, TCLAP and spdlog in-source
+- Improved benchmarks
+
 ### 7 February 2017
 - Fixed minor bugs
 

@@ -9,23 +9,14 @@ set(CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstrict-aliasing -march=native)
 add_compile_options(-Wno-unused-parameter -Wno-sign-compare) # avoids a lot of warnings due to cnpy (save_npz)
 
-# Dependency: rapidjson
-find_path(RAPIDJSON_INCLUDE_PATH rapidjson)
-if(RAPIDJSON_INCLUDE_PATH-NOTFOUND)
-        message(FATAL_ERROR "RapidJSON not found")
-endif()
+# Dependency: RapidJSON
+set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include/rapidjson")
 
 # Dependency: spdlog
-find_path(SPDLOG_INCLUDE_PATH spdlog)
-if(SPDLOG_INCLUDE_PATH-NOTFOUND)
-        message(FATAL_ERROR "spdlog not found")
-endif()
+set(SPDLOG_INCLUDE_PATH "../third-party/spdlog/include/spdlog")
 
 # Dependency: tclap
-find_path(TCLAP_INCLUDE_PATH tclap)
-if(TCLAP_INCLUDE_PATH-NOTFOUND)
-        message(FATAL_ERROR "TCLAP not found")
-endif()
+set(TCLAP_INCLUDE_PATH "../third-party/tclap/include/tclap")
 
 # Target: reduce
 set(REDUCE_TARGET_NAME "reduce")
