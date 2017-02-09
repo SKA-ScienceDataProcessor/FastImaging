@@ -42,7 +42,6 @@ RAPIDJSON_DIAG_OFF(4127) // conditional expression is constant
 RAPIDJSON_DIAG_PUSH
 RAPIDJSON_DIAG_OFF(padded)
 RAPIDJSON_DIAG_OFF(unreachable-code)
-RAPIDJSON_DIAG_OFF(c++98-compat)
 #endif
 
 RAPIDJSON_NAMESPACE_BEGIN
@@ -103,13 +102,6 @@ public:
     explicit
     Writer(StackAllocator* allocator = 0, size_t levelDepth = kDefaultLevelDepth) :
         os_(0), level_stack_(allocator, levelDepth * sizeof(Level)), maxDecimalPlaces_(kDefaultMaxDecimalPlaces), hasRoot_(false) {}
-
-#if RAPIDJSON_HAS_CXX11_RVALUE_REFS
-    Writer(Writer&& rhs) :
-        os_(rhs.os_), level_stack_(std::move(rhs.level_stack_)), maxDecimalPlaces_(rhs.maxDecimalPlaces_), hasRoot_(rhs.hasRoot_) {
-        rhs.os_ = 0;
-    }
-#endif
 
     //! Reset the writer with a new stream.
     /*!
@@ -192,14 +184,12 @@ public:
     bool Double(double d)       { Prefix(kNumberType); return EndValue(WriteDouble(d)); }
 
     bool RawNumber(const Ch* str, SizeType length, bool copy = false) {
-        RAPIDJSON_ASSERT(str != 0);
         (void)copy;
         Prefix(kNumberType);
         return EndValue(WriteString(str, length));
     }
 
     bool String(const Ch* str, SizeType length, bool copy = false) {
-        RAPIDJSON_ASSERT(str != 0);
         (void)copy;
         Prefix(kStringType);
         return EndValue(WriteString(str, length));
@@ -259,11 +249,7 @@ public:
         \param length Length of the json.
         \param type Type of the root of json.
     */
-    bool RawValue(const Ch* json, size_t length, Type type) {
-        RAPIDJSON_ASSERT(json != 0);
-        Prefix(type);
-        return EndValue(WriteRawValue(json, length));
-    }
+    bool RawValue(const Ch* json, size_t length, Type type) { Prefix(type); return EndValue(WriteRawValue(json, length)); }
 
 protected:
     //! Information for each nested level
@@ -297,7 +283,7 @@ protected:
         const char* end = internal::i32toa(i, buffer);
         PutReserve(*os_, static_cast<size_t>(end - buffer));
         for (const char* p = buffer; p != end; ++p)
-            PutUnsafe(*os_, static_cast<typename OutputStream::Ch>(*p));
+            PutUnsafe(*os_, static_cast<typename TargetEncoding::Ch>(*p));
         return true;
     }
 
@@ -306,7 +292,7 @@ protected:
         const char* end = internal::u32toa(u, buffer);
         PutReserve(*os_, static_cast<size_t>(end - buffer));
         for (const char* p = buffer; p != end; ++p)
-            PutUnsafe(*os_, static_cast<typename OutputStream::Ch>(*p));
+            PutUnsafe(*os_, static_cast<typename TargetEncoding::Ch>(*p));
         return true;
     }
 
@@ -315,7 +301,7 @@ protected:
         const char* end = internal::i64toa(i64, buffer);
         PutReserve(*os_, static_cast<size_t>(end - buffer));
         for (const char* p = buffer; p != end; ++p)
-            PutUnsafe(*os_, static_cast<typename OutputStream::Ch>(*p));
+            PutUnsafe(*os_, static_cast<typename TargetEncoding::Ch>(*p));
         return true;
     }
 
@@ -324,7 +310,7 @@ protected:
         char* end = internal::u64toa(u64, buffer);
         PutReserve(*os_, static_cast<size_t>(end - buffer));
         for (char* p = buffer; p != end; ++p)
-            PutUnsafe(*os_, static_cast<typename OutputStream::Ch>(*p));
+            PutUnsafe(*os_, static_cast<typename TargetEncoding::Ch>(*p));
         return true;
     }
 
@@ -352,12 +338,12 @@ protected:
         char* end = internal::dtoa(d, buffer, maxDecimalPlaces_);
         PutReserve(*os_, static_cast<size_t>(end - buffer));
         for (char* p = buffer; p != end; ++p)
-            PutUnsafe(*os_, static_cast<typename OutputStream::Ch>(*p));
+            PutUnsafe(*os_, static_cast<typename TargetEncoding::Ch>(*p));
         return true;
     }
 
     bool WriteString(const Ch* str, SizeType length)  {
-        static const typename OutputStream::Ch hexDigits[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        static const typename TargetEncoding::Ch hexDigits[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
         static const char escape[256] = {
 #define Z16 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
             //0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
@@ -413,7 +399,7 @@ protected:
             else if ((sizeof(Ch) == 1 || static_cast<unsigned>(c) < 256) && RAPIDJSON_UNLIKELY(escape[static_cast<unsigned char>(c)]))  {
                 is.Take();
                 PutUnsafe(*os_, '\\');
-                PutUnsafe(*os_, static_cast<typename OutputStream::Ch>(escape[static_cast<unsigned char>(c)]));
+                PutUnsafe(*os_, static_cast<typename TargetEncoding::Ch>(escape[static_cast<unsigned char>(c)]));
                 if (escape[static_cast<unsigned char>(c)] == 'u') {
                     PutUnsafe(*os_, '0');
                     PutUnsafe(*os_, '0');

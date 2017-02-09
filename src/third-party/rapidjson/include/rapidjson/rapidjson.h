@@ -568,7 +568,7 @@ RAPIDJSON_NAMESPACE_END
 #ifndef RAPIDJSON_HAS_CXX11_RANGE_FOR
 #if defined(__clang__)
 #define RAPIDJSON_HAS_CXX11_RANGE_FOR __has_feature(cxx_range_for)
-#elif (defined(RAPIDJSON_GNUC) && (RAPIDJSON_GNUC >= RAPIDJSON_VERSION_CODE(4,6,0)) && defined(__GXX_EXPERIMENTAL_CXX0X__)) || \
+#elif (defined(RAPIDJSON_GNUC) && (RAPIDJSON_GNUC >= RAPIDJSON_VERSION_CODE(4,3,0)) && defined(__GXX_EXPERIMENTAL_CXX0X__)) || \
       (defined(_MSC_VER) && _MSC_VER >= 1700)
 #define RAPIDJSON_HAS_CXX11_RANGE_FOR 1
 #else
@@ -583,7 +583,7 @@ RAPIDJSON_NAMESPACE_END
 
 #ifndef RAPIDJSON_NEW
 ///! customization point for global \c new
-#define RAPIDJSON_NEW(TypeName) new TypeName
+#define RAPIDJSON_NEW(x) new x
 #endif
 #ifndef RAPIDJSON_DELETE
 ///! customization point for global \c delete

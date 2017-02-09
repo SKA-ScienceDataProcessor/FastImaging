@@ -140,8 +140,8 @@ inline bool StrtodDiyFp(const char* decimals, size_t length, size_t decimalPosit
         significand++;
 
     size_t remaining = length - i;
-    const int kUlpShift = 3;
-    const int kUlp = 1 << kUlpShift;
+    const unsigned kUlpShift = 3;
+    const unsigned kUlp = 1 << kUlpShift;
     int64_t error = (remaining == 0) ? 0 : kUlp / 2;
 
     DiyFp v(significand, 0);
@@ -177,17 +177,17 @@ inline bool StrtodDiyFp(const char* decimals, size_t length, size_t decimalPosit
     v = v.Normalize();
     error <<= oldExp - v.e;
 
-    const int effectiveSignificandSize = Double::EffectiveSignificandSize(64 + v.e);
-    int precisionSize = 64 - effectiveSignificandSize;
+    const unsigned effectiveSignificandSize = Double::EffectiveSignificandSize(64 + v.e);
+    unsigned precisionSize = 64 - effectiveSignificandSize;
     if (precisionSize + kUlpShift >= 64) {
-        int scaleExp = (precisionSize + kUlpShift) - 63;
+        unsigned scaleExp = (precisionSize + kUlpShift) - 63;
         v.f >>= scaleExp;
         v.e += scaleExp; 
-        error = (error >> scaleExp) + 1 + kUlp;
+        error = (error >> scaleExp) + 1 + static_cast<int>(kUlp);
         precisionSize -= scaleExp;
     }
 
-    DiyFp rounded(v.f >> precisionSize, v.e + precisionSize);
+    DiyFp rounded(v.f >> precisionSize, v.e + static_cast<int>(precisionSize));
     const uint64_t precisionBits = (v.f & ((uint64_t(1) << precisionSize) - 1)) * kUlp;
     const uint64_t halfWay = (uint64_t(1) << (precisionSize - 1)) * kUlp;
     if (precisionBits >= halfWay + static_cast<unsigned>(error)) {

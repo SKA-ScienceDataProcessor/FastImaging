@@ -1101,7 +1101,7 @@ public:
         };
 
         for (size_t i = 0; i < kCount; i++)
-            if (strncmp(uri, uris[i], length) == 0 && strlen(uris[i]) == length)
+            if (strncmp(uri, uris[i], length) == 0)
                 return sd_[i];
         return 0;
     }
@@ -1306,14 +1306,6 @@ TEST(SchemaValidator, Issue608) {
 
     VALIDATE(s, "{\"a\" : null, \"b\": null}", true);
     INVALIDATE(s, "{\"a\" : null, \"a\" : null}", "", "required", "");
-}
-
-// Fail to resolve $ref in allOf causes crash in SchemaValidator::StartObject()
-TEST(SchemaValidator, Issue728_AllOfRef) {
-    Document sd;
-    sd.Parse("{\"allOf\": [{\"$ref\": \"#/abc\"}]}");
-    SchemaDocument s(sd);
-    VALIDATE(s, "{\"key1\": \"abc\", \"key2\": \"def\"}", true);
 }
 
 #ifdef __clang__

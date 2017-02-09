@@ -100,9 +100,6 @@ struct Foo {
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/schema.h"   // -> pointer.h
 
-typedef Transcoder<UTF8<>, UTF8<> > TranscoderUtf8ToUtf8;
-typedef BaseReaderHandler<UTF8<>, void> BaseReaderHandlerUtf8Void;
-
 Foo::Foo() : 
     // encodings.h
     utf8(RAPIDJSON_NEW(UTF8<>)),
@@ -114,40 +111,40 @@ Foo::Foo() :
     utf32le(RAPIDJSON_NEW(UTF32LE<>)),
     ascii(RAPIDJSON_NEW(ASCII<>)),
     autoutf(RAPIDJSON_NEW(AutoUTF<unsigned>)),
-    transcoder(RAPIDJSON_NEW(TranscoderUtf8ToUtf8)),
+    transcoder(RAPIDJSON_NEW((Transcoder<UTF8<>, UTF8<> >))),
 
     // allocators.h
     crtallocator(RAPIDJSON_NEW(CrtAllocator)),
     memorypoolallocator(RAPIDJSON_NEW(MemoryPoolAllocator<>)),
 
     // stream.h
-    stringstream(RAPIDJSON_NEW(StringStream)(NULL)),
-    insitustringstream(RAPIDJSON_NEW(InsituStringStream)(NULL)),
+    stringstream(RAPIDJSON_NEW(StringStream(0))),
+    insitustringstream(RAPIDJSON_NEW(InsituStringStream(0))),
 
     // stringbuffer.h
     stringbuffer(RAPIDJSON_NEW(StringBuffer)),
 
     // // filereadstream.h
-    // filereadstream(RAPIDJSON_NEW(FileReadStream)(stdout, buffer, sizeof(buffer))),
+    // filereadstream(RAPIDJSON_NEW(FileReadStream(stdout, buffer, sizeof(buffer)))),
 
     // // filewritestream.h
-    // filewritestream(RAPIDJSON_NEW(FileWriteStream)(stdout, buffer, sizeof(buffer))),
+    // filewritestream(RAPIDJSON_NEW(FileWriteStream(stdout, buffer, sizeof(buffer)))),
 
     // memorybuffer.h
     memorybuffer(RAPIDJSON_NEW(MemoryBuffer)),
 
     // memorystream.h
-    memorystream(RAPIDJSON_NEW(MemoryStream)(NULL, 0)),
+    memorystream(RAPIDJSON_NEW(MemoryStream(0, 0))),
 
     // reader.h
-    basereaderhandler(RAPIDJSON_NEW(BaseReaderHandlerUtf8Void)),
+    basereaderhandler(RAPIDJSON_NEW((BaseReaderHandler<UTF8<>, void>))),
     reader(RAPIDJSON_NEW(Reader)),
 
     // writer.h
-    writer(RAPIDJSON_NEW(Writer<StringBuffer>)),
+    writer(RAPIDJSON_NEW((Writer<StringBuffer>))),
 
     // prettywriter.h
-    prettywriter(RAPIDJSON_NEW(PrettyWriter<StringBuffer>)),
+    prettywriter(RAPIDJSON_NEW((PrettyWriter<StringBuffer>))),
 
     // document.h
     value(RAPIDJSON_NEW(Value)),
@@ -157,8 +154,8 @@ Foo::Foo() :
     pointer(RAPIDJSON_NEW(Pointer)),
 
     // schema.h
-    schemadocument(RAPIDJSON_NEW(SchemaDocument)(*document)),
-    schemavalidator(RAPIDJSON_NEW(SchemaValidator)(*schemadocument))
+    schemadocument(RAPIDJSON_NEW(SchemaDocument(*document))),
+    schemavalidator(RAPIDJSON_NEW(SchemaValidator(*schemadocument)))
 {
 
 }

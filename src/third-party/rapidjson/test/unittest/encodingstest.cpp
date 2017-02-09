@@ -267,7 +267,7 @@ static unsigned inline decode(unsigned* state, unsigned* codep, unsigned byte) {
 
     *codep = (*state != UTF8_ACCEPT) ?
         (byte & 0x3fu) | (*codep << 6) :
-    (0xffu >> type) & (byte);
+    (0xff >> type) & (byte);
 
     *state = utf8d[256 + *state + type];
     return *state;
