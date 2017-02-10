@@ -1,8 +1,8 @@
-g++
-texinfo
 cmake
 cppcheck
-rapidjson-dev
-libarmadillo-dev
-libtclap-dev
+g++
+libblas-dev liblapack-dev
 libspdlog-dev
+libtclap-dev
+rapidjson-dev
+texinfo

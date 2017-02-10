@@ -1,13 +1,24 @@
-# -*- mode: ruby -*-
+    # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
+
+  # NB: Xenial64 box breaks username/password convention:
+  # http://askubuntu.com/a/875659/31731
+
+  #config.vm.box = "ubuntu/xenial64"
+  #config.ssh.username = "ubuntu"
+  #config.ssh.password = "9b296369bff0e066f60d217b"
+
+  # Alternatively, use a debian-testing image:
   config.vm.box = "fujimakishouten/debian-stretch64"
+
+
   config.vm.define "fastimagingvm" do |fastimagingvm| end
 
   config.vm.provider "virtualbox" do |v|
       v.memory = 2048
-      v.cpus = 3
+      v.cpus = 2
   end
 
   config.vm.provision "shell",
