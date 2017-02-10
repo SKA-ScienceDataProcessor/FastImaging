@@ -6,3 +6,4 @@ libspdlog-dev
 libtclap-dev
 rapidjson-dev
 texinfo
+zlib1g-dev
