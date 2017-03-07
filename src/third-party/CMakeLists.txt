@@ -40,7 +40,7 @@ include(ExternalProject)
 ExternalProject_Add(
     ${FFTW_PROJECT_NAME}
     SOURCE_DIR ${FFTW_SOURCE_DIR}
-    CONFIGURE_COMMAND ./configure --prefix=${FFTW_INSTALL_DIR} --with-pic --enable-threads
+    CONFIGURE_COMMAND ./configure --prefix=${FFTW_INSTALL_DIR} --with-pic --enable-threads --disable-doc
     BUILD_COMMAND make
     BUILD_IN_SOURCE 1
     INSTALL_COMMAND make install && make distclean

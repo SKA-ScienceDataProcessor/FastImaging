@@ -31,7 +31,7 @@
 - [FFTW3](http://www.fftw.org/) [3.3.5]
 - [pybind11](https://github.com/pybind/pybind11) [2.0.0]
 - [TBB](https://www.threadingbuildingblocks.org/) [2017 Update 3]
-- [rapidjson](https://github.com/miloyip/rapidjson) [0.12]
+- [rapidjson](https://github.com/miloyip/rapidjson) [1.1.0]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
 
@@ -62,7 +62,7 @@ $ make test
 ### Running on the Command Line (all tests)
 ```sh
 $ cd path/to/build/directory
-$ run-parts ./libstp/tests
+$ run-parts ./tests
 ```
 
 ## Benchmark Execution
@@ -86,12 +86,11 @@ $ ./reduce projectroot/config/pipeline-benchmark/fastimg_oversampling_config.jso
 ```
 
 ## Code profiling
- - Valgrind framework and kcachegrind GUI application can be used to profile STP library. 
- - Recommended valgrind tools: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
- - STP and reduce shall be compiled in Release mode for realistic profiling. However, if detailed profiling of source code is desired, debug info (-g option of gcc) shall be added. This can be accomplished "Release With Debug Information" mode (CMAKE_BUILD_TYPE=RelWithDebInfo) as this mode keeps compiling optimizations while adding debug symbols.
- - When running valgrind with callgrind tool, add --separate-threads=yes if you want to profile all threads.
+ - Valgrind framework tools can be used to profile STP library: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
+ - For more accurate profiling STP and reduce shall be compiled in Release mode. However, if detailed profiling of source code lines is desired, debug information shall be added (-g option of gcc). This can be done using the "Release With Debug Information" mode (CMAKE_BUILD_TYPE=RelWithDebInfo), as it uses compiling optimizations while adding debug symbols.
+ - When running valgrind with callgrind tool, add --separate-threads=yes in order to independently profile all threads.
  - Results of these tools are written out to a file (default name: \<tool\>.out.\<pid\>).
- - Callgrind and cachegrind output files can be analyzed using kcachegrind, while massif output file can be analyzed with massif-visualizer.
+ - Callgrind and cachegrind output files can be analyzed using kcachegrind GUI application, while massif output file can be analyzed with massif-visualizer.
  - Callgrind usage example:
 ```sh
 $ mkdir -p path/to/build/directory
@@ -99,11 +98,17 @@ $ cd path/to/build/directory
 $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
 $ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce projectroot/config/pipeline-benchmark/fastimg_oversampling_config.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/config/pipeline-benchmark/fastimg_oversampling_config.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json
 $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 7 March 2017
+- Some minor improvements and fixes
+- Improved benchmark tests
+- Added new benchmark tests
+- Improve gridder for the case of exact kernel
+
 ### 8 February 2017
 - Some minor improvements
 - Added RapidJSON, TCLAP and spdlog in-source

@@ -34,7 +34,7 @@ void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int im
     uv_in_pixels.col(1) = uvw_in_pixels.col(1);
 }
 
-static void gridder_kernel_exact_benchmark(benchmark::State& state)
+static void gridder_exact_benchmark(benchmark::State& state)
 {
     int image_size = pow(2, state.range(0));
 
@@ -51,7 +51,7 @@ static void gridder_kernel_exact_benchmark(benchmark::State& state)
         benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, 1));
 }
 
-static void gridder_kernel_oversampling_benchmark(benchmark::State& state)
+static void gridder_oversampling_benchmark(benchmark::State& state)
 {
     int image_size = pow(2, state.range(0));
 
@@ -64,34 +64,41 @@ static void gridder_kernel_oversampling_benchmark(benchmark::State& state)
 
     stp::GaussianSinc kernel_func(state.range(1));
 
-    while (state.KeepRunning())
-        benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, state.range(2)));
+    while (state.KeepRunning()) {
+        benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, cfg.oversampling));
+    }
 }
 
-BENCHMARK(gridder_kernel_oversampling_benchmark)
-    ->Args({ 11, 3, 9 })
-    ->Args({ 12, 3, 9 })
-    ->Args({ 13, 3, 9 })
-    ->Args({ 14, 3, 9 })
-    ->Args({ 11, 5, 9 })
-    ->Args({ 12, 5, 9 })
-    ->Args({ 13, 5, 9 })
-    ->Args({ 14, 5, 9 })
-    ->Args({ 11, 7, 9 })
-    ->Args({ 12, 7, 9 })
-    ->Args({ 13, 7, 9 })
-    ->Args({ 14, 7, 9 })
-    ->Unit(benchmark::kMillisecond);
-
-BENCHMARK(gridder_kernel_exact_benchmark)
+BENCHMARK(gridder_oversampling_benchmark)
+    ->Args({ 10, 3 })
     ->Args({ 11, 3 })
     ->Args({ 12, 3 })
     ->Args({ 13, 3 })
     ->Args({ 14, 3 })
+    ->Args({ 10, 5 })
     ->Args({ 11, 5 })
     ->Args({ 12, 5 })
     ->Args({ 13, 5 })
     ->Args({ 14, 5 })
+    ->Args({ 10, 7 })
+    ->Args({ 11, 7 })
+    ->Args({ 12, 7 })
+    ->Args({ 13, 7 })
+    ->Args({ 14, 7 })
+    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK(gridder_exact_benchmark)
+    ->Args({ 10, 3 })
+    ->Args({ 11, 3 })
+    ->Args({ 12, 3 })
+    ->Args({ 13, 3 })
+    ->Args({ 14, 3 })
+    ->Args({ 10, 5 })
+    ->Args({ 11, 5 })
+    ->Args({ 12, 5 })
+    ->Args({ 13, 5 })
+    ->Args({ 14, 5 })
+    ->Args({ 10, 7 })
     ->Args({ 11, 7 })
     ->Args({ 12, 7 })
     ->Args({ 13, 7 })

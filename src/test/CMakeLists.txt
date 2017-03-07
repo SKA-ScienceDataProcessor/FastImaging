@@ -6,15 +6,12 @@ set(CMAKE_CXX_STANDARD 14)
 # Dependency: Threads (required by google test)
 find_package(Threads REQUIRED)
 
-# External dependency: RapidJSON
-find_path(RAPIDJSON rapidjson)
-if(NOT RAPIDJSON)
-    message(FATAL_ERROR "RapidJSON library was not found")
-endif()
+# Dependency: RapidJSON
+set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include/rapidjson")
 
 # For convenience all link libraries required by
 # the tests are put in one variable
-set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main benchmark Threads::Threads)
+set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main Threads::Threads)
 
 # Copy configuration files to the binary directory
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../config/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
@@ -50,7 +47,7 @@ add_unit_test(test_vector_math_funcs vectormath/test_vector_math_funcs.cpp)
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
 # Triangle
-add_unit_test(test_conv_triangle_func conv/conv_test_triangle.cpp)
+add_unit_test(test_conv_triangle conv/conv_test_triangle.cpp)
 
 # Tophat
 add_unit_test(test_conv_tophat conv/conv_test_tophat.cpp)
@@ -70,7 +67,7 @@ add_unit_test(test_conv_gaussian_sinc conv/conv_test_gaussiansinc.cpp)
 add_unit_test(test_kernel_generation_oversampled_pillbox kernel/kernel_test_OversampledPillbox.cpp)
 
 # Oversampled Pillbox Small
-add_unit_test(test_kernel_generation_oversample_pillbox_small kernel/kernel_test_OversampledPillboxSmall.cpp)
+add_unit_test(test_kernel_generation_oversampled_pillbox_small kernel/kernel_test_OversampledPillboxSmall.cpp)
 
 # Regular Sampling Pillbox
 add_unit_test(test_kernel_generation_regular_sampling_pillbox kernel/kernel_test_RegularSamplingPillbox.cpp)
@@ -81,7 +78,7 @@ add_unit_test(test_kernel_generation_regular_sampling_triangle kernel/kernel_tes
 # Test Cases: Gridder Functions ----------------------------------------------------------------------------------------
 
 # Bounds Checking
-add_unit_test(test_gridder_bouns_checking gridder/gridder_test_BoundsChecking.cpp)
+add_unit_test(test_gridder_bounds_checking gridder/gridder_test_BoundsChecking.cpp)
 
 # Multi Pixel Pillbox
 add_unit_test(test_gridder_multi_pixel_pillbox gridder/gridder_test_MultiPixelPillbox.cpp)
@@ -163,7 +160,7 @@ add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp
 add_test(NAME VectorMathFunctions COMMAND test_vector_math_funcs)
 
 # Convolution
-add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle_func)
+add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle)
 add_test(NAME ConvTopHatFunc COMMAND test_conv_tophat)
 add_test(NAME ConvSincFunc COMMAND test_conv_sinc)
 add_test(NAME ConvGaussianFunc COMMAND test_conv_gaussian)
@@ -171,12 +168,12 @@ add_test(NAME ConvGaussianSincFunc COMMAND test_conv_gaussian_sinc)
 
 # Kernel
 add_test(NAME KernelGenerationOversampledPillbox COMMAND test_kernel_generation_oversampled_pillbox)
-add_test(NAME KernelGenerationOversamplePillboxSmall COMMAND test_kernel_generation_oversample_pillbox_small)
+add_test(NAME KernelGenerationOversampledPillboxSmall COMMAND test_kernel_generation_oversampled_pillbox_small)
 add_test(NAME KernelGenerationRegularSamplingPillbox COMMAND test_kernel_generation_regular_sampling_pillbox)
 add_test(NAME KernelGenerationRegularSamplingTriangle COMMAND test_kernel_generation_regular_sampling_triangle)
 
 # Gridder
-add_test(NAME GridderBoundsChecking COMMAND test_gridder_bouns_checking)
+add_test(NAME GridderBoundsChecking COMMAND test_gridder_bounds_checking)
 add_test(NAME GridderMultiPixelPillbox COMMAND test_gridder_multi_pixel_pillbox)
 add_test(NAME GridderMultipleComplexVis COMMAND test_gridder_multiple_complex_vis)
 add_test(NAME GridderNearbyComplexVis COMMAND test_gridder_nearby_complex_vis)

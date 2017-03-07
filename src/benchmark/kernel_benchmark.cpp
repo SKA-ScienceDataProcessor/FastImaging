@@ -22,5 +22,7 @@ static void kernel_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(kernel_test_benchmark)
-    ->Args({ 3 });
+    ->Args({ 3 })
+    ->Args({ 5 })
+    ->Args({ 7 });
 BENCHMARK_MAIN()

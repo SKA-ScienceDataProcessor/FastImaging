@@ -151,9 +151,10 @@ std::pair<arma::cx_mat, arma::mat> convolve_to_grid(const T& kernel_creator, con
     arma::cx_mat vis_grid = arma::zeros<arma::cx_mat>(image_size, image_size);
     arma::mat sampling_grid = arma::zeros<arma::mat>(image_size, image_size);
 
-    int kernel_size = support * 2 + 1;
-
     if (kernel_exact == false) {
+
+        int kernel_size = support * 2 + 1;
+
         // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
         const arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, pad, normalize);
         arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
@@ -184,18 +185,24 @@ std::pair<arma::cx_mat, arma::mat> convolve_to_grid(const T& kernel_creator, con
             });
         });
     } else {
-        good_vis_idx.for_each([&kernel_centre_on_grid, &support, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid](arma::uvec::elem_type& val) {
+        arma::uword kernel_size = support * 2 + 1;
+
+        good_vis_idx.for_each([&kernel_centre_on_grid, &support, &kernel_size, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid](arma::uvec::elem_type& val) {
             const int gc_x = kernel_centre_on_grid(val, 0);
             const int gc_y = kernel_centre_on_grid(val, 1);
 
-            arma::span xrange = arma::span(gc_x - support, gc_x + support);
-            arma::span yrange = arma::span(gc_y - support, gc_y + support);
+            arma::uword xstart = gc_x - support;
+            arma::uword ystart = gc_y - support;
 
             // Exact gridding is used, i.e. the kernel is recalculated for each visibility, with
             // precise sub-pixel offset according to that visibility's UV co-ordinates.
             arma::mat normed_kernel_array = make_kernel_array(kernel_creator, support, uv_frac.row(val));
-            vis_grid(yrange, xrange) += vis[val] * normed_kernel_array;
-            sampling_grid(yrange, xrange) += normed_kernel_array;
+            for (arma::uword i = 0; i < kernel_size; i++) {
+                for (arma::uword j = 0; j < kernel_size; j++) {
+                    vis_grid(ystart + j, xstart + i) += vis[val] * normed_kernel_array.at(j, i);
+                    sampling_grid(ystart + j, xstart + i) += normed_kernel_array.at(j, i);
+                }
+            }
         });
     }
 

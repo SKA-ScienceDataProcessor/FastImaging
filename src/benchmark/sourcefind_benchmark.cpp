@@ -17,6 +17,8 @@ std::string config_file_oversampling("fastimg_oversampling_config.json");
 
 static void sourcefind_test_benchmark(benchmark::State& state)
 {
+    int image_size = pow(2, state.range(0));
+
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
@@ -29,7 +31,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     arma::cx_mat residual_vis = input_vis - input_model;
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, input_uvw, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
     arma::mat image = arma::real(result.first);
 
     while (state.KeepRunning()) {
@@ -38,5 +40,10 @@ static void sourcefind_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(sourcefind_test_benchmark)
+    ->Args({ 10 })
+    ->Args({ 11 })
+    ->Args({ 12 })
+    ->Args({ 13 })
+    ->Args({ 14 })
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN()

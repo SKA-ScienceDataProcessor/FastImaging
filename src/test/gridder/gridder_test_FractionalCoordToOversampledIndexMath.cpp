@@ -1,4 +1,3 @@
-#include <benchmark/benchmark.h>
 #include <gtest/gtest.h>
 #include <stp.h>
 

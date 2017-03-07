@@ -85,14 +85,24 @@ static void generate_1D_GaussianSinc(benchmark::State& state)
 }
 
 BENCHMARK(generate_1D_TopHat)
-    ->Args({ 3 });
+    ->Args({ 3 })
+    ->Args({ 5 })
+    ->Args({ 7 });
 BENCHMARK(generate_1D_Triangle)
-    ->Args({ 3 });
+    ->Args({ 3 })
+    ->Args({ 5 })
+    ->Args({ 7 });
 BENCHMARK(generate_1D_Sinc)
-    ->Args({ 3 });
+    ->Args({ 3 })
+    ->Args({ 5 })
+    ->Args({ 7 });
 BENCHMARK(generate_1D_Gaussian)
-    ->Args({ 3 });
+    ->Args({ 3 })
+    ->Args({ 5 })
+    ->Args({ 7 });
 BENCHMARK(generate_1D_GaussianSinc)
-    ->Args({ 3 });
+    ->Args({ 3 })
+    ->Args({ 5 })
+    ->Args({ 7 });
 
 BENCHMARK_MAIN()

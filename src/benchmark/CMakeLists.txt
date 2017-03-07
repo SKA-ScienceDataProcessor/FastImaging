@@ -9,11 +9,8 @@ add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstr
 # Dependency: Threads (required by google benchmark)
 find_package(Threads REQUIRED)
 
-# Dependency: rapidjson
-find_path(RAPIDJSON_INCLUDE_PATH rapidjson)
-if(RAPIDJSON_INCLUDE_PATH-NOTFOUND)
-        message(FATAL_ERROR "RapidJSON not found")
-endif()
+# Dependency: RapidJSON
+set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include/rapidjson")
 
 # Configures the location of the test data
 get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-data" ABSOLUTE)
@@ -42,7 +39,7 @@ endfunction()
 # Vector Math
 add_benchmark_test(vector_math_benchmark vector_math_benchmark.cpp)
 
-# Convolution
+# Convolution_function
 add_benchmark_test(conv_benchmark conv_benchmark.cpp)
 
 # Populate_cache
@@ -56,6 +53,9 @@ add_benchmark_test(imager_benchmark imager_benchmark.cpp)
 
 # Kernel
 add_benchmark_test(kernel_benchmark kernel_benchmark.cpp)
+
+# Gridder_convolution
+add_benchmark_test(gridder_convolution_benchmark gridder_convolution_benchmark.cpp)
 
 # Gridder
 add_benchmark_test(gridder_benchmark gridder_benchmark.cpp)

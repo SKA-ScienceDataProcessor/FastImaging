@@ -16,7 +16,8 @@ const uint beam_slice = 1;
 
 // Available FFT algorithms
 typedef enum { FFTW,
-    ARMAFFT } fft_function_type;
+    ARMAFFT,
+    FFTW_OPTIMAL } fft_function_type;
 
 /**
  * @brief Generates image and beam data from input visibilities.
