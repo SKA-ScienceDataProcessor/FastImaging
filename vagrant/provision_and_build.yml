@@ -4,7 +4,7 @@
     - timstaley.base
 
   vars:
-    fastimg_dir: "/home/vagrant/fastimaging"
+    fastimg_dir: "{{ ansible_user_dir }}/fastimaging"
 
   tasks:
   - name: "Install debian-packaged dependencies"
@@ -18,16 +18,14 @@
       path: "{{ fastimg_dir }}"
       state: "directory"
 
-  - name: "Copy src directory"
+  - name: "Copy required repository contents"
     synchronize:
-      src: "../src"
+      src: "{{ item }}"
       dest: "{{ fastimg_dir }}"
-
-  - name: "Copy test-data directory"
-    synchronize:
-      src: "../test-data"
-      dest: "{{ fastimg_dir }}"
-
+    with_items:
+      - "../src"
+      - "../test-data"
+      - "../config"
 
   - name: "Create build dir"
     file:
