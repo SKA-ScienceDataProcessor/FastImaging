@@ -10,7 +10,7 @@
 #include <stp.h>
 
 std::string data_path(_PIPELINE_DATAPATH);
-std::string input_npz("simdata_small.npz");
+std::string input_npz("simdata_nstep10.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 
@@ -51,8 +51,7 @@ static void gridder_convolution_oversampling_benchmark(benchmark::State& state)
 
     assert(uv.n_cols == 2);
     assert(uv.n_rows == vis.n_rows);
-    assert(cfg.kernel_support || (oversampling >= 1));
-    assert(cfg.kernel_support == false);
+    assert(support || (oversampling >= 1));
 
     arma::mat uv_rounded = uv;
     uv_rounded.for_each([](arma::mat::elem_type& val) {
@@ -63,42 +62,93 @@ static void gridder_convolution_oversampling_benchmark(benchmark::State& state)
     arma::imat kernel_centre_on_grid = arma::conv_to<arma::imat>::from(uv_rounded) + (image_size / 2);
     arma::uvec good_vis_idx = stp::bounds_check_kernel_centre_locations(kernel_centre_on_grid, support, image_size);
 
-    arma::cx_mat vis_grid = arma::zeros<arma::cx_mat>(image_size, image_size);
-    arma::mat sampling_grid = arma::zeros<arma::mat>(image_size, image_size);
-    benchmark::DoNotOptimize(vis_grid);
-    benchmark::DoNotOptimize(sampling_grid);
+    stp::MatStp<cx_real_t> vis_grid(image_size, image_size);
+    stp::MatStp<real_t> sampling_grid(image_size, image_size);
+
+    /**********/
+    int shift_offset = ceil(image_size / 2);
+    kernel_centre_on_grid.for_each([&shift_offset](arma::imat::elem_type& val) {
+        if (val < shift_offset) {
+            val += shift_offset;
+        } else {
+            val -= shift_offset;
+        }
+    });
+    /*********/
 
     int kernel_size = support * 2 + 1;
 
     // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
-    const arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, false, true);
+    const arma::field<arma::mat> kernel_cache = stp::populate_kernel_cache(kernel_creator, support, oversampling);
     arma::imat oversampled_offset = stp::calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
     while (state.KeepRunning()) {
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&good_vis_idx, &kernel_centre_on_grid, &support, &kernel_size, &oversampling, &kernel_cache, &oversampled_offset, &uv_frac, &kernel_creator, &vis, &vis_grid, &sampling_grid](const tbb::blocked_range<size_t>& r) {
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&good_vis_idx, &image_size, &kernel_centre_on_grid, &support, &kernel_size, &kernel_cache, &oversampled_offset, &vis, &vis_grid, &sampling_grid](const tbb::blocked_range<size_t>& r) {
 
-            good_vis_idx.for_each([&kernel_centre_on_grid, &support, &kernel_size, &oversampling, &kernel_cache, &oversampled_offset, &uv_frac, &kernel_creator, &vis, &vis_grid, &sampling_grid, &r](arma::uvec::elem_type& val) {
-                const int gc_x = kernel_centre_on_grid(val, 0);
-                const int gc_y = kernel_centre_on_grid(val, 1);
+            for (arma::uword k = 0; k < good_vis_idx.n_elem; k++) {
+                arma::uword val = good_vis_idx.at(k);
+                int gc_x = kernel_centre_on_grid(val, 0);
+                int gc_y = kernel_centre_on_grid(val, 1);
+
                 const arma::uword cp_x = oversampled_offset.at(val, 0);
                 const arma::uword cp_y = oversampled_offset.at(val, 1);
 
                 int conv_col = ((gc_x - r.begin() + kernel_size) % kernel_size);
                 if (conv_col > support)
                     conv_col -= kernel_size;
-                const arma::uword grid_col = (gc_x - conv_col);
+                int grid_col = (gc_x - conv_col);
+                if ((grid_col < image_size) && (grid_col >= 0)) {
 
-                assert(std::abs(conv_col) <= support);
-                assert(arma::uword(grid_col % kernel_size) == r.begin());
+                    assert(std::abs(conv_col) <= support);
+                    assert(arma::uword(grid_col % kernel_size) == r.begin());
 
-                // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
-                for (int i = 0; i < kernel_size; i++) {
-                    const double kernel_val = kernel_cache(cp_y, cp_x).at(i, support - conv_col);
-                    const arma::uword grid_row = gc_y - support + i;
-                    vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
-                    sampling_grid.at(grid_row, grid_col) += kernel_val;
+                    // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
+                    for (int i = 0; i < kernel_size; i++) {
+                        const double kernel_val = kernel_cache(cp_y, cp_x).at(i, support - conv_col);
+                        int grid_row = gc_y - support + i;
+                        if (grid_row >= image_size)
+                            grid_row -= image_size;
+                        if (grid_row < 0)
+                            grid_row += image_size;
+                        vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
+                        sampling_grid.at(grid_row, grid_col) += kernel_val;
+                    }
                 }
-            });
+
+                if ((gc_x >= (image_size - support)) || (gc_x < support)) {
+                    if (gc_x >= (image_size - support)) {
+                        gc_x -= image_size;
+                        conv_col = ((gc_x - r.begin() + kernel_size * 2) % kernel_size);
+                        if (conv_col > support)
+                            conv_col -= kernel_size;
+                        grid_col = (gc_x - conv_col);
+                        assert(std::abs(conv_col) <= support);
+                    } else {
+                        assert(gc_x < support);
+                        gc_x += image_size;
+                        conv_col = ((gc_x - r.begin() + kernel_size) % kernel_size);
+                        if (conv_col > support)
+                            conv_col -= kernel_size;
+                        grid_col = (gc_x - conv_col);
+                        assert(std::abs(conv_col) <= support);
+                    }
+
+                    if ((grid_col < image_size) && (grid_col >= 0)) {
+
+                        // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
+                        for (int i = 0; i < kernel_size; i++) {
+                            const double kernel_val = kernel_cache(cp_y, cp_x).at(i, support - conv_col);
+                            int grid_row = gc_y - support + i;
+                            if (grid_row >= image_size)
+                                grid_row -= image_size;
+                            if (grid_row < 0)
+                                grid_row += image_size;
+                            vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
+                            sampling_grid.at(grid_row, grid_col) += kernel_val;
+                        }
+                    }
+                }
+            }
         });
         benchmark::ClobberMemory();
     }
@@ -110,16 +160,19 @@ BENCHMARK(gridder_convolution_oversampling_benchmark)
     ->Args({ 12, 3 })
     ->Args({ 13, 3 })
     ->Args({ 14, 3 })
+    ->Args({ 15, 3 })
     ->Args({ 10, 5 })
     ->Args({ 11, 5 })
     ->Args({ 12, 5 })
     ->Args({ 13, 5 })
     ->Args({ 14, 5 })
+    ->Args({ 15, 5 })
     ->Args({ 10, 7 })
     ->Args({ 11, 7 })
     ->Args({ 12, 7 })
     ->Args({ 13, 7 })
     ->Args({ 14, 7 })
-    ->Unit(benchmark::kMicrosecond);
+    ->Args({ 15, 7 })
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

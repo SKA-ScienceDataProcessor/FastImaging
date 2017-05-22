@@ -1,9 +1,0 @@
-{
-	"image_size_pix": 1024,
-	"cell_size_arcsec": 0.5,
-	"kernel_support" : 3,
-	"kernel_exact": false,
-	"oversampling": 9,
-	"sourcefind_detection": 50.0,
-	"sourcefind_analysis": 50.0
-}

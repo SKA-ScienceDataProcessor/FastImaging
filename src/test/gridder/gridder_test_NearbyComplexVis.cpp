@@ -5,7 +5,7 @@ using namespace stp;
 
 class GridderNearbyComplexVis : public ::testing::Test {
 private:
-    std::complex<double> v = 1. / 9.;
+    cx_real_t v = 1. / 9.;
 
     int image_size;
     int support;
@@ -37,13 +37,13 @@ public:
 
     arma::mat uv;
     arma::cx_mat vis;
-    std::pair<arma::cx_mat, arma::mat> result;
-    arma::cx_mat expected_vis_grid = {
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
+    arma::Mat<cx_real_t> expected_vis_grid = {
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, v, v, v, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, v, v, v, 0.0, 0.0 },
-        { 0.0, v, v, 2. * v, v, v, 0.0, 0.0 },
+        { 0.0, v, v, real_t(2.) * v, v, v, 0.0, 0.0 },
         { 0.0, v, v, v, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, v, v, v, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }
@@ -53,7 +53,7 @@ public:
 TEST_F(GridderNearbyComplexVis, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(std::get<vis_grid_index>(result)) }, arma::cx_mat{ accu(vis) }, "absdiff", tolerance));
+    EXPECT_TRUE(std::abs(accu(std::get<vis_grid_index>(result)) - cx_real_t(accu(vis))) < tolerance);
 }
 
 TEST_F(GridderNearbyComplexVis, vis_grid)

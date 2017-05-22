@@ -7,6 +7,8 @@
  *  @bug No known bugs.
  */
 
+#include <stp.h>
+
 #include "../../auxiliary/load_data.h"
 // RapidJson
 #include <rapidjson/document.h>

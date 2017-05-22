@@ -5,7 +5,7 @@ using namespace stp;
 
 class GridderSmallPillbox : public ::testing::Test {
 private:
-    double v = 1. / 4.;
+    real_t v = 1. / 4.;
 
     int image_size;
     int support;
@@ -36,8 +36,8 @@ public:
 
     arma::mat uv;
     arma::cx_mat vis;
-    std::pair<arma::cx_mat, arma::mat> result;
-    arma::mat expected_result = {
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
+    arma::Mat<real_t> expected_result = {
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },

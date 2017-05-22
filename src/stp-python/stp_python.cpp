@@ -1,6 +1,5 @@
 #include "stp_python.h"
 #include <pybind11/stl.h>
-#include <stp.h>
 #include <utility>
 
 namespace stp_python {
@@ -10,7 +9,7 @@ using ptr_complex_double = std::complex<double>*;
 using ptr_double = double*;
 
 pybind11::tuple image_visibilities_wrapper(
-    np_complex_array vis,
+    np_complex_double_array vis,
     np_double_array uvw_lambda,
     int image_size,
     double cell_size,
@@ -39,34 +38,39 @@ pybind11::tuple image_visibilities_wrapper(
         true);
 
     // (image, beam) tuple
-    std::pair<arma::cx_mat, arma::cx_mat> image_and_beam;
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > image_and_beam;
 
     // Since "image_visibilities" is a function template, there's no way to prevent the use of the following switch statement.
     // Inheritance could be used instead, but virtual function calls would impose an unnecessary performance penalty.
     switch (kernel_func) {
     case KernelFunction::TopHat: {
         stp::TopHat th_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(th_kernel, vis_arma, uvw_lambda_arma, image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling, normalize);
+        image_and_beam = stp::image_visibilities(th_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
+            kernel_support, kernel_exact, kernel_oversampling, normalize);
     };
         break;
     case KernelFunction::Triangle: {
         stp::Triangle tg_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(tg_kernel, vis_arma, uvw_lambda_arma, image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling, normalize);
+        image_and_beam = stp::image_visibilities(tg_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
+            kernel_support, kernel_exact, kernel_oversampling, normalize);
     };
         break;
     case KernelFunction::Sinc: {
         stp::Sinc s_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(s_kernel, vis_arma, uvw_lambda_arma, image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling, normalize);
+        image_and_beam = stp::image_visibilities(s_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
+            kernel_support, kernel_exact, kernel_oversampling, normalize);
     };
         break;
     case KernelFunction::Gaussian: {
         stp::Gaussian g_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(g_kernel, vis_arma, uvw_lambda_arma, image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling, normalize);
+        image_and_beam = stp::image_visibilities(g_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
+            kernel_support, kernel_exact, kernel_oversampling, normalize);
     };
         break;
     case KernelFunction::GaussianSinc: {
         stp::GaussianSinc gs_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(gs_kernel, vis_arma, uvw_lambda_arma, image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling, normalize);
+        image_and_beam = stp::image_visibilities(gs_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
+            kernel_support, kernel_exact, kernel_oversampling, normalize);
     };
         break;
     default:
@@ -78,12 +82,12 @@ pybind11::tuple image_visibilities_wrapper(
     pybind11::tuple result(2);
 
     // Image at index 0
-    arma::cx_mat image(std::get<0>(image_and_beam));
-    size_t data_size = sizeof(arma::cx_double);
+    arma::Mat<cx_real_t> image(std::get<0>(image_and_beam));
+    size_t data_size = sizeof(cx_real_t);
     pybind11::buffer_info image_buffer(
         static_cast<void*>(image.memptr()), // void *ptr
         data_size, // size_t itemsize
-        pybind11::format_descriptor<arma::cx_double>::format(), // const std::string &format
+        pybind11::format_descriptor<cx_real_t>::format(), // const std::string &format
         2, // size_t ndim
         { image.n_rows, image.n_cols }, // const std::vector<size_t> &shape
         { data_size, image.n_cols * data_size }); // const std::vector<size_t> &strides
@@ -91,11 +95,11 @@ pybind11::tuple image_visibilities_wrapper(
     result[0] = np_complex_array(image_buffer);
 
     // Beam at index 1
-    arma::cx_mat beam(std::get<1>(image_and_beam));
+    arma::Mat<cx_real_t> beam(std::get<1>(image_and_beam));
     pybind11::buffer_info beam_buffer(
         static_cast<void*>(beam.memptr()), // void *ptr
         data_size, // size_t itemsize
-        pybind11::format_descriptor<arma::cx_double>::format(), // const std::string &format
+        pybind11::format_descriptor<cx_real_t>::format(), // const std::string &format
         2, // size_t ndim
         { beam.n_rows, beam.n_cols }, // const std::vector<size_t> &shape
         { data_size, beam.n_cols * data_size }); // const std::vector<size_t> &strides
@@ -106,22 +110,22 @@ pybind11::tuple image_visibilities_wrapper(
 }
 
 std::vector<std::tuple<int, double, int, int, double, double> > source_find_wrapper(
-    np_double_array image_data,
+    np_real_array image_data,
     double detection_n_sigma,
     double analysis_n_sigma,
     double rms_est)
 {
     assert(image_data.request().ndim == 2);
 
-    arma::mat image_data_arma(
-        static_cast<ptr_double>(image_data.request().ptr),
+    arma::Mat<real_t> image_data_arma(
+        static_cast<real_t*>(image_data.request().ptr),
         image_data.request().shape[0], // n_rows
         image_data.request().shape[1], // n_cols
         true, // copy_aux_mem - this prevents the object on the python side from being modified
         true); // strict
 
     // Call source find function
-    stp::source_find_image sfimage = stp::source_find_image(image_data_arma, detection_n_sigma, analysis_n_sigma, rms_est, true);
+    stp::source_find_image sfimage = stp::source_find_image(std::move(image_data_arma), detection_n_sigma, analysis_n_sigma, rms_est);
 
     // Convert 'vector of stp::island' to 'vector of tuples'
     std::vector<std::tuple<int, double, int, int, double, double> > v_islands;

@@ -30,7 +30,7 @@ public:
 
     const int image_size = 8;
     const int support = 2;
-    std::pair<arma::cx_mat, arma::mat> result;
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
     arma::mat kernel;
     arma::cx_mat vis;
     arma::mat uv;
@@ -39,11 +39,11 @@ public:
 TEST_F(GridderTriangle, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(arma::real(std::get<vis_grid_index>(result))) }, arma::cx_mat{ accu(arma::real(vis)) }, "absdiff", tolerance));
+    EXPECT_TRUE(std::abs(accu(arma::real(std::get<vis_grid_index>(result))) - accu(arma::real(vis))) < tolerance);
 }
 
 TEST_F(GridderTriangle, uv_location)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::real(std::get<vis_grid_index>(result)(arma::span(image_size / 2 - support, image_size / 2 + support), arma::span(image_size / 2 + 1 - support, image_size / 2 + 1 + support))), (kernel / accu(kernel)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::real(std::get<vis_grid_index>(result)(arma::span(image_size / 2 - support, image_size / 2 + support), arma::span(image_size / 2 + 1 - support, image_size / 2 + 1 + support))), arma::conv_to<arma::Mat<real_t> >::from(kernel / accu(kernel)), "absdiff", tolerance));
 }

@@ -7,27 +7,23 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Threads REQUIRED)
 
 # Dependency: RapidJSON
-set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include/rapidjson")
+set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
 
 # For convenience all link libraries required by
 # the tests are put in one variable
 set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main Threads::Threads)
 
 # Copy configuration files to the binary directory
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../config/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../configs/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
 
 # Configures the location of the test data
-get_filename_component(IMAGER_DATAPATH "../../test-data/imager-data" ABSOLUTE)
+get_filename_component(IMAGER_DATAPATH "../../test-data/imager-tests" ABSOLUTE)
 add_definitions ( -D_IMAGER_TESTPATH="${IMAGER_DATAPATH}/")
-get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-data" ABSOLUTE)
+get_filename_component(PIPELINE_DATAPATH "../../test-data/visibilities" ABSOLUTE)
 add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
 
-# Configures the location of the configuration files
-get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-tests" ABSOLUTE)
-add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
-
 # Configures the location of the cnpy test data
-get_filename_component(CNPY_DATA_PATH "../../test-data/cnpy-data" ABSOLUTE)
+get_filename_component(CNPY_DATA_PATH "../../test-data/cnpy-tests" ABSOLUTE)
 add_definitions ( -D_CNPYTESTPATH="${CNPY_DATA_PATH}/")
 
 # Helper function for test target specification

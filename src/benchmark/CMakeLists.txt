@@ -10,15 +10,23 @@ add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstr
 find_package(Threads REQUIRED)
 
 # Dependency: RapidJSON
-set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include/rapidjson")
+set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
 
 # Configures the location of the test data
-get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-data" ABSOLUTE)
+get_filename_component(PIPELINE_DATAPATH "../../test-data/visibilities" ABSOLUTE)
 add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
 
 # Configures the location of the configuration files
-get_filename_component(PIPELINE_CONFIGPATH "../../config/pipeline-benchmark" ABSOLUTE)
+get_filename_component(PIPELINE_CONFIGPATH "../../configs/reduce" ABSOLUTE)
 add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
+
+# Configures the location of the fftw wisdom files
+if(USE_FLOAT)
+   get_filename_component(WISDOM_FILEPATH "../../scripts/fftw-wisdom/wisdomfiles_f" ABSOLUTE)
+else()
+   get_filename_component(WISDOM_FILEPATH "../../scripts/fftw-wisdom/wisdomfiles" ABSOLUTE)
+endif()
+add_definitions ( -D_WISDOM_FILEPATH="${WISDOM_FILEPATH}/")
 
 # For convenience all link libraries required by
 # the benchmark are put in one variable
@@ -36,6 +44,9 @@ endfunction()
 
 # Benchmark Tests: ---------------------------------------------------------------------------------------------------
 
+# Memset
+add_benchmark_test(memset_benchmark memset_benchmark.cpp)
+
 # Vector Math
 add_benchmark_test(vector_math_benchmark vector_math_benchmark.cpp)
 
@@ -47,6 +58,9 @@ add_benchmark_test(populate_kernel_cache_benchmark populate_kernel_cache_benchma
 
 # FFT
 add_benchmark_test(fft_benchmark fft_benchmark.cpp)
+
+# FFT R2C
+add_benchmark_test(fft_r2c_benchmark fft_r2c_benchmark.cpp)
 
 # Imager
 add_benchmark_test(imager_benchmark imager_benchmark.cpp)

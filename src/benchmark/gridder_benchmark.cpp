@@ -10,7 +10,7 @@
 #include <stp.h>
 
 std::string data_path(_PIPELINE_DATAPATH);
-std::string input_npz("simdata_small.npz");
+std::string input_npz("simdata_nstep10.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
@@ -75,16 +75,19 @@ BENCHMARK(gridder_oversampling_benchmark)
     ->Args({ 12, 3 })
     ->Args({ 13, 3 })
     ->Args({ 14, 3 })
+    ->Args({ 15, 3 })
     ->Args({ 10, 5 })
     ->Args({ 11, 5 })
     ->Args({ 12, 5 })
     ->Args({ 13, 5 })
     ->Args({ 14, 5 })
+    ->Args({ 15, 5 })
     ->Args({ 10, 7 })
     ->Args({ 11, 7 })
     ->Args({ 12, 7 })
     ->Args({ 13, 7 })
     ->Args({ 14, 7 })
+    ->Args({ 15, 7 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(gridder_exact_benchmark)
@@ -93,16 +96,19 @@ BENCHMARK(gridder_exact_benchmark)
     ->Args({ 12, 3 })
     ->Args({ 13, 3 })
     ->Args({ 14, 3 })
+    ->Args({ 15, 3 })
     ->Args({ 10, 5 })
     ->Args({ 11, 5 })
     ->Args({ 12, 5 })
     ->Args({ 13, 5 })
     ->Args({ 14, 5 })
+    ->Args({ 15, 5 })
     ->Args({ 10, 7 })
     ->Args({ 11, 7 })
     ->Args({ 12, 7 })
     ->Args({ 13, 7 })
     ->Args({ 14, 7 })
+    ->Args({ 15, 7 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

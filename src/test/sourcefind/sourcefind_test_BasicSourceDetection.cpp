@@ -31,7 +31,7 @@ private:
     island_params found_src;
     Gaussian2D bright_src;
     Gaussian2D faint_src;
-    arma::mat img;
+    arma::Mat<real_t> img;
 
 public:
     void SetUp()
@@ -55,7 +55,7 @@ public:
 
         bright_src = gaussian_point_source(bright_x_centre, bright_y_centre, bright_amplitude);
         faint_src = gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude);
-        img = arma::zeros(ydim, xdim);
+        img = arma::zeros<arma::Mat<real_t> >(ydim, xdim);
     }
 
     void run()

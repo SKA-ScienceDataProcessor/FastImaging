@@ -5,7 +5,7 @@ using namespace stp;
 
 class GridderMultiPixelPillbox : public ::testing::Test {
 private:
-    double v = 1. / 9.;
+    real_t v = 1. / 9.;
     int image_size;
     int support;
     double half_base_width;
@@ -34,9 +34,9 @@ public:
     }
 
     arma::mat uv = { { -2., 0 } };
-    std::pair<arma::cx_mat, arma::mat> result;
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
     arma::cx_mat vis;
-    arma::mat expected_result = {
+    arma::Mat<real_t> expected_result = {
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },
@@ -51,17 +51,17 @@ public:
 TEST_F(GridderMultiPixelPillbox, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(std::get<vis_grid_index>(result)) }, arma::cx_mat{ accu(vis) }, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::Mat<cx_real_t>{ accu(std::get<vis_grid_index>(result)) }, arma::Mat<cx_real_t>{ cx_real_t(accu(vis)) }, "absdiff", tolerance));
 }
 
 TEST_F(GridderMultiPixelPillbox, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, arma::real(std::get<vis_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t> >::from(std::get<vis_grid_index>(result)), "absdiff", tolerance));
 }
 
 TEST_F(GridderMultiPixelPillbox, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, arma::real(std::get<sampling_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, std::get<sampling_grid_index>(result), "absdiff", tolerance));
 }

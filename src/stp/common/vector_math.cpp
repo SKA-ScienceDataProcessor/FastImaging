@@ -1,6 +1,5 @@
 #include "vector_math.h"
 #include <math.h>
-#include <tbb/tbb.h>
 #include <thread>
 
 namespace stp {
@@ -49,7 +48,7 @@ struct SumStdDev {
     }
 };
 
-double vector_accumulate(arma::vec& v)
+double vector_accumulate(arma::Col<real_t>& v)
 {
     double accu = 0.0;
     arma::uword v_size = v.n_elem;
@@ -70,7 +69,7 @@ double vector_accumulate(arma::vec& v)
     return accu;
 }
 
-double vector_accumulate_parallel(arma::vec& v)
+double vector_accumulate_parallel(arma::Col<real_t>& v)
 {
     double accu = 0.0;
     arma::uword v_size = v.n_elem;
@@ -86,7 +85,7 @@ double vector_accumulate_parallel(arma::vec& v)
     return accu;
 }
 
-double vector_mean(arma::vec& v)
+double vector_mean(arma::Col<real_t>& v)
 {
     double mean = 0.0;
     double v_size = v.n_elem;
@@ -97,7 +96,7 @@ double vector_mean(arma::vec& v)
     return mean;
 }
 
-double vector_mean_robust(arma::vec& v)
+double vector_mean_robust(arma::Col<real_t>& v)
 {
     double mean = 0.0;
     arma::uword v_size = v.n_elem;
@@ -128,7 +127,7 @@ double vector_mean_robust(arma::vec& v)
     return mean;
 }
 
-double vector_mean_parallel(arma::vec& v)
+double vector_mean_parallel(arma::Col<real_t>& v)
 {
     double mean = 0.0;
     double accu = 0.0;
@@ -141,7 +140,7 @@ double vector_mean_parallel(arma::vec& v)
     return mean;
 }
 
-double vector_mean_robust_parallel(arma::vec& v)
+double vector_mean_robust_parallel(arma::Col<real_t>& v)
 {
     double mean = 0.0;
     arma::uword v_size = v.n_elem;
@@ -163,7 +162,7 @@ double vector_mean_robust_parallel(arma::vec& v)
     return mean;
 }
 
-double vector_stddev(arma::vec& v, double mean)
+double vector_stddev(arma::Col<real_t>& v, double mean)
 {
     double std;
     arma::uword v_size = v.n_elem;
@@ -187,7 +186,7 @@ double vector_stddev(arma::vec& v, double mean)
     return std;
 }
 
-double vector_stddev_robust(arma::vec& v, double mean)
+double vector_stddev_robust(arma::Col<real_t>& v, double mean)
 {
     double std = 0.0;
     arma::uword v_size = v.n_elem;
@@ -213,7 +212,7 @@ double vector_stddev_robust(arma::vec& v, double mean)
     return std;
 }
 
-double vector_stddev_parallel(arma::vec& v, double mean)
+double vector_stddev_parallel(arma::Col<real_t>& v, double mean)
 {
     double std = 0.0;
     arma::uword v_size = v.n_elem;
@@ -238,7 +237,7 @@ double vector_stddev_parallel(arma::vec& v, double mean)
     return std;
 }
 
-double vector_stddev_robust_parallel(arma::vec& v, double mean)
+double vector_stddev_robust_parallel(arma::Col<real_t>& v, double mean)
 {
     double std = 0.0;
     arma::uword v_size = v.n_elem;

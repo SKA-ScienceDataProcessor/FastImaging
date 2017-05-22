@@ -2,6 +2,7 @@
 #define GAUSSIAN2D_H
 
 #include <armadillo>
+#include <stp.h>
 
 class Gaussian2D {
 
@@ -38,7 +39,7 @@ public:
      *
      * @return (arma::mat) The calculated model
      */
-    arma::mat operator()(arma::uword n_rows, arma::uword n_cols) const;
+    arma::Mat<real_t> operator()(arma::uword n_rows, arma::uword n_cols) const;
 };
 
 typedef Gaussian2D gaussian_point_source;

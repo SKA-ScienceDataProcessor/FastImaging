@@ -79,6 +79,12 @@ int main(int argc, char** argv)
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
 
+    // Parse fft routine string
+    stp::fft_routine r_fft = parse_fft_routine(cfg.fft_routine);
+
+    // Parse kernel function string
+    KernelFunction kernel_func = parse_kernel_function(cfg.kernel_func);
+
     if (use_logger) {
         _logger->info("Configuration parameters:");
         _logger->info(" - image_size={}", cfg.image_size);
@@ -86,19 +92,70 @@ int main(int argc, char** argv)
         _logger->info(" - kernel_support={}", cfg.kernel_support);
         _logger->info(" - kernel_exact={}", cfg.kernel_exact);
         _logger->info(" - oversampling={}", cfg.oversampling);
+        _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
+        _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
+        _logger->info(" - kernel_function={}", cfg.kernel_func);
+        _logger->info(" - fft_routine={}", cfg.fft_routine);
+        _logger->info(" - image_fft_wisdom={}", cfg.image_wisdom_filename);
+        _logger->info(" - beam_fft_wisdom={}", cfg.beam_wisdom_filename);
+        _logger->info(" - generate_full_beam={}", cfg.gen_fullbeam);
         _logger->info("Running image visibilities");
     }
 
+    // Create output matrix
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > result;
+
     // Run image_visibilities
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(cfg.kernel_support), input_vis, input_uvw, cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    switch (kernel_func) {
+    case KernelFunction::TopHat: {
+        stp::TopHat kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::Triangle: {
+        stp::Triangle kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::Sinc: {
+        stp::Sinc kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::Gaussian: {
+        stp::Gaussian kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::GaussianSinc: {
+        stp::GaussianSinc kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    default:
+        assert(0);
+        break;
+    }
 
     if (use_logger) {
-        _logger->info("Finished");
-        _logger->info("Saving output data");
+        _logger->info("Finished pipeline execution");
     }
 
     // Save image and beam matrices in NPZ file
     if (_outNpzFileArg.isSet()) {
+        if (use_logger) {
+            _logger->info("Saving output data");
+        }
         npz_save(_outNpzFileArg.getValue(), "image", result.first, "w");
         npz_save(_outNpzFileArg.getValue(), "beam", result.second, "a");
     }

@@ -10,12 +10,12 @@
 
 namespace stp {
 
-arma::uvec sigma_clip(const arma::vec& data, double sigma, uint iters)
+arma::uvec sigma_clip(const arma::Col<real_t>& data, double sigma, uint iters)
 {
-    double median = arma::median(data);
+    real_t median = arma::median(data);
 
     // Generate deviation data based on median function
-    arma::vec deviation = data - median;
+    arma::Col<real_t> deviation = data - median;
     arma::uvec valid_idx;
     double std = arma::stddev(deviation, 1);
 
@@ -35,18 +35,18 @@ arma::uvec sigma_clip(const arma::vec& data, double sigma, uint iters)
     return valid_idx;
 }
 
-double estimate_rms(const arma::vec& data, double sigma, uint iters)
+double estimate_rms(const arma::Col<real_t>& data, double sigma, uint iters)
 {
     assert(arma::is_finite(data)); // input data must have only finite values
 
     // The above sigma_clip function is not called, because we do not need the clipped vector data returned by sigma_clip
     // In the following, sigma_clip is combined with estimate_rms in order to save some computational complexity
-    double median = arma::median(data);
-    arma::vec deviation = data - median;
+    real_t median = arma::median(data);
+    arma::Col<real_t> deviation = data - median;
 
     double accu = vector_accumulate_parallel(deviation);
     arma::uword valid_n_elem = deviation.n_elem;
-    double std = vector_stddev_robust_parallel(deviation, accu / valid_n_elem);
+    double std = vector_stddev_robust_parallel(deviation, accu / double(valid_n_elem));
 
     for (uint i = 0; i < iters; i++) {
         double lower_sigma = -sigma * std;
@@ -84,18 +84,26 @@ double estimate_rms(const arma::vec& data, double sigma, uint iters)
 }
 
 source_find_image::source_find_image(
-    const arma::mat& input_data,
+    arma::Mat<real_t> input_data,
     double input_detection_n_sigma,
     double input_analysis_n_sigma,
     double input_rms_est,
-    bool input_find_negative_sources)
-    : data(input_data)
-    , detection_n_sigma(input_detection_n_sigma)
+    bool input_find_negative_sources,
+    uint sigmaclip_iters,
+    bool compute_bg_level,
+    bool compute_barycentre)
+    : detection_n_sigma(input_detection_n_sigma)
     , analysis_n_sigma(input_analysis_n_sigma)
 {
-    const arma::vec vdata = arma::vec(data.memptr(), data.n_elem, false); // This vector reuses internal buffer of input_data, just to minimize allocated memory
-    rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(vdata);
-    bg_level = arma::median(vdata);
+    data = std::move(input_data);
+    const arma::Col<real_t> vdata((real_t*)data.memptr(), data.n_elem, false, false); // This vector reuses internal buffer of data, just to avoid memory allocation
+    rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(vdata, 3, sigmaclip_iters);
+
+    if (compute_bg_level) {
+        bg_level = arma::median(vdata);
+    } else {
+        bg_level = 0.0;
+    }
 
     _label_detection_islands_positive();
 
@@ -107,19 +115,20 @@ source_find_image::source_find_image(
 
     islands.resize(label_extrema.n_elem);
 
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, label_extrema.n_elem), [this](const tbb::blocked_range<size_t>& r) {
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, label_extrema.n_elem), [this, &compute_barycentre](const tbb::blocked_range<size_t>& r) {
         for (size_t i = r.begin(); i != r.end(); i++) {
-            islands[i] = std::move(island_params(data, label_map, label_extrema_label(i), label_extrema(i), label_extrema_linear_idx(i)));
+            islands[i] = std::move(island_params(data, label_map, label_extrema_label(i), label_extrema(i), label_extrema_linear_idx(i), compute_barycentre));
         }
     });
 }
 
-arma::imat positive_comp(const arma::mat& data, const double analysis_thresh)
+arma::Mat<char> positive_comp(const arma::Mat<real_t>& data, const double analysis_thresh)
 {
-    arma::imat analysis_map(arma::size(data));
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_elem), [&data, &analysis_map, &analysis_thresh](const tbb::blocked_range<size_t>& r) {
+    real_t real_analysis_thresh = analysis_thresh;
+    arma::Mat<char> analysis_map(arma::size(data));
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_elem), [&data, &analysis_map, &real_analysis_thresh](const tbb::blocked_range<size_t>& r) {
         for (size_t j = r.begin(); j != r.end(); j++) {
-            if (data.at(j) > analysis_thresh) {
+            if (data.at(j) > real_analysis_thresh) {
                 analysis_map.at(j) = 1;
             } else {
                 analysis_map.at(j) = 0;
@@ -129,12 +138,13 @@ arma::imat positive_comp(const arma::mat& data, const double analysis_thresh)
     return analysis_map;
 }
 
-arma::imat negative_comp(const arma::mat& data, const double analysis_thresh)
+arma::Mat<char> negative_comp(const arma::Mat<real_t>& data, const double analysis_thresh)
 {
-    arma::imat analysis_map(arma::size(data));
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_elem), [&data, &analysis_map, &analysis_thresh](const tbb::blocked_range<size_t>& r) {
+    real_t real_analysis_thresh = analysis_thresh;
+    arma::Mat<char> analysis_map(arma::size(data));
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_elem), [&data, &analysis_map, &real_analysis_thresh](const tbb::blocked_range<size_t>& r) {
         for (size_t j = r.begin(); j != r.end(); j++) {
-            if (data.at(j) < analysis_thresh) {
+            if (data.at(j) < real_analysis_thresh) {
                 analysis_map.at(j) = 1;
             } else {
                 analysis_map.at(j) = 0;
@@ -144,17 +154,17 @@ arma::imat negative_comp(const arma::mat& data, const double analysis_thresh)
     return analysis_map;
 }
 
-std::pair<arma::vec, arma::uvec> positive_find_local_extrema(const arma::mat& data, const arma::imat& label_map, arma::sword n_labels)
+std::pair<arma::Col<real_t>, arma::uvec> positive_find_local_extrema(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, int n_labels)
 {
-    arma::vec data_maxs(n_labels);
+    arma::Col<real_t> data_maxs(n_labels);
     arma::uvec linear_idx(n_labels);
 
     const arma::uword n_elem = data.n_elem;
 
-    data_maxs.fill(std::numeric_limits<double>::min());
+    data_maxs.fill(std::numeric_limits<real_t>::min());
 
     for (arma::uword i = 0; i < n_elem; i++) {
-        double cmax, val;
+        real_t cmax, val;
         int label = label_map.at(i);
 
         if (label <= 0)
@@ -171,16 +181,16 @@ std::pair<arma::vec, arma::uvec> positive_find_local_extrema(const arma::mat& da
     return std::make_pair(std::move(data_maxs), std::move(linear_idx));
 }
 
-std::pair<arma::vec, arma::uvec> negative_find_local_extrema(const arma::mat& data, const arma::imat& label_map, arma::sword n_labels)
+std::pair<arma::Col<real_t>, arma::uvec> negative_find_local_extrema(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, int n_labels)
 {
-    arma::vec data_mins(n_labels);
+    arma::Col<real_t> data_mins(n_labels);
     arma::uvec linear_idx(n_labels);
     const arma::uword n_elem = data.n_elem;
 
-    data_mins.fill(std::numeric_limits<double>::max());
+    data_mins.fill(std::numeric_limits<real_t>::max());
 
     for (arma::uword i = 0; i < n_elem; i++) {
-        double cmin, val;
+        real_t cmin, val;
         int label = label_map.at(i);
 
         if (label <= 0)
@@ -202,9 +212,9 @@ void source_find_image::_label_detection_islands_positive()
     double analysis_thresh_island = bg_level + analysis_n_sigma * rms_est;
     double detection_thresh_island = bg_level + detection_n_sigma * rms_est;
 
-    arma::imat local_label_map(arma::size(data));
-    arma::sword n_labels = labeling(positive_comp(data, analysis_thresh_island), local_label_map);
-    std::pair<arma::vec, arma::uvec> all_label_extrema = positive_find_local_extrema(data, local_label_map, n_labels);
+    arma::Mat<int> local_label_map(arma::size(data));
+    int n_labels = labeling(positive_comp(data, analysis_thresh_island), local_label_map);
+    std::pair<arma::Col<real_t>, arma::uvec> all_label_extrema = positive_find_local_extrema(data, local_label_map, n_labels);
 
     assert(label_extrema.n_elem == label_extrema_label.n_elem);
 
@@ -229,7 +239,7 @@ void source_find_image::_label_detection_islands_positive()
     if (n_elem_invalid > 0) {
         label_extrema_idx_invalid.for_each([&local_label_map](arma::uvec::elem_type& val) { local_label_map.replace(val + 1, 0); });
     }
-    label_map = local_label_map;
+    label_map = std::move(local_label_map);
 }
 
 void source_find_image::_label_detection_islands_negative()
@@ -237,9 +247,9 @@ void source_find_image::_label_detection_islands_negative()
     double analysis_thresh_island = bg_level + (-1) * analysis_n_sigma * rms_est;
     double detection_thresh_island = bg_level + (-1) * detection_n_sigma * rms_est;
 
-    arma::imat local_label_map(arma::size(data));
-    arma::sword n_labels = labeling(negative_comp(data, analysis_thresh_island), local_label_map);
-    std::pair<arma::vec, arma::uvec> all_label_extrema = negative_find_local_extrema(data, local_label_map, n_labels);
+    arma::Mat<int> local_label_map(arma::size(data));
+    int n_labels = labeling(negative_comp(data, analysis_thresh_island), local_label_map);
+    std::pair<arma::Col<real_t>, arma::uvec> all_label_extrema = negative_find_local_extrema(data, local_label_map, n_labels);
 
     assert(label_extrema.n_elem == label_extrema_label.n_elem);
 
@@ -269,11 +279,12 @@ void source_find_image::_label_detection_islands_negative()
 }
 
 island_params::island_params(
-    const arma::mat& input_data,
-    const arma::imat& label_map,
+    const arma::Mat<real_t>& input_data,
+    const arma::Mat<int>& label_map,
     const int label,
     const double l_extremum,
-    const uint l_extremum_linear_idx)
+    const uint l_extremum_linear_idx,
+    const bool compute_barycentre)
     : label_idx(label) // Index of region in label-map of source image.
     , extremum_val(l_extremum)
 {
@@ -293,22 +304,27 @@ island_params::island_params(
     double b_y = 0.0;
     double b_sum = 0.0;
 
-    // Analyses an 'island' to extract further parameters
-    for (arma::uword i = 0; i < data_ncols; i++) {
-        for (arma::uword j = 0; j < data_nrows; j++) {
-            if (label_map.at(j, i) == label) {
-                const double val = input_data.at(j, i);
-                b_x += val * i;
-                b_y += val * j;
-                b_sum += val;
+    if (compute_barycentre) {
+        // Analyses an 'island' to extract further parameters
+        for (arma::uword i = 0; i < data_ncols; i++) {
+            for (arma::uword j = 0; j < data_nrows; j++) {
+                if (label_map.at(j, i) == label) {
+                    const double val = input_data.at(j, i);
+                    b_x += val * i;
+                    b_y += val * j;
+                    b_sum += val;
+                }
             }
         }
-    }
 
-    // Barycentric centre in x-pixel index
-    xbar = b_x / b_sum;
-    // Barycentric centre in y-pixel index
-    ybar = b_y / b_sum;
+        // Barycentric centre in x-pixel index
+        xbar = b_x / b_sum;
+        // Barycentric centre in y-pixel index
+        ybar = b_y / b_sum;
+    } else {
+        xbar = 0.0;
+        ybar = 0.0;
+    }
 }
 
 bool island_params::operator==(const island_params& other) const

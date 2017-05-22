@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     }
 
     //Load simulated data from input npz file
-    arma::mat image = arma::real(load_npy_complex_array(_inNpzFileArg.getValue(), "image"));
+    arma::Mat<real_t> image = arma::conv_to<arma::Mat<real_t> >::from(arma::real(load_npy_complex_array(_inNpzFileArg.getValue(), "image")));
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
@@ -71,15 +71,22 @@ int main(int argc, char** argv)
         _logger->info("Configuration parameters:");
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
+        _logger->info(" - estimate_rms={}", cfg.estimate_rms);
+        _logger->info(" - compute_bg_level={}", cfg.compute_bg_level);
+        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
+        _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
         _logger->info("Running source find");
     }
 
     // Run source find
-    stp::source_find_image sfimage = stp::source_find_image(image, cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true);
+    stp::source_find_image sfimage = stp::source_find_image(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma,
+        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.compute_bg_level, cfg.compute_barycentre);
 
     if (use_logger) {
-        _logger->info("Finished");
-        _logger->info("Saving output data");
+        _logger->info("Finished pipeline execution");
+        if (_outJsonFileArg.isSet() || _outNpzFileArg.isSet()) {
+            _logger->info("Saving output data");
+        }
     }
 
     // Save detected island parameters in JSON file

@@ -1,5 +1,5 @@
-/** @file libstp.h
- *  @brief Include of main libstp functions
+/** @file stp.h
+ *  @brief Include of main functions of STP library
  *
  *  @bug No known bugs.
  */

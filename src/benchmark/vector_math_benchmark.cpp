@@ -10,45 +10,21 @@
 
 #define DIVCONST 0.03549
 
-arma::vec generate_vector_data(int size)
+arma::Col<real_t> generate_vector_data(int size)
 {
     arma::arma_rng::set_seed(1);
-    return std::move(arma::randu<arma::vec>(size) + 10);
+    return std::move(arma::randu<arma::Col<real_t> >(size) + 1);
 }
 
-arma::cx_vec generate_cx_vector_data(int size)
+arma::Col<cx_real_t> generate_cx_vector_data(int size)
 {
     arma::arma_rng::set_seed(1);
-    return std::move(arma::randu<arma::cx_vec>(size) + 10);
+    return std::move(arma::randu<arma::Col<cx_real_t> >(size) + 1);
 }
-
-auto standard_memset_benchmark = [](benchmark::State& state) {
-    int size = pow(2, double(state.range(0) + 19) / 2.0);
-    std::complex<double>* m = (std::complex<double>*)std::malloc(sizeof(std::complex<double>) * size * size);
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(m);
-        std::memset(m, 0, sizeof(std::complex<double>) * size * size);
-        benchmark::ClobberMemory();
-    }
-    if (m)
-        std::free(m);
-};
-
-auto armadillo_memset_benchmark = [](benchmark::State& state) {
-    int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::cx_mat m(size, size);
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(m);
-        m.zeros();
-        benchmark::ClobberMemory();
-    }
-};
 
 auto armadillo_accumulate_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(arma::accu(v));
@@ -57,7 +33,7 @@ auto armadillo_accumulate_benchmark = [](benchmark::State& state) {
 
 auto vector_accumulate_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_accumulate(v));
@@ -66,7 +42,7 @@ auto vector_accumulate_benchmark = [](benchmark::State& state) {
 
 auto vector_accumulate_parallel_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_accumulate_parallel(v));
@@ -75,7 +51,7 @@ auto vector_accumulate_parallel_benchmark = [](benchmark::State& state) {
 
 auto armadillo_mean_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(arma::mean(v));
@@ -84,7 +60,7 @@ auto armadillo_mean_benchmark = [](benchmark::State& state) {
 
 auto vector_mean_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_mean(v));
@@ -93,7 +69,7 @@ auto vector_mean_benchmark = [](benchmark::State& state) {
 
 auto vector_mean_parallel_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_mean_parallel(v));
@@ -102,7 +78,7 @@ auto vector_mean_parallel_benchmark = [](benchmark::State& state) {
 
 auto vector_mean_robust_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_mean_robust(v));
@@ -111,7 +87,7 @@ auto vector_mean_robust_benchmark = [](benchmark::State& state) {
 
 auto vector_mean_robust_parallel_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_mean_parallel(v));
@@ -120,7 +96,7 @@ auto vector_mean_robust_parallel_benchmark = [](benchmark::State& state) {
 
 auto armadillo_stddev_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(arma::stddev(v));
@@ -129,7 +105,7 @@ auto armadillo_stddev_benchmark = [](benchmark::State& state) {
 
 auto vector_stddev_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_stddev(v));
@@ -138,7 +114,7 @@ auto vector_stddev_benchmark = [](benchmark::State& state) {
 
 auto vector_stddev_parallel_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_stddev_parallel(v));
@@ -147,7 +123,7 @@ auto vector_stddev_parallel_benchmark = [](benchmark::State& state) {
 
 auto vector_stddev_robust_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_stddev_robust(v));
@@ -156,7 +132,7 @@ auto vector_stddev_robust_benchmark = [](benchmark::State& state) {
 
 auto vector_stddev_robust_parallel_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::vec v = generate_vector_data(size * size);
+    arma::Col<real_t> v = generate_vector_data(size * size);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::vector_stddev_parallel(v));
@@ -165,7 +141,7 @@ auto vector_stddev_robust_parallel_benchmark = [](benchmark::State& state) {
 
 auto matrix_arma_inplace_div_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::cx_vec cv = generate_cx_vector_data(size * size);
+    arma::Col<cx_real_t> cv = generate_cx_vector_data(size * size);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -176,7 +152,7 @@ auto matrix_arma_inplace_div_benchmark = [](benchmark::State& state) {
 
 auto matrix_serial_inplace_div_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::cx_vec cv = generate_cx_vector_data(size * size);
+    arma::Col<cx_real_t> cv = generate_cx_vector_data(size * size);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -190,7 +166,7 @@ auto matrix_serial_inplace_div_benchmark = [](benchmark::State& state) {
 
 auto matrix_tbb_inplace_div_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::cx_vec cv = generate_cx_vector_data(size * size);
+    arma::Col<cx_real_t> cv = generate_cx_vector_data(size * size);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -207,13 +183,17 @@ auto matrix_tbb_inplace_div_benchmark = [](benchmark::State& state) {
 
 auto matrix_cblas_inplace_div_benchmark = [](benchmark::State& state) {
     int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::cx_vec cv = generate_cx_vector_data(size * size);
+    arma::Col<cx_real_t> cv = generate_cx_vector_data(size * size);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
         uint n_elem = cv.n_elem;
         benchmark::DoNotOptimize(cv.memptr());
-        cblas_zdscal(n_elem, (1.0 / a), cv.memptr(), 1); // for division we use (1 / a)
+#ifdef USE_FLOAT
+        cblas_csscal(n_elem, (1.0 / a), reinterpret_cast<real_t*>(cv.memptr()), 1); // for division we use (1 / a)
+#else
+        cblas_zdscal(n_elem, (1.0 / a), reinterpret_cast<real_t*>(cv.memptr()), 1); // for division we use (1 / a)
+#endif
         benchmark::ClobberMemory();
     }
 };
@@ -250,33 +230,6 @@ auto matrix_shift_benchmark = [](benchmark::State& state) {
 
 int main(int argc, char** argv)
 {
-
-    benchmark::RegisterBenchmark("standard_memset_benchmark", standard_memset_benchmark)
-        ->Args({ 1 })
-        ->Args({ 2 })
-        ->Args({ 3 })
-        ->Args({ 4 })
-        ->Args({ 5 })
-        ->Args({ 6 })
-        ->Args({ 7 })
-        ->Args({ 8 })
-        ->Args({ 9 })
-        ->Args({ 10 })
-        ->Args({ 11 })
-        ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("armadillo_memset_benchmark", armadillo_memset_benchmark)
-        ->Args({ 1 })
-        ->Args({ 2 })
-        ->Args({ 3 })
-        ->Args({ 4 })
-        ->Args({ 5 })
-        ->Args({ 6 })
-        ->Args({ 7 })
-        ->Args({ 8 })
-        ->Args({ 9 })
-        ->Args({ 10 })
-        ->Args({ 11 })
-        ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("armadillo_accumulate_benchmark", armadillo_accumulate_benchmark)
         ->Args({ 1 })
         ->Args({ 2 })

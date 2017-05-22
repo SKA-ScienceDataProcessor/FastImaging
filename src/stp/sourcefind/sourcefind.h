@@ -7,6 +7,7 @@
 #define SOURCE_FIND_H
 
 #include "../common/ccl.h"
+#include "../types.h"
 #include <cassert>
 #include <cfloat>
 #include <functional>
@@ -28,7 +29,7 @@ namespace stp {
  * @return (arma::uvec): An uvec array with the input data indexes accepted by the algorithm (i.e. not clipped indexes).
  *                       Indexes with non-finite data are also excluded.
 */
-arma::uvec sigma_clip(const arma::vec& data, double sigma = 3, uint iters = 5);
+arma::uvec sigma_clip(const arma::Col<real_t>& data, double sigma = 3, uint iters = 5);
 
 /**
  * @brief Perform sigma-clip and estimate RMS of input matrix
@@ -42,7 +43,7 @@ arma::uvec sigma_clip(const arma::vec& data, double sigma = 3, uint iters = 5);
  *
  * @return (double): Root mean square value.
 */
-double estimate_rms(const arma::vec& data, double sigma = 3, uint iters = 5);
+double estimate_rms(const arma::Col<real_t>& data, double sigma = 3, uint iters = 5);
 
 /**
  * @brief positive_comp function
@@ -54,7 +55,7 @@ double estimate_rms(const arma::vec& data, double sigma = 3, uint iters = 5);
  *
  * @return (arma::imat): Binary array with "true" when (data > analysis_thresh) and "false" otherwise.
 */
-arma::imat positive_comp(const arma::mat& data, const double analysis_thresh);
+arma::Mat<char> positive_comp(const arma::Mat<real_t>& data, const double analysis_thresh);
 
 /**
  * @brief negative_comp function
@@ -66,7 +67,7 @@ arma::imat positive_comp(const arma::mat& data, const double analysis_thresh);
  *
  * @return (arma::imat): Binary array with "true" when (data < analysis_thresh) and "false" otherwise.
 */
-arma::imat negative_comp(const arma::mat& data, const double analysis_thresh);
+arma::Mat<char> negative_comp(const arma::Mat<real_t>& data, const double analysis_thresh);
 
 /**
  * @brief positive_find_local_extrema function
@@ -75,11 +76,11 @@ arma::imat negative_comp(const arma::mat& data, const double analysis_thresh);
  *
  * @param[in] label_map (arma::mat): Array of integers representing different regions over which the maximum value of "data" is to be searched. Must have the same size as "data".
  * @param[in] data (arma::mat): Array of values. For each region specified by label_map, the maximum values of "data" over the region is computed.
- * @param[in] n_labels (arma::sword): Number of regions in label_map (does not count backgound - label 0).
+ * @param[in] n_labels (int): Number of regions in label_map (does not count backgound - label 0).
  *
  * @return (std::pair<arma::vec, arma::uvec>): Two vector arrays with maximum values found for each label (vector index = label - 1) and respective linear indices.
 */
-std::pair<arma::vec, arma::uvec> positive_find_local_extrema(const arma::mat& data, const arma::imat& label_map, arma::sword n_labels);
+std::pair<arma::Col<real_t>, arma::uvec> positive_find_local_extrema(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, int n_labels);
 
 /**
  * @brief negative_find_local_extrema function
@@ -92,7 +93,7 @@ std::pair<arma::vec, arma::uvec> positive_find_local_extrema(const arma::mat& da
  *
  * @return (std::pair<arma::vec, arma::uvec>): Two vector arrays with minimum values found for each label (vector index = label - 1) and respective linear indices.
 */
-std::pair<arma::vec, arma::uvec> negative_find_local_extrema(const arma::mat& data, const arma::imat& label_map, arma::sword n_labels);
+std::pair<arma::Col<real_t>, arma::uvec> negative_find_local_extrema(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, int n_labels);
 
 /**
  * @brief island_params struct
@@ -120,9 +121,10 @@ struct island_params {
      * @param[in] label (int): Index of region in label-map of source image.
      * @param[in] l_extremum (double): the extremum value
      * @param[in] l_extremum_linear_idx (double): the linear index of the extremum value
+     * @param[in] compute_barycentre (bool): compute barycentric centre
      *
     */
-    island_params(const arma::mat& input_data, const arma::imat& label_map, const int label, const double l_extremum, const uint l_extremum_linear_idx);
+    island_params(const arma::Mat<real_t>& input_data, const arma::Mat<int>& label_map, const int label, const double l_extremum, const uint l_extremum_linear_idx, const bool compute_barycentre);
 
     /**
      * @brief Compare two island_params objects
@@ -148,9 +150,9 @@ struct island_params {
 class source_find_image {
 
 public:
-    arma::mat data;
-    arma::imat label_map;
-    arma::vec label_extrema;
+    arma::Mat<real_t> data;
+    arma::Mat<int> label_map;
+    arma::Col<real_t> label_extrema;
     arma::uvec label_extrema_linear_idx;
     arma::ivec label_extrema_label;
     double detection_n_sigma;
@@ -171,13 +173,19 @@ public:
      * @param[in] analysis_n_sigma (double): Analysis threshold as multiple of RMS
      * @param[in] rms_est (RMS_est): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
      * @param[in] input_find_negative_sources (bool): Determine if the signal is -1 or 1 (negative/positive sources)
+     * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function.
+     * @param[in] compute_bg_level (bool): Compute background level from median. If false, assumes bg_level = 0.
+     * @param[in] compute_barycentre (bool): Compute barycentric centre of each island.
     */
     source_find_image(
-        const arma::mat& input_data,
+        arma::Mat<real_t> input_data,
         double input_detection_n_sigma,
         double input_analysis_n_sigma,
         double input_rms_est = 0.0,
-        bool input_find_negative_sources = true);
+        bool input_find_negative_sources = true,
+        uint sigmaclip_iters = 5,
+        bool compute_bg_level = true,
+        bool compute_barycentre = true);
 
 private:
     /** @brief _label_detection_islands_positive function

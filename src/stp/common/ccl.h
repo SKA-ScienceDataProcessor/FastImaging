@@ -22,7 +22,7 @@ const int G4[2][2] = { { 1, 0 }, { 0, -1 } }; //b, d neighborhoods
  *
  * @return Number of labels
  */
-arma::sword labeling(const arma::imat& I, arma::imat& L);
+int labeling(const arma::Mat<char>& I, arma::Mat<int>& L);
 }
 
 #endif /* CCL_H */

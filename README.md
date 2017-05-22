@@ -11,17 +11,13 @@
   - benchmark: functions for benchmarking of STP library
   - auxiliary: external functions to auxiliate tests, benchmark and reduce module
   - third-party: external code, mostly libraries
-- config: auxiliary configuration files
+- configs: auxiliary configuration files
 - test-data: input test data files
-- plot-scripts: scripts to plot benchmarking results
+- scripts: auxiliary scripts to generate FFTW plans and plot benchmarking results
 - vagrant: virtual machine configuration
 
 ## Build & Run
 ### Dependencies
-
-#### External (Debian-provided)
-- [OpenBLAS](http://www.openblas.net) [0.2.19]
-- [LAPACK](http://www.netlib.org/lapack) [3.7.0]
 
 #### In Source (third-party)
 - [Armadillo](http://arma.sourceforge.net/) [7.600.2]
@@ -31,25 +27,60 @@
 - [FFTW3](http://www.fftw.org/) [3.3.5]
 - [pybind11](https://github.com/pybind/pybind11) [2.0.0]
 - [TBB](https://www.threadingbuildingblocks.org/) [2017 Update 3]
-- [rapidjson](https://github.com/miloyip/rapidjson) [1.1.0]
+- [OpenBLAS](http://www.openblas.net) [0.2.19]
+- [RapidJSON](https://github.com/miloyip/rapidjson) [1.1.0]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
-- [Spdlog](https://github.com/gabime/spdlog) [0.11.0]
+- [spdlog](https://github.com/gabime/spdlog) [0.11.0]
 
 ### Build
 
+STP prototype is compiled using CMake tools. The following cmake options are available:
+
+OPTION        | Description
+------------- | -------------
+ BUILD_TESTS          | Builds the unit tests (default=ON)
+ BUILD_BENCHMARK      | Builds the benchmark tests (default=ON)
+ USE_GLIBCXX_PARALLEL | Uses GLIBCXX parallel mode (default=ON)
+ USE_FLOAT            | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
+
+The USE_FLOAT is an important option, as it may affect the STP algorithm accuracy.
+When compiled with USE_FLOAT=ON, most structures of real or complex data in the algorithm will use the FLOAT precision instead of DOUBLE. 
+In most systems, the FLOAT type uses 4 bytes, while DOUBLE uses 8 bytes. Thus, the FLOAT allows to reduce the total memory usage and consequently the running time.
+
+After building STP, the FFTW plans shall be generated using the fftw-wisdom tool.
+By using pre-generated FFTW plans, the FFT step executes faster and the total running time of STP is smaller.
+Scripts to generate FFTW plans are provided in "project-root/scripts/fftw-wisdom" directory. 
+The following matrix sizes are considered for FFTW plan generation:
+128 | 256 | 512 | 1024 | 1448 | 2048 | 2896 | 4096 | 5792 | 8192 | 11585 | 16384 | 23170 | 32768 | 65536
+
+When running the program, only the above matrix sizes can be used as input image_size, since the plans were generated only for these sizes. 
+The full or relative pathname and filename of the FFTW plans for both the complex-to-complex and real-to-complex (r2c) FFT operations shall be given in the JSON configuration file.
+
 #### Using a build script (Includes tests execution)
 ```sh
-$ cd <project directory>
+$ cd <path/to/project>
 $ chmod +x build.sh
-$ ./build.sh    #(add 'r' option to build in release mode)
+$ ./build.sh <OPTIONS>
 ```
+OPTION | Description
+-------|--------------
+ -d    | Use CMAKE_BUILD_TYPE=Debug (default)
+ -r    | Use CMAKE_BUILD_TYPE=Release
+ -i    | Use CMAKE_BUILD_TYPE=RelWithDebInfo
+ -f    | Use USE_FLOAT=ON (default is USE_FLOAT=OFF)
+
 
 #### Manually
 ```sh
-$ mkdir -p path/to/build/directory
-$ cd path/to/build/directory
-$ cmake path/to/project/src
-$ make
+$ mkdir -p <path/to/build/directory>
+$ cd <path/to/build/directory>
+$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF <path/to/project/src>
+$ make all -j4
+```
+Generate FFTW plans using fftw-wisdom:
+```sh
+$ cd <path/to/project>/scripts/fftw-wisdom
+$ ./generate_wisdom.sh    # when compiled with -DUSE_FLOAT=ON use: ./generate_wisdom_f.sh
 ```
 
 ## Tests Execution
@@ -72,18 +103,22 @@ $ make benchmarking
 ```
 
 ## STP Execution using Reduce module
-- cd into reduce folder located in path/to/build/directory
-- run reduce binary using the following arguments:
-   <input-file-json> : (required)  Input JSON filename with configuration parameters.
-   <input-file-npz> : (required)  Input NPZ filename with simulation data (uvw_lambda, model, vis).
-   <output-file-json> : (required)  Output JSON filename for detected islands.
-   <output-file-npz> : (optional)  Output NPZ filename for label map matrix (label_map).
-   -d,  --diff : (optional) Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
-   -l,  --log : (optional)  Enable logger.
-- Example:
+The reduce executable is located in the reduce folder in path/to/build/directory. It accepts the following arguments:
+Argument | Description
+---------|--------------
+   <input-file-json>  | (required)  Input JSON filename with configuration parameters.
+   <input-file-npz>   | (required)  Input NPZ filename with simulation data (uvw_lambda, model, vis).
+   <output-file-json> | (required)  Output JSON filename for detected islands.
+   <output-file-npz>  | (optional)  Output NPZ filename for label map matrix (label_map).
+   -d,  --diff | (optional) Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
+   -l,  --log  | (optional)  Enable logger.
+
+Example:
 ```sh
-$ ./reduce projectroot/config/pipeline-benchmark/fastimg_oversampling_config.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json -l
+$ ./reduce projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/visibilities/simdata_nstep10.npz detected_islands.json -d -l
 ```
+Note that the provided fastimg_oversampling_config.json file assumes that the FFTW wisdom files (with the pre-generated plans) are located in the current directory.
+Thus, the path of the wisdom files in the JSON configuration file shall be properly setup. Otherwise, the wisdom files shall be copied from the projectroot/scripts/fftw-wisdom/wisdomfiles (or wisdomfiles_f when USE_FLOAT=ON) to the reduce directory.
 
 ## Code profiling
  - Valgrind framework tools can be used to profile STP library: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
@@ -98,11 +133,25 @@ $ cd path/to/build/directory
 $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
 $ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/config/pipeline-benchmark/fastimg_oversampling_config.json projectroot/test-data/pipeline-data/simdata_small.npz detected_islands.json
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/visibilities/simdata_nstep10.npz detected_islands.json
 $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 22 May 2017
+- Added support to FFTW Wisdom files
+- Added OpenBlas to in-source third-party libraries
+- Enabled sse, avx, avx2 configure options for FFTW
+- Implemented real-to-complex FFT for the beam matrix
+- Replaced backward FFT by forward FFT by applying the FFT duality property
+- Added new options to JSON file
+- Added cmake option to use float rather than double type to represent large structures of real/complex numbers
+- Implemented shifted-gridder which generates shifted matrices
+- Implemented MatStp class which creates a matrix initialized with zeros using calloc (inherits arma::Mat<>)
+- Updated data matrices to use shorter primitive types
+- Added and improved benchmark tests
+- Performed general improvements to STP implementation
+
 ### 7 March 2017
 - Some minor improvements and fixes
 - Improved benchmark tests

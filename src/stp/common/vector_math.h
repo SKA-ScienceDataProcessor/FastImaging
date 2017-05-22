@@ -1,6 +1,7 @@
 #ifndef VECTOR_MATH_H
 #define VECTOR_MATH_H
 
+#include "../types.h"
 #include <armadillo>
 #include <tbb/tbb.h>
 
@@ -20,7 +21,7 @@ namespace stp {
  *
  * @return (double): Accumulation value.
  */
-double vector_accumulate(arma::vec& v);
+double vector_accumulate(arma::Col<real_t>& v);
 
 /**
  * @brief Accumulate vector elements (parallel implementation).
@@ -32,7 +33,7 @@ double vector_accumulate(arma::vec& v);
  *
  * @return (double): Accumulation value.
  */
-double vector_accumulate_parallel(arma::vec& v);
+double vector_accumulate_parallel(arma::Col<real_t>& v);
 
 /**
  * @brief Compute vector mean (single thread).
@@ -44,7 +45,7 @@ double vector_accumulate_parallel(arma::vec& v);
  *
  * @return (double): Mean value of input vector.
  */
-double vector_mean(arma::vec& v);
+double vector_mean(arma::Col<real_t>& v);
 
 /**
  * @brief Compute vector mean (parallel).
@@ -56,7 +57,7 @@ double vector_mean(arma::vec& v);
  *
  * @return (double): Mean value of input vector.
  */
-double vector_mean_parallel(arma::vec& v);
+double vector_mean_parallel(arma::Col<real_t>& v);
 
 /**
  * @brief Compute mean value of finite vector elements (single thread).
@@ -68,7 +69,7 @@ double vector_mean_parallel(arma::vec& v);
  *
  * @return (double): Mean value of input vector.
  */
-double vector_mean_robust(arma::vec& v);
+double vector_mean_robust(arma::Col<real_t>& v);
 
 /**
  * @brief Compute mean value of finite vector elements (parallel).
@@ -80,7 +81,7 @@ double vector_mean_robust(arma::vec& v);
  *
  * @return (double): Mean value of input vector.
  */
-double vector_mean_robust_parallel(arma::vec& v);
+double vector_mean_robust_parallel(arma::Col<real_t>& v);
 
 /**
  * @brief Compute vector standard deviation (single thread).
@@ -94,7 +95,7 @@ double vector_mean_robust_parallel(arma::vec& v);
  *
  * @return (double): Standard deviation of input vector.
  */
-double vector_stddev(arma::vec& v, double mean = arma::datum::nan);
+double vector_stddev(arma::Col<real_t>& v, double mean = arma::datum::nan);
 
 /**
  * @brief Compute vector standard deviation (parallel).
@@ -108,7 +109,7 @@ double vector_stddev(arma::vec& v, double mean = arma::datum::nan);
  *
  * @return (double): Standard deviation of input vector.
  */
-double vector_stddev_parallel(arma::vec& v, double mean = arma::datum::nan);
+double vector_stddev_parallel(arma::Col<real_t>& v, double mean = arma::datum::nan);
 
 /**
  * @brief Compute standard deviation of finite vector elements (single thread).
@@ -122,7 +123,7 @@ double vector_stddev_parallel(arma::vec& v, double mean = arma::datum::nan);
  *
  * @return (double): Standard deviation of input vector.
  */
-double vector_stddev_robust(arma::vec& v, double mean = arma::datum::nan);
+double vector_stddev_robust(arma::Col<real_t>& v, double mean = arma::datum::nan);
 
 /**
  * @brief Compute standard deviation of finite vector elements (parallel).
@@ -136,7 +137,7 @@ double vector_stddev_robust(arma::vec& v, double mean = arma::datum::nan);
  *
  * @return (double): Standard deviation of input vector.
  */
-double vector_stddev_robust_parallel(arma::vec& v, double mean = arma::datum::nan);
+double vector_stddev_robust_parallel(arma::Col<real_t>& v, double mean = arma::datum::nan);
 
 /**
  * @brief Shift elements of input complex matrix in a circular manner.

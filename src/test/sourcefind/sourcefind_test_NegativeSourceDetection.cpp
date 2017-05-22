@@ -37,7 +37,7 @@ private:
 
     island_params found_src;
 
-    arma::mat img;
+    arma::Mat<real_t> img;
 
 public:
     void SetUp()
@@ -67,7 +67,7 @@ public:
         faint_src = gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude);
         negative_src = gaussian_point_source(negative_x_centre, negative_y_centre, negative_amplitude);
 
-        img = arma::zeros(ydim, xdim);
+        img = arma::zeros<arma::Mat<real_t> >(ydim, xdim);
     }
 
     void run()

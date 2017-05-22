@@ -17,7 +17,11 @@
 
 namespace stp {
 
+#ifdef USE_FLOAT
+const double tolerance = 1.0e-5;
+#else
 const double tolerance = 1.0e-14;
+#endif
 
 /**
  * @brief The TopHat functor class

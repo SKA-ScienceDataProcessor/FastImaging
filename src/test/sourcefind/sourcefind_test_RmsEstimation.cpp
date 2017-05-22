@@ -45,14 +45,13 @@ public:
 
     void run()
     {
-        arma::mat img = uncorrelated_gaussian_noise_background(ydim, xdim, rms);
+        arma::Mat<real_t> img = uncorrelated_gaussian_noise_background(ydim, xdim, rms);
         img += evaluate_model_on_pixel_grid(ydim, xdim, gaussian_point_source(bright_x_centre, bright_y_centre, bright_amplitude));
         img += evaluate_model_on_pixel_grid(ydim, xdim, gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude));
 
         rms_est = estimate_rms(arma::vectorise(img));
 
-        arma::mat aux = { (rms_est - rms) / rms };
-        absolute_rms = arma::abs(aux)[0];
+        absolute_rms = std::abs((rms_est - rms) / rms);
     }
     double absolute_rms;
 };

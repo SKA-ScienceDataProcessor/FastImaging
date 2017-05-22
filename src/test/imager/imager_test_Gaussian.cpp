@@ -32,7 +32,9 @@ public:
         // Loads the expected results to a arma::mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
 
-        result = image_visibilities(Gaussian(width_normalization, threshold), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+        std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > orig_result = image_visibilities(Gaussian(width_normalization, threshold), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+        result.first = arma::conv_to<arma::cx_mat>::from(orig_result.first);
+        result.second = arma::conv_to<arma::cx_mat>::from(orig_result.second);
     }
 };
 

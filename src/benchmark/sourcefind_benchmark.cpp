@@ -10,7 +10,7 @@
 #include <stp.h>
 
 std::string data_path(_PIPELINE_DATAPATH);
-std::string input_npz("simdata.npz");
+std::string input_npz("simdata_nstep10.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
@@ -31,11 +31,12 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     arma::cx_mat residual_vis = input_vis - input_model;
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(kernel_func, residual_vis, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
-    arma::mat image = arma::real(result.first);
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > result = stp::image_visibilities(kernel_func, residual_vis, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    arma::Mat<real_t> image = arma::real(result.first);
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::source_find_image(image, cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true));
+        benchmark::DoNotOptimize(stp::source_find_image(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma));
+        benchmark::ClobberMemory();
     }
 }
 
@@ -45,5 +46,5 @@ BENCHMARK(sourcefind_test_benchmark)
     ->Args({ 12 })
     ->Args({ 13 })
     ->Args({ 14 })
-    ->Unit(benchmark::kMillisecond);
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN()

@@ -80,6 +80,12 @@ int main(int argc, char** argv)
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
 
+    // Parse fft routine string
+    stp::fft_routine r_fft = parse_fft_routine(cfg.fft_routine);
+
+    // Parse kernel function string
+    KernelFunction kernel_func = parse_kernel_function(cfg.kernel_func);
+
     if (use_logger) {
         _logger->info("Configuration parameters:");
         _logger->info(" - image_size={}", cfg.image_size);
@@ -89,23 +95,76 @@ int main(int argc, char** argv)
         _logger->info(" - oversampling={}", cfg.oversampling);
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
+        _logger->info(" - kernel_function={}", cfg.kernel_func);
+        _logger->info(" - fft_routine={}", cfg.fft_routine);
+        _logger->info(" - image_fft_wisdom={}", cfg.image_wisdom_filename);
+        _logger->info(" - beam_fft_wisdom={}", cfg.beam_wisdom_filename);
+        _logger->info(" - generate_full_beam={}", cfg.gen_fullbeam);
+        _logger->info(" - estimate_rms={}", cfg.estimate_rms);
+        _logger->info(" - compute_bg_level={}", cfg.compute_bg_level);
+        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
+        _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
         _logger->info("Running pipeline");
     }
 
+    // Create output matrix
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > result;
+
     // Run image_visibilities
-    std::pair<arma::cx_mat, arma::cx_mat> result = stp::image_visibilities(stp::GaussianSinc(cfg.kernel_support), input_vis, input_uvw,
-        cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    switch (kernel_func) {
+    case KernelFunction::TopHat: {
+        stp::TopHat kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::Triangle: {
+        stp::Triangle kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::Sinc: {
+        stp::Sinc kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::Gaussian: {
+        stp::Gaussian kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    case KernelFunction::GaussianSinc: {
+        stp::GaussianSinc kernel_function(cfg.kernel_support);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
+            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+    };
+        break;
+    default:
+        assert(0);
+        break;
+    }
 
     result.second.set_size(0); // Destroy unused matrix
-    arma::mat image = arma::real(result.first);
+    arma::Mat<real_t> image = arma::real(result.first);
     result.first.set_size(0); // Destroy unused matrix
 
     // Run source find
-    stp::source_find_image sfimage = stp::source_find_image(image, cfg.detection_n_sigma, cfg.analysis_n_sigma, 0.0, true);
+    stp::source_find_image sfimage = stp::source_find_image(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma,
+        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.compute_bg_level, cfg.compute_barycentre);
 
     if (use_logger) {
-        _logger->info("Finished");
-        _logger->info("Saving output data");
+        _logger->info("Finished pipeline execution");
+        if (_outJsonFileArg.isSet() || _outNpzFileArg.isSet()) {
+            _logger->info("Saving output data");
+        }
     }
 
     // Save detected island parameters in JSON file

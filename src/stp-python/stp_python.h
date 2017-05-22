@@ -10,6 +10,7 @@
 #include <complex>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
+#include <stp.h>
 
 namespace stp_python {
 
@@ -24,7 +25,9 @@ enum struct KernelFunction {
     GaussianSinc
 };
 
-using np_complex_array = pybind11::array_t<std::complex<double>, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
+using np_complex_array = pybind11::array_t<std::complex<real_t>, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
+using np_real_array = pybind11::array_t<real_t, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
+using np_complex_double_array = pybind11::array_t<std::complex<double>, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
 using np_double_array = pybind11::array_t<double, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
 
 /**
@@ -55,7 +58,7 @@ using np_double_array = pybind11::array_t<double, pybind11::array::f_style | pyb
  * @return (pybind11::tuple): Tuple of numpy.ndarrays representing the image map and beam model (image, beam).
  */
 pybind11::tuple image_visibilities_wrapper(
-    np_complex_array vis, // numpy.ndarray<np.complex_>
+    np_complex_double_array vis, // numpy.ndarray<np.complex_>
     np_double_array uvw_lambda, // numpy.ndarray<np.float_>
     int image_size, // int
     double cell_size, // double
@@ -85,7 +88,7 @@ pybind11::tuple image_visibilities_wrapper(
  *                             - 'xbar, ybar' (double) are 'centre-of-mass' locations for the source-detection island.
  */
 std::vector<std::tuple<int, double, int, int, double, double> > source_find_wrapper(
-    np_double_array image_data, // numpy.ndarray<np.float_>
+    np_real_array image_data, // numpy.ndarray<np.float_>
     double detection_n_sigma, // double
     double analysis_n_sigma, // double
     double rms_est = 0.0); // double

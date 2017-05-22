@@ -6,31 +6,54 @@
 
 namespace stp {
 
-/**
- * @brief Performs a fast fourier transform on a matrix using the armadillo library
- *
- * Receives a complex matrix and performs a fast fourier transform or an inverse fast fourier transform
- * if the parameter inverse is false
- *
- * @param[in] in (cx_mat) : Complex matrix to perform the fft
- * @param[in] inverse (bool) : Boolean flag to indicate if we perform an inverse transform
- *
- * @return The transformed matrix
- */
-arma::cx_mat fft_arma(arma::cx_mat& input, bool inverse = false);
+// Available FFT algorithms
+typedef enum {
+    FFTW_ESTIMATE_FFT,
+    FFTW_MEASURE_FFT,
+    FFTW_PATIENT_FFT,
+    FFTW_WISDOM_FFT,
+    ARMADILLO_FFT
+} fft_routine;
 
 /**
- * @brief Performs a fast fourier transform on a matrix using the FFTW library
+ * @brief Performs a fast fourier transform on a complex matrix using the FFTW library
  *
  * Receives a complex matrix and performs a fast fourier transform or an inverse fast fourier transform
  * if the parameter inverse is false
  *
  * @param[in] m (cx_mat) : Complex matrix to perform the fft
  * @param[in] inverse (bool) : Boolean flag to indicate if we perform an inverse transform
+ * @param[in] r_fft (fft_routine enum) : Indicates FFTW planner flag to be used based on input fft routine config
+ * @param[in] wisdom_filename (string) : Input filename of FFTW wisdom (optional)
  *
- * @return The transformed matrix
+ * @return (cx_mat) The transformed matrix
  */
-arma::cx_mat fft_fftw(arma::cx_mat& m, bool inverse = false);
+arma::Mat<cx_real_t> fft_fftw(arma::Mat<cx_real_t>& m, bool inverse = false, fft_routine r_fft = FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
+
+/**
+ * @brief Performs a fast fourier transform on a real matrix using the FFTW library (real to complex FFT)
+ *
+ * Receives a real matrix and performs a fast fourier transform (only performs forward FFT)
+ *
+ * @param[in] m (mat) : Real matrix to perform the fft
+ * @param[in] r_fft (fft_routine enum) : Indicates FFTW planner flag to be used based on input fft routine config
+ * @param[in] wisdom_filename (string) : Input filename of FFTW wisdom (optional)
+ *
+ * @return (cx_mat) The transformed matrix
+ */
+arma::Mat<cx_real_t> fft_fftw_r2c(arma::Mat<real_t>& m, fft_routine r_fft = FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
+
+/**
+ * @brief Generates a hermitian matrix from the non-redundant values
+ *
+ * Receives a complex matrix with the non-redundant values (as returned by the fft_r2c FFTW function)
+ * which is used to generate the full hermitian matrix.
+ *
+ * @param[in] matrix (cx_mat) : Matrix with the non-redundant values
+ *
+ * @return (cx_mat) The hermitian matrix
+ */
+void generate_hermitian_matrix_from_nonredundant(arma::Mat<cx_real_t>& matrix);
 
 /**
  * @brief Performs matrix circular shift as needed for iFFT
