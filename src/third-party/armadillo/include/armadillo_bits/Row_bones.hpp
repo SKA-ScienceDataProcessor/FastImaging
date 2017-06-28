@@ -1,11 +1,17 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup Row
@@ -34,30 +40,30 @@ class Row : public Mat<eT>
   template<typename fill_type> inline Row(const uword in_rows, const uword in_cols, const fill::fill_class<fill_type>& f);
   template<typename fill_type> inline Row(const SizeMat& s,                         const fill::fill_class<fill_type>& f);
   
-  inline                  Row(const char*        text);
-  inline const Row& operator=(const char*        text);
+  inline            Row(const char*        text);
+  inline Row& operator=(const char*        text);
   
-  inline                  Row(const std::string& text);
-  inline const Row& operator=(const std::string& text);
+  inline            Row(const std::string& text);
+  inline Row& operator=(const std::string& text);
   
-  inline                  Row(const std::vector<eT>& x);
-  inline const Row& operator=(const std::vector<eT>& x);
+  inline            Row(const std::vector<eT>& x);
+  inline Row& operator=(const std::vector<eT>& x);
   
   #if defined(ARMA_USE_CXX11)
-  inline                  Row(const std::initializer_list<eT>& list);
-  inline const Row& operator=(const std::initializer_list<eT>& list);
+  inline            Row(const std::initializer_list<eT>& list);
+  inline Row& operator=(const std::initializer_list<eT>& list);
   
-  inline                  Row(Row&& m);
-  inline const Row& operator=(Row&& m);
+  inline            Row(Row&& m);
+  inline Row& operator=(Row&& m);
   #endif
   
   inline explicit Row(const SpRow<eT>& X);
   
-  inline const Row& operator=(const eT val);
-  inline const Row& operator=(const Row& X);
+  inline Row& operator=(const eT val);
+  inline Row& operator=(const Row& X);
   
-  template<typename T1> inline                   Row(const Base<eT,T1>& X);
-  template<typename T1> inline const Row&  operator=(const Base<eT,T1>& X);
+  template<typename T1> inline             Row(const Base<eT,T1>& X);
+  template<typename T1> inline Row&  operator=(const Base<eT,T1>& X);
   
   inline Row(      eT* aux_mem, const uword aux_length, const bool copy_aux_mem = true, const bool strict = false);
   inline Row(const eT* aux_mem, const uword aux_length);
@@ -65,11 +71,11 @@ class Row : public Mat<eT>
   template<typename T1, typename T2>
   inline explicit Row(const Base<pod_type,T1>& A, const Base<pod_type,T2>& B);
   
-  template<typename T1> inline                  Row(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Row& operator=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline            Row(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Row& operator=(const BaseCube<eT,T1>& X);
   
-  inline                  Row(const subview_cube<eT>& X);
-  inline const Row& operator=(const subview_cube<eT>& X);
+  inline            Row(const subview_cube<eT>& X);
+  inline Row& operator=(const subview_cube<eT>& X);
   
   inline mat_injector<Row> operator<<(const eT val);
   
@@ -193,25 +199,25 @@ class Row<eT>::fixed : public Row<eT>
   inline fixed(const char*        text);
   inline fixed(const std::string& text);
   
-  template<typename T1> inline const Row& operator=(const Base<eT,T1>& A);
+  template<typename T1> inline Row& operator=(const Base<eT,T1>& A);
   
-  inline const Row& operator=(const eT val);
-  inline const Row& operator=(const char*        text);
-  inline const Row& operator=(const std::string& text);
-  inline const Row& operator=(const subview_cube<eT>& X);
+  inline Row& operator=(const eT val);
+  inline Row& operator=(const char*        text);
+  inline Row& operator=(const std::string& text);
+  inline Row& operator=(const subview_cube<eT>& X);
   
   using Row<eT>::operator();
   
   #if defined(ARMA_USE_CXX11)
-    inline                fixed(const std::initializer_list<eT>& list);
-    inline const Row& operator=(const std::initializer_list<eT>& list);
+    inline          fixed(const std::initializer_list<eT>& list);
+    inline Row& operator=(const std::initializer_list<eT>& list);
   #endif
   
-  arma_inline const Row& operator=(const fixed<fixed_n_elem>& X);
+  arma_inline Row& operator=(const fixed<fixed_n_elem>& X);
   
   #if defined(ARMA_GOOD_COMPILER)
-    template<typename T1,              typename   eop_type> inline const Row& operator=(const   eOp<T1,       eop_type>& X);
-    template<typename T1, typename T2, typename eglue_type> inline const Row& operator=(const eGlue<T1, T2, eglue_type>& X);
+    template<typename T1,              typename   eop_type> inline Row& operator=(const   eOp<T1,       eop_type>& X);
+    template<typename T1, typename T2, typename eglue_type> inline Row& operator=(const eGlue<T1, T2, eglue_type>& X);
   #endif
   
   arma_inline const Op< Row_fixed_type, op_htrans >  t() const;

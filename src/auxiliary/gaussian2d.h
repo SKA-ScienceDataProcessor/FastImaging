@@ -21,9 +21,9 @@ public:
         double x_stddev = -1.5,
         double y_stddev = -1.2,
         double theta = 1.0)
-        : amplitude(amplitude)
-        , x_mean(x_mean)
+        : x_mean(x_mean)
         , y_mean(y_mean)
+        , amplitude(amplitude)
         , x_stddev(x_stddev)
         , y_stddev(y_stddev)
         , theta(theta)

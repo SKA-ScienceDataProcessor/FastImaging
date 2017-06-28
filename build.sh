@@ -6,8 +6,10 @@ NUMCORES=$(nproc)
 BUILDTYPE="Debug"
 # Default USE_FLOAT=OFF
 USEFLOAT="OFF"
+# Generate fftw plans
+GENFFT=1
 
-while getopts "drifh" OPTION
+while getopts "drifnh" OPTION
 do
 	case $OPTION in
 		d)
@@ -22,6 +24,9 @@ do
 		f)
 			USEFLOAT="ON"
 			;;
+		n)
+			GENFFT=0
+			;;
 		h)
 			echo 
 			echo "Build STP prototype, generate FFTW plans and run tests."
@@ -32,6 +37,7 @@ do
 			echo " -r    Use BUILDTYPE=Release"
 			echo " -i    Use BUILDTYPE=RelWithDebInfo"
 			echo " -f    Use USE_FLOAT=ON (default is USE_FLOAT=OFF)"
+			echo " -n    Disable generation of fftw plans (enabled by default)"
 			echo
 			exit 1
 			;;
@@ -64,15 +70,11 @@ $COMMAND
 make all -j $NUMCORES
 
 # Generate FFTW plans
-echo
-echo " >> Generate FFTW plans using fftw-wisdom method"
-cd ../../scripts/fftw-wisdom
-
-if [[ ${USEFLOAT} == "ON" ]]
-then
-	./generate_wisdom_f.sh
-else
-	./generate_wisdom.sh
+if [ $GENFFT == 1 ] ; then
+	echo
+	echo " >> Generate FFTW plans using fftw-wisdom method"
+	cd ../../scripts/fftw-wisdom
+	./generate_wisdom.sh $@
 fi
 
 echo

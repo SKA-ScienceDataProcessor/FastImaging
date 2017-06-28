@@ -1,0 +1,18 @@
+{
+	"image_size_pix": 16384,
+	"cell_size_arcsec": 0.5,
+	"kernel_support" : 3,
+	"kernel_exact": true,
+	"oversampling": 1,
+	"sourcefind_detection": 50.0,
+	"sourcefind_analysis": 50.0,
+	"kernel_function": "GaussianSinc",
+	"fft_routine": "FFTW_WISDOM_FFT",
+	"image_fft_wisdom": "WisdomFile_rob16384x16384.fftw",
+	"beam_fft_wisdom": "WisdomFile_rob16384x16384.fftw",
+	"rms_estimation": 0.0,
+	"sigma_clip_iters": 5,
+	"binapprox_median": true,
+	"compute_barycentre": true,
+	"generate_labelmap": false
+}

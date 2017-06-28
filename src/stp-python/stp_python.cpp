@@ -38,7 +38,7 @@ pybind11::tuple image_visibilities_wrapper(
         true);
 
     // (image, beam) tuple
-    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > image_and_beam;
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t> > image_and_beam;
 
     // Since "image_visibilities" is a function template, there's no way to prevent the use of the following switch statement.
     // Inheritance could be used instead, but virtual function calls would impose an unnecessary performance penalty.
@@ -82,12 +82,12 @@ pybind11::tuple image_visibilities_wrapper(
     pybind11::tuple result(2);
 
     // Image at index 0
-    arma::Mat<cx_real_t> image(std::get<0>(image_and_beam));
-    size_t data_size = sizeof(cx_real_t);
+    arma::Mat<real_t> image(std::get<0>(image_and_beam));
+    size_t data_size = sizeof(real_t);
     pybind11::buffer_info image_buffer(
         static_cast<void*>(image.memptr()), // void *ptr
         data_size, // size_t itemsize
-        pybind11::format_descriptor<cx_real_t>::format(), // const std::string &format
+        pybind11::format_descriptor<real_t>::format(), // const std::string &format
         2, // size_t ndim
         { image.n_rows, image.n_cols }, // const std::vector<size_t> &shape
         { data_size, image.n_cols * data_size }); // const std::vector<size_t> &strides
@@ -95,11 +95,11 @@ pybind11::tuple image_visibilities_wrapper(
     result[0] = np_complex_array(image_buffer);
 
     // Beam at index 1
-    arma::Mat<cx_real_t> beam(std::get<1>(image_and_beam));
+    arma::Mat<real_t> beam(std::get<1>(image_and_beam));
     pybind11::buffer_info beam_buffer(
         static_cast<void*>(beam.memptr()), // void *ptr
         data_size, // size_t itemsize
-        pybind11::format_descriptor<cx_real_t>::format(), // const std::string &format
+        pybind11::format_descriptor<real_t>::format(), // const std::string &format
         2, // size_t ndim
         { beam.n_rows, beam.n_cols }, // const std::vector<size_t> &shape
         { data_size, beam.n_cols * data_size }); // const std::vector<size_t> &strides

@@ -9,6 +9,7 @@
 
 #include <complex>
 
+// Defines single- or double- precision floating point type for STP library
 #ifdef USE_FLOAT
 using real_t = float;
 using cx_real_t = std::complex<float>;

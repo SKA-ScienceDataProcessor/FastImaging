@@ -30,10 +30,10 @@ KernelFunction parse_kernel_function(const std::string& kernel)
     return k_func;
 }
 
-stp::fft_routine parse_fft_routine(const std::string& fft)
+stp::FFTRoutine parse_fft_routine(const std::string& fft)
 {
     // Convert fft routine string to enum
-    stp::fft_routine r_fft = stp::FFTW_ESTIMATE_FFT;
+    stp::FFTRoutine r_fft = stp::FFTW_ESTIMATE_FFT;
     if (fft == "FFTW_ESTIMATE_FFT") {
         r_fft = stp::FFTW_ESTIMATE_FFT;
     } else if (fft == "FFTW_MEASURE_FFT") {
@@ -42,8 +42,8 @@ stp::fft_routine parse_fft_routine(const std::string& fft)
         r_fft = stp::FFTW_PATIENT_FFT;
     } else if (fft == "FFTW_WISDOM_FFT") {
         r_fft = stp::FFTW_WISDOM_FFT;
-    } else if (fft == "ARMADILLO_FFT") {
-        r_fft = stp::ARMADILLO_FFT;
+    } else if (fft == "FFTW_WISDOM_INPLACE_FFT") {
+        r_fft = stp::FFTW_WISDOM_INPLACE_FFT;
     }
 
     return r_fft;

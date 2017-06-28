@@ -9,37 +9,37 @@
  *
  *  Returns a matrix of gaussian noise.
  *
- *  @param[in] x_rows (double): number of rows
- *  @param[in] y_cols (double): number of columns
- *  @param[in] sigma (double): noise standard deviation
- *  @param[in] mean (double): noise mean value
+ *  @param[in] rows (double): number of rows
+ *  @param[in] cols (double): number of columns
+ *  @param[in] sigma (double): noise standard deviation (default: 1.0)
+ *  @param[in] mean (double): noise mean value (default: 0.0)
  *
  *  @return (arma::mat): gaussian noise background
  */
 arma::Mat<real_t> uncorrelated_gaussian_noise_background(
-    double x_rows,
-    double y_cols,
+    double rows,
+    double cols,
     double sigma = 1.0,
     double mean = 0.0)
 {
     arma::arma_rng::set_seed_random();
-    return (sigma * arma::randn<arma::Mat<real_t> >(x_rows, y_cols)) + mean;
+    return (sigma * arma::randn<arma::Mat<real_t> >(rows, cols)) + mean;
 }
 
 /** @brief evaluate_model_on_pixel_grid function
  *
  *  Computes input model (e.g. gaussian2D) in a matrix defined by input x_rows and y_rows.
  *
- *  @param[in] x_rows (double): number of rows
- *  @param[in] y_cols (double): number of columns
+ *  @param[in] y (double): number of rows
+ *  @param[in] x (double): number of columns
  *  @param[in] model (double): input model to be computed
  *
  *  @return (arma::mat): computed model
  */
 template <typename T>
-arma::Mat<real_t> evaluate_model_on_pixel_grid(double x_rows, double y_cols, const T& model)
+arma::Mat<real_t> evaluate_model_on_pixel_grid(double y, double x, const T& model)
 {
-    return model(x_rows, y_cols);
+    return model(y, x);
 }
 
 #endif /* FIXTURES_H */

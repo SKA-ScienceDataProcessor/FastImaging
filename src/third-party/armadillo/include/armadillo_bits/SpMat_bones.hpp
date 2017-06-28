@@ -1,13 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
-// Written by Ryan Curtin
-// Written by Matthew Amidon
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup SpMat
@@ -81,16 +85,16 @@ class SpMat : public SpBase< eT, SpMat<eT> >
   inline explicit SpMat(const uword in_rows, const uword in_cols);
   inline explicit SpMat(const SizeMat& s);
   
-  inline                  SpMat(const char*        text);
-  inline const SpMat& operator=(const char*        text);
-  inline                  SpMat(const std::string& text);
-  inline const SpMat& operator=(const std::string& text);
-  inline                  SpMat(const SpMat<eT>&   x);
+  inline            SpMat(const char*        text);
+  inline SpMat& operator=(const char*        text);
+  inline            SpMat(const std::string& text);
+  inline SpMat& operator=(const std::string& text);
+  inline            SpMat(const SpMat<eT>&   x);
   
   
   #if defined(ARMA_USE_CXX11)
-  inline                  SpMat(SpMat&& m);
-  inline const SpMat& operator=(SpMat&& m);
+  inline            SpMat(SpMat&& m);
+  inline SpMat& operator=(SpMat&& m);
   #endif
   
   template<typename T1, typename T2, typename T3>
@@ -105,65 +109,65 @@ class SpMat : public SpBase< eT, SpMat<eT> >
   template<typename T1, typename T2>
   inline SpMat(const bool add_values, const Base<uword,T1>& locations, const Base<eT,T2>& values, const uword n_rows, const uword n_cols, const bool sort_locations = true, const bool check_for_zeros = true);
   
-  inline const SpMat&  operator=(const eT val); //! sets size to 1x1
-  inline const SpMat& operator*=(const eT val);
-  inline const SpMat& operator/=(const eT val);
+  inline SpMat&  operator=(const eT val); //! sets size to 1x1
+  inline SpMat& operator*=(const eT val);
+  inline SpMat& operator/=(const eT val);
   // operator+=(val) and operator-=(val) are not defined as they don't make sense for sparse matrices
   
-  inline const SpMat&  operator=(const SpMat& m);
-  inline const SpMat& operator+=(const SpMat& m);
-  inline const SpMat& operator-=(const SpMat& m);
-  inline const SpMat& operator*=(const SpMat& m);
-  inline const SpMat& operator%=(const SpMat& m);
-  inline const SpMat& operator/=(const SpMat& m);
+  inline SpMat&  operator=(const SpMat& m);
+  inline SpMat& operator+=(const SpMat& m);
+  inline SpMat& operator-=(const SpMat& m);
+  inline SpMat& operator*=(const SpMat& m);
+  inline SpMat& operator%=(const SpMat& m);
+  inline SpMat& operator/=(const SpMat& m);
   
-  template<typename T1> inline explicit          SpMat(const Base<eT, T1>& m);
-  template<typename T1> inline const SpMat&  operator=(const Base<eT, T1>& m);
-  template<typename T1> inline const SpMat& operator+=(const Base<eT, T1>& m);
-  template<typename T1> inline const SpMat& operator-=(const Base<eT, T1>& m);
-  template<typename T1> inline const SpMat& operator*=(const Base<eT, T1>& m);
-  template<typename T1> inline const SpMat& operator/=(const Base<eT, T1>& m);
-  template<typename T1> inline const SpMat& operator%=(const Base<eT, T1>& m);
+  template<typename T1> inline explicit    SpMat(const Base<eT, T1>& m);
+  template<typename T1> inline SpMat&  operator=(const Base<eT, T1>& m);
+  template<typename T1> inline SpMat& operator+=(const Base<eT, T1>& m);
+  template<typename T1> inline SpMat& operator-=(const Base<eT, T1>& m);
+  template<typename T1> inline SpMat& operator*=(const Base<eT, T1>& m);
+  template<typename T1> inline SpMat& operator/=(const Base<eT, T1>& m);
+  template<typename T1> inline SpMat& operator%=(const Base<eT, T1>& m);
   
   
   //! construction of complex matrix out of two non-complex matrices
   template<typename T1, typename T2>
   inline explicit SpMat(const SpBase<pod_type, T1>& A, const SpBase<pod_type, T2>& B);
   
-  inline                   SpMat(const SpSubview<eT>& X);
-  inline const SpMat&  operator=(const SpSubview<eT>& X);
-  inline const SpMat& operator+=(const SpSubview<eT>& X);
-  inline const SpMat& operator-=(const SpSubview<eT>& X);
-  inline const SpMat& operator*=(const SpSubview<eT>& X);
-  inline const SpMat& operator%=(const SpSubview<eT>& X);
-  inline const SpMat& operator/=(const SpSubview<eT>& X);
+  inline             SpMat(const SpSubview<eT>& X);
+  inline SpMat&  operator=(const SpSubview<eT>& X);
+  inline SpMat& operator+=(const SpSubview<eT>& X);
+  inline SpMat& operator-=(const SpSubview<eT>& X);
+  inline SpMat& operator*=(const SpSubview<eT>& X);
+  inline SpMat& operator%=(const SpSubview<eT>& X);
+  inline SpMat& operator/=(const SpSubview<eT>& X);
   
   // delayed unary ops
-  template<typename T1, typename spop_type> inline                   SpMat(const SpOp<T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat&  operator=(const SpOp<T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator+=(const SpOp<T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator-=(const SpOp<T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator*=(const SpOp<T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator%=(const SpOp<T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator/=(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline             SpMat(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat&  operator=(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator+=(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator-=(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator*=(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator%=(const SpOp<T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator/=(const SpOp<T1, spop_type>& X);
   
   // delayed binary ops
-  template<typename T1, typename T2, typename spglue_type> inline                   SpMat(const SpGlue<T1, T2, spglue_type>& X);
-  template<typename T1, typename T2, typename spglue_type> inline const SpMat&  operator=(const SpGlue<T1, T2, spglue_type>& X);
-  template<typename T1, typename T2, typename spglue_type> inline const SpMat& operator+=(const SpGlue<T1, T2, spglue_type>& X);
-  template<typename T1, typename T2, typename spglue_type> inline const SpMat& operator-=(const SpGlue<T1, T2, spglue_type>& X);
-  template<typename T1, typename T2, typename spglue_type> inline const SpMat& operator*=(const SpGlue<T1, T2, spglue_type>& X);
-  template<typename T1, typename T2, typename spglue_type> inline const SpMat& operator%=(const SpGlue<T1, T2, spglue_type>& X);
-  template<typename T1, typename T2, typename spglue_type> inline const SpMat& operator/=(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline             SpMat(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline SpMat&  operator=(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline SpMat& operator+=(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline SpMat& operator-=(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline SpMat& operator*=(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline SpMat& operator%=(const SpGlue<T1, T2, spglue_type>& X);
+  template<typename T1, typename T2, typename spglue_type> inline SpMat& operator/=(const SpGlue<T1, T2, spglue_type>& X);
   
   // delayed mixed-type unary ops
-  template<typename T1, typename spop_type> inline                   SpMat(const mtSpOp<eT, T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat&  operator=(const mtSpOp<eT, T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator+=(const mtSpOp<eT, T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator-=(const mtSpOp<eT, T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator*=(const mtSpOp<eT, T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator%=(const mtSpOp<eT, T1, spop_type>& X);
-  template<typename T1, typename spop_type> inline const SpMat& operator/=(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline             SpMat(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat&  operator=(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator+=(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator-=(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator*=(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator%=(const mtSpOp<eT, T1, spop_type>& X);
+  template<typename T1, typename spop_type> inline SpMat& operator/=(const mtSpOp<eT, T1, spop_type>& X);
   
   
   arma_inline       SpSubview<eT> row(const uword row_num);

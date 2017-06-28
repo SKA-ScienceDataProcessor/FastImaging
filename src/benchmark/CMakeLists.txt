@@ -30,13 +30,14 @@ add_definitions ( -D_WISDOM_FILEPATH="${WISDOM_FILEPATH}/")
 
 # For convenience all link libraries required by
 # the benchmark are put in one variable
-set(BENCHMARK_LINK_LIBRARIES stp benchmark Threads::Threads)
+set(BENCHMARK_LINK_LIBRARIES stp benchmark Threads::Threads armadillo)
 
 add_custom_target(benchmarking COMMAND run-parts .)
 
 # Helper function for test target specification
 function(add_benchmark_test benchmark_test_name benchmark_test_source)
    add_executable(${benchmark_test_name} ${benchmark_test_source} ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp)
+   add_dependencies(${benchmark_test_name} stp cnpy-static benchmark armadillo)
    target_include_directories(${benchmark_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
        ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${RAPIDJSON_INCLUDE_PATH})
    target_link_libraries(${benchmark_test_name} ${BENCHMARK_LINK_LIBRARIES} cnpy-static)
@@ -47,8 +48,8 @@ endfunction()
 # Memset
 add_benchmark_test(memset_benchmark memset_benchmark.cpp)
 
-# Vector Math
-add_benchmark_test(vector_math_benchmark vector_math_benchmark.cpp)
+# Matrix Math
+add_benchmark_test(matrix_math_benchmark matrix_math_benchmark.cpp)
 
 # Convolution_function
 add_benchmark_test(conv_benchmark conv_benchmark.cpp)
@@ -56,20 +57,14 @@ add_benchmark_test(conv_benchmark conv_benchmark.cpp)
 # Populate_cache
 add_benchmark_test(populate_kernel_cache_benchmark populate_kernel_cache_benchmark.cpp)
 
-# FFT
-add_benchmark_test(fft_benchmark fft_benchmark.cpp)
-
-# FFT R2C
-add_benchmark_test(fft_r2c_benchmark fft_r2c_benchmark.cpp)
+# FFT C2R
+add_benchmark_test(fft_c2r_benchmark fft_c2r_benchmark.cpp)
 
 # Imager
 add_benchmark_test(imager_benchmark imager_benchmark.cpp)
 
 # Kernel
 add_benchmark_test(kernel_benchmark kernel_benchmark.cpp)
-
-# Gridder_convolution
-add_benchmark_test(gridder_convolution_benchmark gridder_convolution_benchmark.cpp)
 
 # Gridder
 add_benchmark_test(gridder_benchmark gridder_benchmark.cpp)

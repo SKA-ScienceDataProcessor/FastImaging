@@ -50,11 +50,11 @@ struct ConfigurationFile {
     std::string fft_routine = "FFTW_ESTIMATE_FFT";
     std::string image_wisdom_filename;
     std::string beam_wisdom_filename;
-    bool gen_fullbeam = true;
     double estimate_rms = 0.0;
-    bool compute_bg_level = true;
-    bool compute_barycentre = true;
     int sigma_clip_iters = 5;
+    bool binapprox_median = true;
+    bool compute_barycentre = true;
+    bool generate_labelmap = false;
 
 public:
     ConfigurationFile() = delete;
@@ -87,17 +87,17 @@ public:
                 image_wisdom_filename = config_document["image_fft_wisdom"].GetString();
             if (config_document.HasMember("beam_fft_wisdom"))
                 beam_wisdom_filename = config_document["beam_fft_wisdom"].GetString();
-            if (config_document.HasMember("generate_full_beam"))
-                gen_fullbeam = config_document["generate_full_beam"].GetBool();
-            if (config_document.HasMember("estimate_rms"))
-                estimate_rms = config_document["estimate_rms"].GetDouble();
-            if (config_document.HasMember("compute_bg_level"))
-                compute_bg_level = config_document["compute_bg_level"].GetBool();
 
+            if (config_document.HasMember("rms_estimation"))
+                estimate_rms = config_document["rms_estimation"].GetDouble();
+            if (config_document.HasMember("sigma_clip_iters"))
+                sigma_clip_iters = config_document["sigma_clip_iters"].GetInt();
+            if (config_document.HasMember("binapprox_median"))
+                binapprox_median = config_document["binapprox_median"].GetBool();
             if (config_document.HasMember("compute_barycentre"))
                 compute_barycentre = config_document["compute_barycentre"].GetBool();
-            if (config_document.HasMember("sigma_clip_iterations"))
-                sigma_clip_iters = config_document["sigma_clip_iterations"].GetInt();
+            if (config_document.HasMember("generate_labelmap"))
+                generate_labelmap = config_document["generate_labelmap"].GetBool();
         }
     }
 };
@@ -116,8 +116,8 @@ KernelFunction parse_kernel_function(const std::string& kernel);
  *
  * @param[in] fft (string): Input fft routine string
  *
- * @return (fft_routine) Enumeration value for the input fft routine
+ * @return (FFTRoutine) Enumeration value for the input fft routine
  */
-stp::fft_routine parse_fft_routine(const std::string& fft);
+stp::FFTRoutine parse_fft_routine(const std::string& fft);
 
 #endif /* LOAD_JSON_CONFIG_H */

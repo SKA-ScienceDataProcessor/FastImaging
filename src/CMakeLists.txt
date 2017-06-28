@@ -27,19 +27,16 @@ option(BUILD_TESTS "Builds the unit tests" ON)
 option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
 option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
 option(USE_FLOAT "Builds STP using 'float' type to represent real numbers" ON)
-
-# Global dependency: Armadillo (7.600.2)
-# Armadillo is used as a pure template library, so only include_directories needs to be updated
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third-party/armadillo/include)
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions(-DARMA_NO_DEBUG)
-endif()
-add_definitions(-DARMA_DONT_USE_WRAPPER)
-add_definitions(-DARMA_USE_TBB_ALLOC)
+option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
 
 # Use float rather than double to represent real numbers (less memory usage)
 if(USE_FLOAT)
     add_definitions(-DUSE_FLOAT)
+endif()
+
+# Measure function execution times from the reduce executable
+if(WITH_FUNCTION_TIMINGS)
+    add_definitions(-DFUNCTION_TIMINGS)
 endif()
 
 # Check libstdc++ parallel mode

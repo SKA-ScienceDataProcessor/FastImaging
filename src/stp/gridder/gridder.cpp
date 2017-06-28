@@ -10,7 +10,8 @@ arma::uvec bounds_check_kernel_centre_locations(arma::imat& kernel_centre_indice
     kernel_centre_indices.each_row([&out_of_bounds_bool, &image_size, &support, &col](arma::imat& r) {
         const int kc_x = r[0];
         const int kc_y = r[1];
-        if (kc_x - support < 0 || kc_y - support < 0 || kc_x + support >= image_size || kc_y + support >= image_size) {
+
+        if ((kc_x - support) < 0 || (kc_y - support) < 0 || (kc_x + support) >= image_size || (kc_y + support) >= image_size) {
             out_of_bounds_bool[col] = 1;
         } else {
             out_of_bounds_bool[col] = 0;

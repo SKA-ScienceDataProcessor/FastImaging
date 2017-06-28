@@ -1,12 +1,17 @@
-// Copyright (C) 2016 National ICT Australia (NICTA)
-//
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
-//
-// Written by Yixuan Qiu
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 namespace newarp
@@ -116,24 +121,21 @@ UpperHessenbergEigen<eT>::eigenvectors()
   
   arma_debug_check( (computed == false), "newarp::UpperHessenbergEigen::eigenvectors(): need to call compute() first" );
 
-  // in fact Lapack will set the imaginary parts of real eigenvalues to be exact zero
-  // here we just use a small value
-  eT prec = std::numeric_limits<eT>::epsilon();
-  
+  // Lapack will set the imaginary parts of real eigenvalues to be exact zero
   Mat< std::complex<eT> > evecs(n, n);
   
   std::complex<eT>* col_ptr = evecs.memptr();
   
   for(blas_int i = 0; i < n; i++)
     {
-    if(cx_attrib::is_real(evals(i), prec))
+    if(cx_attrib::is_real(evals(i), eT(0)))
       {
       // for real eigenvector, normalise and copy
       eT z_norm = norm(mat_Z.col(i));
       
       for(blas_int j = 0; j < n; j++)
         {
-        col_ptr[j] = std::complex<eT>(mat_Z(j, i) / z_norm, 0);
+        col_ptr[j] = std::complex<eT>(mat_Z(j, i) / z_norm, eT(0));
         }
 
       col_ptr += n;

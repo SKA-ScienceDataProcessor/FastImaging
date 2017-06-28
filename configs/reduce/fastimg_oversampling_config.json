@@ -1,5 +1,5 @@
 {
-	"image_size_pix": 4096,
+	"image_size_pix": 16384,
 	"cell_size_arcsec": 0.5,
 	"kernel_support" : 3,
 	"kernel_exact": false,
@@ -8,11 +8,11 @@
 	"sourcefind_analysis": 50.0,
 	"kernel_function": "GaussianSinc",
 	"fft_routine": "FFTW_WISDOM_FFT",
-	"image_fft_wisdom": "WisdomFile_cof4096x4096.fftw",
-	"beam_fft_wisdom": "WisdomFile_rof4096x4096.fftw",
-	"generate_full_beam": false,
-	"estimate_rms": 0.0,
-	"compute_bg_level": true,
+	"image_fft_wisdom": "WisdomFile_rob16384x16384.fftw",
+	"beam_fft_wisdom": "WisdomFile_rob16384x16384.fftw",
+	"rms_estimation": 0.0,
+	"sigma_clip_iters": 5,
+	"binapprox_median": true,
 	"compute_barycentre": true,
-	"sigma_clip_iterations": 5
+	"generate_labelmap": false
 }

@@ -15,7 +15,7 @@ std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 
-void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size)
+void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support)
 {
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
@@ -26,12 +26,14 @@ void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int im
     residual_vis = input_vis - input_model;
 
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
-    double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * image_size));
-    arma::mat uvw_in_pixels = input_uvw / grid_pixel_width_lambda;
+    double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * double(image_size)));
+    uv_in_pixels = (input_uvw / grid_pixel_width_lambda);
 
-    uv_in_pixels.resize(uvw_in_pixels.n_rows, 2);
-    uv_in_pixels.col(0) = uvw_in_pixels.col(0);
-    uv_in_pixels.col(1) = uvw_in_pixels.col(1);
+    // Remove W column
+    uv_in_pixels.shed_col(2);
+
+    // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
+    stp::convert_to_halfplane_visibilities(uv_in_pixels, residual_vis, kernel_support);
 }
 
 static void gridder_exact_benchmark(benchmark::State& state)
@@ -43,7 +45,7 @@ static void gridder_exact_benchmark(benchmark::State& state)
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size);
+    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
 
     stp::GaussianSinc kernel_func(state.range(1));
 
@@ -60,7 +62,7 @@ static void gridder_oversampling_benchmark(benchmark::State& state)
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size);
+    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
 
     stp::GaussianSinc kernel_func(state.range(1));
 

@@ -132,11 +132,13 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *            the gridded visibilities and the sampling weights.
  */
 template <typename T>
-std::pair<MatStp<cx_real_t>, MatStp<real_t> > convolve_to_grid(const T& kernel_creator, const int support, int image_size, const arma::mat& uv, const arma::cx_mat& vis, bool kernel_exact = true, int oversampling = 1, bool pad = false, bool normalize = true)
+std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> convolve_to_grid(const T& kernel_creator, const int support, int image_size, const arma::mat& uv, const arma::cx_mat& vis,
+    bool kernel_exact = true, int oversampling = 1, bool pad = false, bool normalize = true, bool shift_uv = true, bool halfplane_gridding = true)
 {
     assert(uv.n_cols == 2);
     assert(uv.n_rows == vis.n_rows);
     assert(kernel_exact || (oversampling >= 1));
+    assert((image_size % 2) == 0);
 
     if (kernel_exact == true)
         oversampling = 1;
@@ -148,31 +150,80 @@ std::pair<MatStp<cx_real_t>, MatStp<real_t> > convolve_to_grid(const T& kernel_c
 
     arma::mat uv_frac = uv - uv_rounded;
     arma::imat kernel_centre_on_grid = arma::conv_to<arma::imat>::from(uv_rounded) + (image_size / 2);
+
+    // Check bounds
     arma::uvec good_vis_idx = bounds_check_kernel_centre_locations(kernel_centre_on_grid, support, image_size);
 
-    MatStp<cx_real_t> vis_grid(image_size, image_size);
-    MatStp<real_t> sampling_grid(image_size, image_size);
+    // Number of rows of the output images. This changes if halfplane gridding is used
+    int image_rows = image_size;
+    if (halfplane_gridding) {
+        image_rows = (image_size / 2) + 1;
+    }
 
-    if (kernel_exact == false) {
-
-        /**********/
-        int shift_offset = ceil(image_size / 2);
-        kernel_centre_on_grid.for_each([&shift_offset](arma::imat::elem_type& val) {
-            if (val < shift_offset) {
-                val += shift_offset;
+    // Shift positions of the visibilities (to avoid call to fftshift function)
+    if (shift_uv) {
+        int shift_offset = image_size / 2;
+        kernel_centre_on_grid.each_row([&](arma::imat& r) {
+            if (r[0] < shift_offset) {
+                r[0] += shift_offset;
             } else {
-                val -= shift_offset;
+                r[0] -= shift_offset;
+            }
+            if (r[1] < shift_offset) {
+                r[1] += shift_offset;
+            } else {
+                r[1] -= shift_offset;
             }
         });
-        /*********/
+    }
 
-        int kernel_size = support * 2 + 1;
+    // Create matrices for output gridded images
+    // Use MatStp class because these images shall be efficiently initialized with zeros
+    MatStp<cx_real_t> vis_grid(image_rows, image_size);
+    MatStp<cx_real_t> sampling_grid(image_rows, image_size);
 
+    int kernel_size = support * 2 + 1;
+
+    if (kernel_exact == false) {
+        // Kernel oversampled gridder
         // If an integer value is supplied (oversampling), we pre-generate an oversampled kernel ahead of time.
         const arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, pad, normalize);
         arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&good_vis_idx, &image_size, &kernel_centre_on_grid, &support, &kernel_size, &kernel_cache, &oversampled_offset, &vis, &vis_grid, &sampling_grid](const tbb::blocked_range<size_t>& r) {
+        /*
+        // Single-threaded implementation of oversampled gridder
+        good_vis_idx.for_each([&](arma::uvec::elem_type& val) {
+            const int gc_x = kernel_centre_on_grid(val, 0);
+            const int gc_y = kernel_centre_on_grid(val, 1);
+
+            const arma::uword cp_x = oversampled_offset.at(val, 0);
+            const arma::uword cp_y = oversampled_offset.at(val, 1);
+
+            for (int j = 0; j < kernel_size; j++) {
+                int grid_col = gc_x - support + j;
+                if (grid_col < 0) // left/right split of the kernel
+                    grid_col += image_size;
+                if (grid_col >= image_size) // left/right split of the kernel
+                    grid_col -= image_size;
+
+                for (int i = 0; i < kernel_size; i++) {
+                    int grid_row = gc_y - support + i;
+                    if (grid_row < 0) // top/bottom split of the kernel. Halfplane gridding: kernel points in the negative halfplane are excluded
+                        grid_row += image_size;
+                    if (grid_row >= image_size) // top/bottom split of the kernel. Halfplane gridding: kernel points touching the positive halfplane are used
+                        grid_row -= image_size;
+                    // The following condition is needed for the case of halfplane gridding, because only the top halfplane visibilities are convolved
+                    const double kernel_val = kernel_cache(cp_y, cp_x).at(i, j);
+                    if (grid_row < image_rows) {
+                        vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
+                        sampling_grid.at(grid_row, grid_col) += kernel_val;
+                    }
+                }
+            }
+        });*/
+
+        // Multi-threaded implementation of oversampled gridder (20-25% faster)
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&](const tbb::blocked_range<size_t>& r) {
 
             for (arma::uword k = 0; k < good_vis_idx.n_elem; k++) {
                 arma::uword val = good_vis_idx.at(k);
@@ -191,19 +242,24 @@ std::pair<MatStp<cx_real_t>, MatStp<real_t> > convolve_to_grid(const T& kernel_c
                     assert(std::abs(conv_col) <= support);
                     assert(arma::uword(grid_col % kernel_size) == r.begin());
 
-                    // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
-                    for (int i = 0; i < kernel_size; i++) {
+                    // Pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
+                    for (int i = 0; i < kernel_size; ++i) {
                         const double kernel_val = kernel_cache(cp_y, cp_x).at(i, support - conv_col);
                         int grid_row = gc_y - support + i;
-                        if (grid_row >= image_size)
-                            grid_row -= image_size;
                         if (grid_row < 0)
                             grid_row += image_size;
-                        vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
-                        sampling_grid.at(grid_row, grid_col) += kernel_val;
+                        if (grid_row >= image_size)
+                            grid_row -= image_size;
+                        if (grid_row < image_rows) {
+                            vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
+                            sampling_grid.at(grid_row, grid_col) += kernel_val;
+                        }
                     }
                 }
 
+                assert(gc_x < image_size);
+
+                // This is for the cases when the kernel is split between the left and right margins
                 if ((gc_x >= (image_size - support)) || (gc_x < support)) {
                     if (gc_x >= (image_size - support)) {
                         gc_x -= image_size;
@@ -223,39 +279,52 @@ std::pair<MatStp<cx_real_t>, MatStp<real_t> > convolve_to_grid(const T& kernel_c
                     }
 
                     if ((grid_col < image_size) && (grid_col >= 0)) {
-
-                        // We pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
+                        // Pick the pre-generated kernel corresponding to the sub-pixel offset nearest to that of the visibility.
                         for (int i = 0; i < kernel_size; i++) {
                             const double kernel_val = kernel_cache(cp_y, cp_x).at(i, support - conv_col);
                             int grid_row = gc_y - support + i;
-                            if (grid_row >= image_size)
-                                grid_row -= image_size;
                             if (grid_row < 0)
                                 grid_row += image_size;
-                            vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
-                            sampling_grid.at(grid_row, grid_col) += kernel_val;
+                            if (grid_row >= image_size)
+                                grid_row -= image_size;
+                            if (grid_row < image_rows) {
+                                vis_grid.at(grid_row, grid_col) += vis[val] * kernel_val;
+                                sampling_grid.at(grid_row, grid_col) += kernel_val;
+                            }
                         }
                     }
                 }
             }
         });
-    } else {
-        arma::uword kernel_size = support * 2 + 1;
 
-        good_vis_idx.for_each([&kernel_centre_on_grid, &support, &kernel_size, &uv_frac, &pad, &normalize, &kernel_creator, &vis, &vis_grid, &sampling_grid](arma::uvec::elem_type& val) {
+    } else {
+        // Exact gridder (slower but with more accuracy)
+        good_vis_idx.for_each([&](arma::uvec::elem_type& val) {
             const int gc_x = kernel_centre_on_grid(val, 0);
             const int gc_y = kernel_centre_on_grid(val, 1);
-
-            arma::uword xstart = gc_x - support;
-            arma::uword ystart = gc_y - support;
 
             // Exact gridding is used, i.e. the kernel is recalculated for each visibility, with
             // precise sub-pixel offset according to that visibility's UV co-ordinates.
             arma::mat normed_kernel_array = make_kernel_array(kernel_creator, support, uv_frac.row(val));
-            for (arma::uword i = 0; i < kernel_size; i++) {
-                for (arma::uword j = 0; j < kernel_size; j++) {
-                    vis_grid(ystart + j, xstart + i) += vis[val] * normed_kernel_array.at(j, i);
-                    sampling_grid(ystart + j, xstart + i) += normed_kernel_array.at(j, i);
+
+            for (int j = 0; j < kernel_size; j++) {
+                int grid_col = gc_x - support + j;
+                if (grid_col < 0) // left/right split of the kernel
+                    grid_col += image_size;
+                if (grid_col >= image_size) // left/right split of the kernel
+                    grid_col -= image_size;
+
+                for (int i = 0; i < kernel_size; i++) {
+                    int grid_row = gc_y - support + i;
+                    if (grid_row < 0) // top/bottom split of the kernel. Halfplane gridding: kernel points in the negative halfplane are excluded
+                        grid_row += image_size;
+                    if (grid_row >= image_size) // top/bottom split of the kernel. Halfplane gridding: kernel points touching the positive halfplane are used
+                        grid_row -= image_size;
+                    // The following condition is needed for the case of halfplane gridding, because only the top halfplane visibilities are convolved
+                    if (grid_row < image_rows) {
+                        vis_grid(grid_row, grid_col) += vis[val] * normed_kernel_array.at(i, j);
+                        sampling_grid(grid_row, grid_col) += normed_kernel_array.at(i, j);
+                    }
                 }
             }
         });

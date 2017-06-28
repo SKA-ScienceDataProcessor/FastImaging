@@ -24,13 +24,14 @@ public:
         arma::mat subpix_offset = { 0.1, -0.15 };
         arma::mat uv_offset = uv + subpix_offset;
 
-        result = convolve_to_grid(Triangle(_half_base_width), support, image_size, uv_offset, vis, _kernel_exact_GRID, _oversampling_GRID, _pad, _normalize);
+        // The last two parameters (false, false) force the use of the full gridder without uv shifting
+        result = convolve_to_grid(Triangle(_half_base_width), support, image_size, uv_offset, vis, _kernel_exact_GRID, _oversampling_GRID, _pad, _normalize, false, false);
         kernel = make_kernel_array(Triangle(_half_base_width), support, subpix_offset, _oversampling_KERNEL, _pad, _normalize);
     }
 
     const int image_size = 8;
     const int support = 2;
-    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
+    std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> result;
     arma::mat kernel;
     arma::cx_mat vis;
     arma::mat uv;
@@ -39,11 +40,11 @@ public:
 TEST_F(GridderTriangle, equal)
 {
     run();
-    EXPECT_TRUE(std::abs(accu(arma::real(std::get<vis_grid_index>(result))) - accu(arma::real(vis))) < tolerance);
+    EXPECT_TRUE(std::abs(accu(arma::real(static_cast<arma::Mat<cx_real_t>>(std::get<vis_grid_index>(result)))) - accu(arma::real(vis))) < tolerance);
 }
 
 TEST_F(GridderTriangle, uv_location)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::real(std::get<vis_grid_index>(result)(arma::span(image_size / 2 - support, image_size / 2 + support), arma::span(image_size / 2 + 1 - support, image_size / 2 + 1 + support))), arma::conv_to<arma::Mat<real_t> >::from(kernel / accu(kernel)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::real(static_cast<arma::Mat<cx_real_t>>(std::get<vis_grid_index>(result))(arma::span(image_size / 2 - support, image_size / 2 + support), arma::span(image_size / 2 + 1 - support, image_size / 2 + 1 + support))), arma::conv_to<arma::Mat<real_t>>::from(kernel / accu(kernel)), "absdiff", tolerance));
 }

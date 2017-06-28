@@ -1,11 +1,17 @@
-// Copyright (C) 2013-2015 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup arma_rng
@@ -264,20 +270,20 @@ struct arma_rng::randu
   void
   fill(eT* mem, const uword N)
     {
-    uword i,j;
+    uword j;
     
-    for(i=0, j=1; j < N; i+=2, j+=2)
+    for(j=1; j < N; j+=2)
       {
       const eT tmp_i = eT( arma_rng::randu<eT>() );
       const eT tmp_j = eT( arma_rng::randu<eT>() );
       
-      mem[i] = tmp_i;
-      mem[j] = tmp_j;
+      (*mem) = tmp_i;  mem++;
+      (*mem) = tmp_j;  mem++;
       }
     
-    if(i < N)
+    if((j-1) < N)
       {
-      mem[i] = eT( arma_rng::randu<eT>() );
+      (*mem) = eT( arma_rng::randu<eT>() );
       }
     }
   };

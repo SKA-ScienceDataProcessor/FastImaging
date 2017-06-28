@@ -20,15 +20,15 @@ set(STP_TARGET_NAME "stp")
 # so that IDEs will notice them, but it's otherwise innocuous.
 set(STP_SOURCE_FILES
     stp.h types.h
-    common/fft.cpp common/ccl.cpp common/vector_math.cpp common/matstp.h
-    convolution/conv_func.cpp gridder/gridder.cpp sourcefind/sourcefind.cpp imager/imager.h
+    common/fft.cpp common/ccl.cpp common/matrix_math.cpp common/matstp.h
+    convolution/conv_func.cpp gridder/gridder.cpp sourcefind/sourcefind.cpp imager/imager.cpp
     # The following third-party include files are added just to be noticed by IDE
     ../third-party/armadillo/include/armadillo ../third-party/fftw/api/fftw3.h ../third-party/tbb/include/tbb/tbb.h ../third-party/openblas/cblas.h
 )
 
 # Create the library as static
 add_library(${STP_TARGET_NAME} STATIC ${STP_SOURCE_FILES})
-add_dependencies(${STP_TARGET_NAME} tbb fftw openblas)
+add_dependencies(${STP_TARGET_NAME} tbb fftw openblas armadillo)
 target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${STP_TARGET_NAME} tbb fftw openblas Threads::Threads)
+target_link_libraries(${STP_TARGET_NAME} tbb fftw openblas Threads::Threads armadillo)
 

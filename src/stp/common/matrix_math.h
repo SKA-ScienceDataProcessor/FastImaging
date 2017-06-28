@@ -1,5 +1,5 @@
-#ifndef VECTOR_MATH_H
-#define VECTOR_MATH_H
+#ifndef MATRIX_MATH_H
+#define MATRIX_MATH_H
 
 #include "../types.h"
 #include <armadillo>
@@ -11,141 +11,176 @@
 
 namespace stp {
 
+struct DataStats {
+
+    DataStats()
+        : mean(0.0)
+        , sigma(0.0)
+        , median(0.0)
+    {
+    }
+
+    DataStats(real_t u)
+        : mean(u)
+        , sigma(0.0)
+        , median(0.0)
+    {
+    }
+
+    DataStats(real_t u, real_t s)
+        : mean(u)
+        , sigma(s)
+        , median(0.0)
+    {
+    }
+
+    DataStats(real_t u, real_t s, real_t m)
+        : mean(u)
+        , sigma(s)
+        , median(m)
+    {
+    }
+
+    real_t mean;
+    real_t sigma;
+    real_t median;
+};
+
+struct DoublePair {
+    double d1;
+    double d2;
+
+    DoublePair()
+        : d1(0.0)
+        , d2(0.0)
+    {
+    }
+
+    DoublePair(double a1, double a2)
+        : d1(a1)
+        , d2(a2)
+    {
+    }
+};
+
+struct SumStdDev {
+    double acc1;
+    double acc2;
+    arma::uword n_elem;
+
+    SumStdDev()
+        : acc1(0.0)
+        , acc2(0.0)
+        , n_elem(0)
+    {
+    }
+
+    SumStdDev(double a1, double a2)
+        : acc1(a1)
+        , acc2(a2)
+        , n_elem(0)
+    {
+    }
+
+    SumStdDev(double a1, double a2, arma::uword num)
+        : acc1(a1)
+        , acc2(a2)
+        , n_elem(num)
+    {
+    }
+};
+
 /**
- * @brief Accumulate vector elements (single thread).
+ * @brief Compute approximation of the median using the binapprox method.
  *
- * Single threaded implementation of vector elements' accumulation.
- * All vector elements must be finite.
+ * Provides parallel implementation of the binapprox method to compute an approximation of the median.
+ * The median error is guaranteed to be inferior to sigma/1000.
+ * An algorithm description and its paper (by Ryan Tibshirani) are available at:
+ * http://www.stat.cmu.edu/~ryantibs/median/
  *
- * @param[in] v (arma::vec): Input vector with elements to be accumulated.
+ * @param[in] data (arma::Mat): Input matrix.
+ *
+ * @return (DataStats): Approximation of the median value.
+ */
+DataStats mat_median_binapprox(const arma::Mat<real_t>& data);
+
+/**
+ * @brief Compute matrix mean and standard deviation at once.
+ *
+ * Provides parallel implementation of matrix mean and standard deviation.
+ * This function uses a single loop over data to compute both quantities at once and thus get better performance.
+ * It does not use a numerically stable implementation.
+ *
+ * @param[in] data (arma::Mat): Input matrix.
+ *
+ * @return (DataStats): Mean and standard deviation values.
+ */
+DataStats mat_mean_and_stddev(const arma::Mat<real_t>& data);
+
+/**
+ * @brief Accumulate matrix elements (single thread).
+ *
+ * Provides single threaded implementation of matrix elements' accumulation.
+ *
+ * @param[in] data (arma::Mat): Input matrix with elements to be accumulated.
  *
  * @return (double): Accumulation value.
  */
-double vector_accumulate(arma::Col<real_t>& v);
+double mat_accumulate(arma::Mat<real_t>& data);
 
 /**
- * @brief Accumulate vector elements (parallel implementation).
+ * @brief Accumulate matrix elements (parallel implementation).
  *
- * Parallel implementation of vector elements' accumulation.
- * All vector elements must be finite.
+ * Provides parallel implementation of matrix elements' accumulation.
  *
- * @param[in] v (arma::vec): Input vector with elements to be accumulated.
+ * @param[in] data (arma::Mat): Input matrix with elements to be accumulated.
  *
  * @return (double): Accumulation value.
  */
-double vector_accumulate_parallel(arma::Col<real_t>& v);
+double mat_accumulate_parallel(arma::Mat<real_t>& data);
 
 /**
- * @brief Compute vector mean (single thread).
+ * @brief Compute matrix mean (single thread).
  *
- * Single threaded implementation of vector mean.
- * All vector elements must be finite.
+ * Provides single threaded implementation of matrix mean.
  *
- * @param[in] v (arma::vec): Input vector.
+ * @param[in] data (arma::Mat): Input matrix.
  *
- * @return (double): Mean value of input vector.
+ * @return (double): Mean value of input matrix.
  */
-double vector_mean(arma::Col<real_t>& v);
+double mat_mean(arma::Mat<real_t>& data);
 
 /**
- * @brief Compute vector mean (parallel).
+ * @brief Compute matrix mean (parallel).
  *
- * Parallel implementation of vector mean.
- * All vector elements must be finite.
+ * Provides parallel implementation of matrix mean.
  *
- * @param[in] v (arma::vec): Input vector.
+ * @param[in] data (arma::Mat): Input matrix.
  *
- * @return (double): Mean value of input vector.
+ * @return (double): Mean value of input matrix.
  */
-double vector_mean_parallel(arma::Col<real_t>& v);
+double mat_mean_parallel(arma::Mat<real_t>& data);
 
 /**
- * @brief Compute mean value of finite vector elements (single thread).
+ * @brief Compute matrix standard deviation (parallel).
  *
- * Single threaded implementation of vector mean.
- * Non-finite vector elements are not considered for mean calculation.
+ * Provides parallel implementation of matrix standard deviation.
+ * If a pre-computed mean value is received, mean calculation is bypassed.
  *
- * @param[in] v (arma::vec): Input vector.
- *
- * @return (double): Mean value of input vector.
- */
-double vector_mean_robust(arma::Col<real_t>& v);
-
-/**
- * @brief Compute mean value of finite vector elements (parallel).
- *
- * Parallel implementation of vector mean.
- * Non-finite vector elements are not considered for mean calculation.
- *
- * @param[in] v (arma::vec): Input vector.
- *
- * @return (double): Mean value of input vector.
- */
-double vector_mean_robust_parallel(arma::Col<real_t>& v);
-
-/**
- * @brief Compute vector standard deviation (single thread).
- *
- * Single threaded implementation of vector standard deviation.
- * All vector elements must be finite.
- * If a pre-computed mean value is received, mean calculation within this function is bypassed.
- *
- * @param[in] v (arma::vec): Input vector.
+ * @param[in] data (arma::Mat): Input matrix.
  * @param[in] double (mean): Pre-computed mean value (optional).
  *
- * @return (double): Standard deviation of input vector.
+ * @return (double): Standard deviation of input matrix.
  */
-double vector_stddev(arma::Col<real_t>& v, double mean = arma::datum::nan);
+double mat_stddev_parallel(arma::Mat<real_t>& data, double mean = arma::datum::nan);
 
 /**
- * @brief Compute vector standard deviation (parallel).
+ * @brief Shift elements of the input matrix in a circular manner.
  *
- * Parallel implementation of vector standard deviation.
- * All vector elements must be finite.
- * If a pre-computed mean value is received, mean calculation within this function is bypassed.
- *
- * @param[in] v (arma::vec): Input vector.
- * @param[in] double (mean): Pre-computed mean value (optional).
- *
- * @return (double): Standard deviation of input vector.
- */
-double vector_stddev_parallel(arma::Col<real_t>& v, double mean = arma::datum::nan);
-
-/**
- * @brief Compute standard deviation of finite vector elements (single thread).
- *
- * Single threaded implementation of vector standard deviation.
- * Non-finite vector elements are not considered for standard deviation calculation.
- * If a pre-computed mean value is received, mean calculation within this function is bypassed.
- *
- * @param[in] v (arma::vec): Input vector.
- * @param[in] double (mean): Pre-computed mean value (optional).
- *
- * @return (double): Standard deviation of input vector.
- */
-double vector_stddev_robust(arma::Col<real_t>& v, double mean = arma::datum::nan);
-
-/**
- * @brief Compute standard deviation of finite vector elements (parallel).
- *
- * Parallel implementation of vector standard deviation.
- * Non-finite vector elements are not considered for standard deviation calculation.
- * If a pre-computed mean value is received, mean calculation within this function is bypassed.
- *
- * @param[in] v (arma::vec): Input vector.
- * @param[in] double (mean): Pre-computed mean value (optional).
- *
- * @return (double): Standard deviation of input vector.
- */
-double vector_stddev_robust_parallel(arma::Col<real_t>& v, double mean = arma::datum::nan);
-
-/**
- * @brief Shift elements of input complex matrix in a circular manner.
- *
- * Based on armadillo shift implementation, but it uses TBB for parallel processing.
+ * Provides matrix shift operation based on armadillo implementation, but it uses TBB for parallel processing.
  * Template function allows to shift diferent matrix types, e.g. arma::mat, arma::cx_mat
  *
- * @param[in] m (arma::Mat<T>): Complex matrix to be shifted.
+ * @param[in] m (arma::Mat<T>): Matrix to be shifted.
  * @param[in] lenght (int): Number of positions to shifted (can be positive or negative).
  * @param[in] dim(int): If dim=0, shift each column by "lenght". If dim=1, shift each row by "lenght". Default is 0.
  *
@@ -235,4 +270,4 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
 }
 }
 
-#endif /* VECTOR_MATH_H */
+#endif /* MATRIX_MATH_H */

@@ -1,11 +1,17 @@
-// Copyright (C) 2014-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup gmm_diag
@@ -49,7 +55,7 @@ gmm_diag<eT>::gmm_diag(const gmm_diag<eT>& x)
 
 template<typename eT>
 inline
-const gmm_diag<eT>&
+gmm_diag<eT>&
 gmm_diag<eT>::operator=(const gmm_diag<eT>& x)
   {
   arma_extra_debug_sigprint();
@@ -934,7 +940,7 @@ gmm_diag<eT>::internal_gen_boundaries(const uword N) const
   {
   arma_extra_debug_sigprint();
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     // const uword n_cores = 0;
     const uword n_cores   = uword(omp_get_num_procs());
     const uword n_threads = (n_cores > 0) ? ( (n_cores <= N) ? n_cores : 1 ) : 1;
@@ -1068,7 +1074,7 @@ gmm_diag<eT>::internal_vec_log_p(const T1& X) const
   
   if(N > 0)
     {
-    #if defined(_OPENMP)
+    #if defined(ARMA_USE_OPENMP)
       {
       const arma_omp_state save_omp_state;
       
@@ -1076,7 +1082,7 @@ gmm_diag<eT>::internal_vec_log_p(const T1& X) const
       
       const uword n_threads = boundaries.n_cols;
       
-      #pragma omp parallel for
+      #pragma omp parallel for schedule(static)
       for(uword t=0; t < n_threads; ++t)
         {
         const uword start_index = boundaries.at(0,t);
@@ -1124,7 +1130,7 @@ gmm_diag<eT>::internal_vec_log_p(const T1& X, const uword gaus_id) const
   
   if(N > 0)
     {
-    #if defined(_OPENMP)
+    #if defined(ARMA_USE_OPENMP)
       {
       const arma_omp_state save_omp_state;
       
@@ -1132,7 +1138,7 @@ gmm_diag<eT>::internal_vec_log_p(const T1& X, const uword gaus_id) const
       
       const uword n_threads = boundaries.n_cols;
       
-      #pragma omp parallel for
+      #pragma omp parallel for schedule(static)
       for(uword t=0; t < n_threads; ++t)
         {
         const uword start_index = boundaries.at(0,t);
@@ -1178,7 +1184,7 @@ gmm_diag<eT>::internal_avg_log_p(const T1& X) const
   if(N == 0)  { return (-Datum<eT>::inf); }
   
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     {
     const arma_omp_state save_omp_state;
     
@@ -1189,7 +1195,7 @@ gmm_diag<eT>::internal_avg_log_p(const T1& X) const
     field< running_mean_scalar<eT> > t_running_means(n_threads);
     
     
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for(uword t=0; t < n_threads; ++t)
       {
       const uword start_index = boundaries.at(0,t);
@@ -1249,7 +1255,7 @@ gmm_diag<eT>::internal_avg_log_p(const T1& X, const uword gaus_id) const
   if(N == 0)  { return (-Datum<eT>::inf); }
   
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     {
     const arma_omp_state save_omp_state;
     
@@ -1260,7 +1266,7 @@ gmm_diag<eT>::internal_avg_log_p(const T1& X, const uword gaus_id) const
     field< running_mean_scalar<eT> > t_running_means(n_threads);
     
     
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for(uword t=0; t < n_threads; ++t)
       {
       const uword start_index = boundaries.at(0,t);
@@ -1679,7 +1685,7 @@ gmm_diag<eT>::km_iterate(const Mat<eT>& X, const uword max_iter, const bool verb
   const eT* mah_aux_mem = mah_aux.memptr();
   
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     const arma_omp_state save_omp_state;
     
     const umat boundaries = internal_gen_boundaries(X.n_cols);
@@ -1701,7 +1707,7 @@ gmm_diag<eT>::km_iterate(const Mat<eT>& X, const uword max_iter, const bool verb
   
   for(uword iter=1; iter <= max_iter; ++iter)
     {
-    #if defined(_OPENMP)
+    #if defined(ARMA_USE_OPENMP)
       {
       for(uword t=0; t < n_threads; ++t)
         {
@@ -1711,7 +1717,7 @@ gmm_diag<eT>::km_iterate(const Mat<eT>& X, const uword max_iter, const bool verb
       
       // km_update_stats() is the "map" operation, which produces partial means
       
-      #pragma omp parallel for
+      #pragma omp parallel for schedule(static)
       for(uword t=0; t < n_threads; ++t)
         {
         field< running_mean_vec<eT> >& current_running_means = t_running_means[t];
@@ -1934,7 +1940,7 @@ gmm_diag<eT>::em_iterate(const Mat<eT>& X, const uword max_iter, const eT var_fl
     get_stream_err2().setf(ios::fixed);
     }
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     const arma_omp_state save_omp_state;
   #endif
   
@@ -1960,7 +1966,7 @@ gmm_diag<eT>::em_iterate(const Mat<eT>& X, const uword max_iter, const eT var_fl
     }
   
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     if(verbose)
       {
       get_stream_err2() << "gmm_diag::learn(): EM: n_threads: " << n_threads  << '\n';
@@ -2033,9 +2039,9 @@ gmm_diag<eT>::em_update_params
   
   // em_generate_acc() is the "map" operation, which produces partial accumulators for means, diagonal covariances and hefts
     
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     {
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for(uword t=0; t<n_threads; t++)
       {
       Mat<eT>& acc_means          = t_acc_means[t];

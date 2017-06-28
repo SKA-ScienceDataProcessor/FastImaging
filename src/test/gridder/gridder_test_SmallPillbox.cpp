@@ -31,12 +31,13 @@ public:
 
     void run()
     {
-        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize);
+        // The last two parameters (false, false) force the use of the full gridder without uv shifting
+        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize, false, false);
     }
 
     arma::mat uv;
     arma::cx_mat vis;
-    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t>> result;
     arma::Mat<real_t> expected_result = {
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },

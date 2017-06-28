@@ -1,0 +1,248 @@
+diff --git libbench2/allocate.c libbench2/allocate.c
+index 92d0d868..413b12ca 100644
+--- libbench2/allocate.c
++++ libbench2/allocate.c
+@@ -3,7 +3,7 @@
+ 
+ #include "bench.h"
+ 
+-static void bounds(bench_problem *p, int *ilb, int *iub, int *olb, int *oub)
++static void bounds(bench_problem *p, size_t *ilb, size_t *iub, size_t *olb, size_t *oub)
+ {
+      bench_tensor *t = tensor_append(p->sz, p->vecsz);
+      tensor_ibounds(t, ilb, iub);
+@@ -19,8 +19,8 @@ static void bounds(bench_problem *p, int *ilb, int *iub, int *olb, int *oub)
+  */
+ void problem_alloc(bench_problem *p)
+ {
+-     int ilb, iub, olb, oub;
+-     int isz, osz;
++     size_t ilb, iub, olb, oub;
++     size_t isz, osz;
+ 
+      bounds(p, &ilb, &iub, &olb, &oub);
+      isz = iub - ilb;
+diff --git libbench2/bench-user.h libbench2/bench-user.h
+index ad309cff..4540793f 100644
+--- libbench2/bench-user.h
++++ libbench2/bench-user.h
+@@ -75,9 +75,9 @@ typedef enum {
+ } r2r_kind_t;
+ 
+ typedef struct {
+-     int n;
+-     int is;			/* input stride */
+-     int os;			/* output stride */
++     size_t n;
++     size_t is;			/* input stride */
++     size_t os;			/* output stride */
+ } bench_iodim;
+ 
+ typedef struct {
+@@ -87,7 +87,7 @@ typedef struct {
+ 
+ bench_tensor *mktensor(int rnk);
+ void tensor_destroy(bench_tensor *sz);
+-int tensor_sz(const bench_tensor *sz);
++size_t tensor_sz(const bench_tensor *sz);
+ bench_tensor *tensor_compress(const bench_tensor *sz);
+ int tensor_unitstridep(bench_tensor *t);
+ int tensor_rowmajorp(bench_tensor *t);
+@@ -96,8 +96,8 @@ bench_tensor *tensor_append(const bench_tensor *a, const bench_tensor *b);
+ bench_tensor *tensor_copy(const bench_tensor *sz);
+ bench_tensor *tensor_copy_sub(const bench_tensor *sz, int start_dim, int rnk);
+ bench_tensor *tensor_copy_swapio(const bench_tensor *sz);
+-void tensor_ibounds(bench_tensor *t, int *lbp, int *ubp);
+-void tensor_obounds(bench_tensor *t, int *lbp, int *ubp);
++void tensor_ibounds(bench_tensor *t, size_t *lbp, size_t *ubp);
++void tensor_obounds(bench_tensor *t, size_t *lbp, size_t *ubp);
+ 
+ /*
+   Definition of rank -infinity.
+@@ -120,7 +120,7 @@ typedef struct {
+      int split;
+      void *in, *out;
+      void *inphys, *outphys;
+-     int iphyssz, ophyssz;
++     size_t iphyssz, ophyssz;
+      char *pstring;
+      void *userinfo; /* user can store whatever */
+      int scrambled_in, scrambled_out; /* hack for MPI */
+diff --git libbench2/dotens2.c libbench2/dotens2.c
+index 0f6f0bde..24dbd713 100644
+--- libbench2/dotens2.c
++++ libbench2/dotens2.c
+@@ -23,16 +23,16 @@
+ 
+ static void recur(int rnk, const bench_iodim *dims0, const bench_iodim *dims1,
+ 		  dotens2_closure *k, 
+-		  int indx0, int ondx0, int indx1, int ondx1)
++                 size_t indx0, size_t ondx0, size_t indx1, size_t ondx1)
+ {
+      if (rnk == 0)
+           k->apply(k, indx0, ondx0, indx1, ondx1);
+      else {
+-          int i, n = dims0[0].n;
+-          int is0 = dims0[0].is;
+-          int os0 = dims0[0].os;
+-          int is1 = dims1[0].is;
+-          int os1 = dims1[0].os;
++          size_t i, n = dims0[0].n;
++          size_t is0 = dims0[0].is;
++          size_t os0 = dims0[0].os;
++          size_t is1 = dims1[0].is;
++          size_t os1 = dims1[0].os;
+ 
+ 	  BENCH_ASSERT(n == dims1[0].n);
+ 
+diff --git libbench2/problem.c libbench2/problem.c
+index 08ca0472..76e43bae 100644
+--- libbench2/problem.c
++++ libbench2/problem.c
+@@ -79,7 +79,7 @@ static void transpose_tensor(bench_tensor *t)
+      t->dims[1].os = t->dims[0].os * t->dims[0].n;
+ }
+ 
+-static const char *parseint(const char *s, int *n)
++static const char *parseuint(const char *s, size_t *n)
+ {
+      int sign = 1;
+ 
+@@ -129,16 +129,16 @@ static const char *parsetensor(const char *s, bench_tensor **tp,
+      m->cdr = l; l = m;
+      ++rnk; 
+ 
+-     s = parseint(s, &m->car.n);
++     s = parseuint(s, &m->car.n);
+ 
+      if (*s == ':') {
+ 	  /* read input stride */
+ 	  ++s;
+-	  s = parseint(s, &m->car.is);
++         s = parseuint(s, &m->car.is);
+ 	  if (*s == ':') {
+ 	       /* read output stride */
+ 	       ++s;
+-	       s = parseint(s, &m->car.os);
++              s = parseuint(s, &m->car.os);
+ 	  } else {
+ 	       /* default */
+ 	       m->car.os = m->car.is;
+@@ -162,9 +162,9 @@ static const char *parsetensor(const char *s, bench_tensor **tp,
+      }
+      else if (*s == 'e' || *s == 'E' || *s == 'o' || *s == 'O') {
+ 	  char c = *(s++);
+-	  int ab;
++         size_t ab;
+ 
+-	  s = parseint(s, &ab);
++         s = parseuint(s, &ab);
+ 
+ 	  if (c == 'e' || c == 'E') {
+ 	       if (ab == 0)
+diff --git libbench2/tensor.c libbench2/tensor.c
+index 6c25ce3f..350d394a 100644
+--- libbench2/tensor.c
++++ libbench2/tensor.c
+@@ -43,9 +43,10 @@ void tensor_destroy(bench_tensor *sz)
+      bench_free(sz);
+ }
+ 
+-int tensor_sz(const bench_tensor *sz)
++size_t tensor_sz(const bench_tensor *sz)
+ {
+-     int i, n = 1;
++     int i;
++     size_t n = 1;
+ 
+      if (!BENCH_FINITE_RNK(sz->rnk))
+           return 0;
+@@ -57,7 +58,7 @@ int tensor_sz(const bench_tensor *sz)
+ 
+ 
+ /* total order among bench_iodim's */
+-static int dimcmp(const bench_iodim *a, const bench_iodim *b)
++static size_t dimcmp(const bench_iodim *a, const bench_iodim *b)
+ {
+      if (b->is != a->is)
+           return (b->is - a->is);	/* shorter strides go later */
+@@ -182,21 +183,31 @@ static int imin(int a, int b)
+      return (a < b) ? a : b;
+ }
+ 
++static size_t szmax(size_t a, size_t b)
++{
++     return (a > b) ? a : b;
++}
++
++static size_t szmin(size_t a, size_t b)
++{
++     return (a < b) ? a : b;
++}
++
+ #define DEFBOUNDS(name, xs)			\
+-void name(bench_tensor *t, int *lbp, int *ubp)	\
++void name(bench_tensor *t, size_t *lbp, size_t *ubp)	\
+ {						\
+-     int lb = 0;				\
+-     int ub = 1;				\
++     size_t lb = 0;				\
++     size_t ub = 1;				\
+      int i;					\
+ 						\
+      BENCH_ASSERT(BENCH_FINITE_RNK(t->rnk));		\
+ 						\
+      for (i = 0; i < t->rnk; ++i) {		\
+ 	  bench_iodim *d = t->dims + i;		\
+-	  int n = d->n;				\
+-	  int s = d->xs;			\
+-	  lb = imin(lb, lb + s * (n - 1));	\
+-	  ub = imax(ub, ub + s * (n - 1));	\
++         size_t n = d->n;				\
++         size_t s = d->xs;			\
++         lb = szmin(lb, lb + s * (n - 1));	\
++         ub = szmax(ub, ub + s * (n - 1));	\
+      }						\
+ 						\
+      *lbp = lb;					\
+@@ -230,7 +241,7 @@ bench_tensor *tensor_copy_swapio(const bench_tensor *sz)
+      int i;
+      if (BENCH_FINITE_RNK(x->rnk))
+ 	  for (i = 0; i < x->rnk; ++i) {
+-	       int s;
++              size_t s;
+ 	       s = x->dims[i].is;
+ 	       x->dims[i].is = x->dims[i].os;
+ 	       x->dims[i].os = s;
+diff --git libbench2/verify.h libbench2/verify.h
+index 9e547c0d..8f6cae5d 100644
+--- libbench2/verify.h
++++ libbench2/verify.h
+@@ -63,7 +63,7 @@ double tf_shift(dofft_closure *k, int realp, const bench_tensor *sz,
+ 
+ typedef struct dotens2_closure_s {
+      void (*apply)(struct dotens2_closure_s *k, 
+-		   int indx0, int ondx0, int indx1, int ondx1);
++                  size_t indx0, size_t ondx0, size_t indx1, size_t ondx1);
+ } dotens2_closure;
+ 
+ void bench_dotens2(const bench_tensor *sz0, 
+diff --git tools/fftw-wisdom.c tools/fftw-wisdom.c
+index c094279c..7314d1f6 100644
+--- tools/fftw-wisdom.c
++++ tools/fftw-wisdom.c
+@@ -57,12 +57,12 @@ static void add_problem(const char *pstring,
+      (*p)[(*ip)++] = problem_parse(pstring);
+ }
+ 
+-static int sz(const bench_problem *p)
++static size_t sz(const bench_problem *p)
+ {
+      return tensor_sz(p->sz) * tensor_sz(p->vecsz);
+ }
+ 
+-static int prob_size_cmp(const void *p1_, const void *p2_)
++static size_t prob_size_cmp(const void *p1_, const void *p2_)
+ {
+      const bench_problem * const *p1 = (const bench_problem * const *) p1_;
+      const bench_problem * const *p2 = (const bench_problem * const *) p2_;

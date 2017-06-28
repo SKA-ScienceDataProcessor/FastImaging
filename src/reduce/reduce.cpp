@@ -41,6 +41,12 @@ void createFlags()
 
 int main(int argc, char** argv)
 {
+#ifdef FUNCTION_TIMINGS
+    std::vector<std::chrono::high_resolution_clock::time_point> times_red;
+    times_red.reserve(NUM_TIME_INST);
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     // Adds the flags to the parser
     createFlags();
 
@@ -68,6 +74,7 @@ int main(int argc, char** argv)
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(_inNpzFileArg.getValue(), "uvw_lambda");
     arma::cx_mat input_vis = load_npy_complex_array(_inNpzFileArg.getValue(), "vis");
+
     if (use_residual) {
         arma::cx_mat input_model = load_npy_complex_array(_inNpzFileArg.getValue(), "model");
         // Subtract model-generated visibilities from incoming data
@@ -81,7 +88,7 @@ int main(int argc, char** argv)
     ConfigurationFile cfg(_inJsonFileArg.getValue());
 
     // Parse fft routine string
-    stp::fft_routine r_fft = parse_fft_routine(cfg.fft_routine);
+    stp::FFTRoutine r_fft = parse_fft_routine(cfg.fft_routine);
 
     // Parse kernel function string
     KernelFunction kernel_func = parse_kernel_function(cfg.kernel_func);
@@ -99,16 +106,20 @@ int main(int argc, char** argv)
         _logger->info(" - fft_routine={}", cfg.fft_routine);
         _logger->info(" - image_fft_wisdom={}", cfg.image_wisdom_filename);
         _logger->info(" - beam_fft_wisdom={}", cfg.beam_wisdom_filename);
-        _logger->info(" - generate_full_beam={}", cfg.gen_fullbeam);
-        _logger->info(" - estimate_rms={}", cfg.estimate_rms);
-        _logger->info(" - compute_bg_level={}", cfg.compute_bg_level);
-        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
+        _logger->info(" - rms_estimation={}", cfg.estimate_rms);
         _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
+        _logger->info(" - binapprox_median={}", cfg.binapprox_median);
+        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
+        _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
         _logger->info("Running pipeline");
     }
 
     // Create output matrix
-    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > result;
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result;
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     // Run image_visibilities
     switch (kernel_func) {
@@ -116,35 +127,35 @@ int main(int argc, char** argv)
         stp::TopHat kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
     case KernelFunction::Triangle: {
         stp::Triangle kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
     case KernelFunction::Sinc: {
         stp::Sinc kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
     case KernelFunction::Gaussian: {
         stp::Gaussian kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
     case KernelFunction::GaussianSinc: {
         stp::GaussianSinc kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename, cfg.gen_fullbeam);
+            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
     default:
@@ -152,13 +163,19 @@ int main(int argc, char** argv)
         break;
     }
 
-    result.second.set_size(0); // Destroy unused matrix
-    arma::Mat<real_t> image = arma::real(result.first);
-    result.first.set_size(0); // Destroy unused matrix
+    result.second.reset(); // Destroy unused matrix
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     // Run source find
-    stp::source_find_image sfimage = stp::source_find_image(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma,
-        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.compute_bg_level, cfg.compute_barycentre);
+    stp::source_find_image sfimage = stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
+        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.generate_labelmap);
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     if (use_logger) {
         _logger->info("Finished pipeline execution");
@@ -188,6 +205,41 @@ int main(int argc, char** argv)
             island_num++;
         }
     }
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+
+    // Display benchmarking times
+    std::chrono::duration<double> time_span;
+    _logger->info("Running time of each pipeline step:");
+
+    std::vector<std::string> imager_steps = { "Gridder", "IFFT", "Normalise" };
+    _logger->info(" Imager:");
+    for (uint i = 1; i < stp::times_iv.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv[i] - stp::times_iv[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", imager_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv.back() - stp::times_iv.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+
+    std::vector<std::string> sourcefind_steps = { "Bg_level", "RMS est", "Label det", "Islands" };
+    _logger->info(" Source find:");
+    for (uint i = 1; i < stp::times_sf.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_sf[i] - stp::times_sf[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", sourcefind_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_sf.back() - stp::times_sf.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+
+    std::vector<std::string> reduce_steps = { "Read data", "Image vis", "Source find", "Write data" };
+    _logger->info(" Reduce:");
+    for (uint i = 1; i < times_red.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red[i] - times_red[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", reduce_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red.back() - times_red.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+#endif
 
     return 0;
 }

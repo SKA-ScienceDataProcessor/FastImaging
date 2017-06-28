@@ -20,7 +20,7 @@
 ### Dependencies
 
 #### In Source (third-party)
-- [Armadillo](http://arma.sourceforge.net/) [7.600.2]
+- [Armadillo](http://arma.sourceforge.net/) [7.950.1]
 - [Google Test](https://github.com/google/googletest) [1.8.0]
 - [Google Benchmark](https://github.com/google/benchmark) [1.1.0]
 - [cnpy](https://github.com/rogersce/cnpy) [repository head]
@@ -34,27 +34,29 @@
 
 ### Build
 
-STP prototype is compiled using CMake tools. The following cmake options are available:
+STP prototype is compiled using CMake tools. 
+The following cmake options are available:
 
 OPTION        | Description
 ------------- | -------------
- BUILD_TESTS          | Builds the unit tests (default=ON)
- BUILD_BENCHMARK      | Builds the benchmark tests (default=ON)
- USE_GLIBCXX_PARALLEL | Uses GLIBCXX parallel mode (default=ON)
- USE_FLOAT            | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
+ BUILD_TESTS           | Builds the unit tests (default=ON)
+ BUILD_BENCHMARK       | Builds the benchmark tests (default=ON)
+ USE_GLIBCXX_PARALLEL  | Uses GLIBCXX parallel mode (default=ON)
+ USE_FLOAT             | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
+ WITH_FUNCTION_TIMINGS | Measures function execution times from the reduce executable (default=ON)
 
-The USE_FLOAT is an important option, as it may affect the STP algorithm accuracy.
-When compiled with USE_FLOAT=ON, most structures of real or complex data in the algorithm will use the FLOAT precision instead of DOUBLE. 
-In most systems, the FLOAT type uses 4 bytes, while DOUBLE uses 8 bytes. Thus, the FLOAT allows to reduce the total memory usage and consequently the running time.
+The USE_FLOAT option is important, as it may affect the STP algorithm accuracy.
+When compiled with USE_FLOAT=ON, most algorithm data structures of real or complex numbers will use single-precision floating-point type instead of double-precision floating-point type. 
+In most systems, the FLOAT type uses 4 bytes, while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time.
 
 After building STP, the FFTW plans shall be generated using the fftw-wisdom tool.
 By using pre-generated FFTW plans, the FFT step executes faster and the total running time of STP is smaller.
-Scripts to generate FFTW plans are provided in "project-root/scripts/fftw-wisdom" directory. 
+A script to generate FFTW plans using complex-to-real (c2r) FFT is provided in "project-root/scripts/fftw-wisdom" directory. 
 The following matrix sizes are considered for FFTW plan generation:
-128 | 256 | 512 | 1024 | 1448 | 2048 | 2896 | 4096 | 5792 | 8192 | 11585 | 16384 | 23170 | 32768 | 65536
+128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
 
-When running the program, only the above matrix sizes can be used as input image_size, since the plans were generated only for these sizes. 
-The full or relative pathname and filename of the FFTW plans for both the complex-to-complex and real-to-complex (r2c) FFT operations shall be given in the JSON configuration file.
+When running the program, only the above matrix sizes can be used as input image size, since the plans were generated only for these sizes. 
+The full or relative pathname and filename of the FFTW plans for the complex-to-real (c2r) FFT step shall be given in the JSON configuration file.
 
 #### Using a build script (Includes tests execution)
 ```sh
@@ -63,7 +65,7 @@ $ chmod +x build.sh
 $ ./build.sh <OPTIONS>
 ```
 OPTION | Description
--------|--------------
+-------| --------------
  -d    | Use CMAKE_BUILD_TYPE=Debug (default)
  -r    | Use CMAKE_BUILD_TYPE=Release
  -i    | Use CMAKE_BUILD_TYPE=RelWithDebInfo
@@ -77,10 +79,14 @@ $ cd <path/to/build/directory>
 $ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF <path/to/project/src>
 $ make all -j4
 ```
-Generate FFTW plans using fftw-wisdom:
+Also, generate FFTW plans using fftw-wisdom (see OPTIONS of generate_wisdom.sh scritpt using --help):
 ```sh
 $ cd <path/to/project>/scripts/fftw-wisdom
-$ ./generate_wisdom.sh    # when compiled with -DUSE_FLOAT=ON use: ./generate_wisdom_f.sh
+$ ./generate_wisdom.sh <OPTIONS>  
+```
+For instance, when compiled in Release mode with -DUSE_FLOAT=ON run:
+```sh
+$ ./generate_wisdom.sh -r -f
 ```
 
 ## Tests Execution
@@ -103,15 +109,16 @@ $ make benchmarking
 ```
 
 ## STP Execution using Reduce module
-The reduce executable is located in the reduce folder in path/to/build/directory. It accepts the following arguments:
-Argument | Description
----------|--------------
-   <input-file-json>  | (required)  Input JSON filename with configuration parameters.
-   <input-file-npz>   | (required)  Input NPZ filename with simulation data (uvw_lambda, model, vis).
-   <output-file-json> | (required)  Output JSON filename for detected islands.
-   <output-file-npz>  | (optional)  Output NPZ filename for label map matrix (label_map).
-   -d,  --diff | (optional) Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
-   -l,  --log  | (optional)  Enable logger.
+The reduce executable is located in build-directory/reduce. It accepts the following arguments:
+
+Argument | Usage  | Description
+---------| -------| -------------
+<input-file-json>  | required | Input JSON filename with configuration parameters.
+<input-file-npz>   | required | Input NPZ filename with simulation data (uvw_lambda, model, vis).
+<output-file-json> | required | Output JSON filename for detected islands.
+<output-file-npz>  | optional | Output NPZ filename for label map matrix (label_map).
+-d, --diff | optional | Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
+-l, --log  | optional | Enable logger.
 
 Example:
 ```sh
@@ -133,11 +140,24 @@ $ cd path/to/build/directory
 $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
 $ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/visibilities/simdata_nstep10.npz detected_islands.json
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/visibilities/simdata_nstep10.npz detected_islands.json -d -l
 $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 28 June 2017
+- Implemented HalfComplex-to-Real FFT
+- Removed matrix shifting steps before and after FFT
+- Modified Connected Components Labeling algorithm to process not shifted matrix
+- Added new matrix class that uses calloc method
+- Implemented parallel algorithm for Connected Components Labeling
+- Rewrote some parts of source find step to minimize memory accesses (e.g. merged some functions)
+- Improved RMS estimation using incremental standard deviation
+- When possible reused computed values of mean, sigma and median among several functions
+- Implemented binapprox method to estimate an approximation of median (it is faster)
+- Added several improvements (e.g. compare floats using integer operations in RMS estimation function)
+- Fixed FFTW to work with 2¹⁶ x 2¹⁶ matrices
+
 ### 22 May 2017
 - Added support to FFTW Wisdom files
 - Added OpenBlas to in-source third-party libraries

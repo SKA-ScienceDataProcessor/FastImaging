@@ -1,13 +1,17 @@
-// Copyright (C) 2008-2012 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
-// Written by Ryan Curtin
-// Written by Matthew Amidon
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup SpRow
@@ -31,19 +35,19 @@ class SpRow : public SpMat<eT>
   inline explicit SpRow(const uword N);
   inline          SpRow(const uword in_rows, const uword in_cols);
   
-  inline                  SpRow(const char*        text);
-  inline const SpRow& operator=(const char*        text);
+  inline            SpRow(const char*        text);
+  inline SpRow& operator=(const char*        text);
   
-  inline                  SpRow(const std::string& text);
-  inline const SpRow& operator=(const std::string& text);
+  inline            SpRow(const std::string& text);
+  inline SpRow& operator=(const std::string& text);
   
-  inline const SpRow& operator=(const eT val);
+  inline SpRow& operator=(const eT val);
   
-  template<typename T1> inline                  SpRow(const Base<eT,T1>& X);
-  template<typename T1> inline const SpRow& operator=(const Base<eT,T1>& X);
+  template<typename T1> inline            SpRow(const Base<eT,T1>& X);
+  template<typename T1> inline SpRow& operator=(const Base<eT,T1>& X);
   
-  template<typename T1> inline                  SpRow(const SpBase<eT,T1>& X);
-  template<typename T1> inline const SpRow& operator=(const SpBase<eT,T1>& X);
+  template<typename T1> inline            SpRow(const SpBase<eT,T1>& X);
+  template<typename T1> inline SpRow& operator=(const SpBase<eT,T1>& X);
   
   template<typename T1, typename T2>
   inline explicit SpRow(const SpBase<pod_type,T1>& A, const SpBase<pod_type,T2>& B);

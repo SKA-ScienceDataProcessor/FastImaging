@@ -1,11 +1,17 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup traits
@@ -235,6 +241,10 @@ template<typename eT>
 struct is_Cube< Cube<eT> >
   { static const bool value = true; };
 
+template<typename eT>
+struct is_Cube< const Cube<eT> >
+  { static const bool value = true; };
+
 template<typename T>
 struct is_subview_cube
   { static const bool value = false; };
@@ -243,6 +253,9 @@ template<typename eT>
 struct is_subview_cube< subview_cube<eT> >
   { static const bool value = true; };
 
+template<typename eT>
+struct is_subview_cube< const subview_cube<eT> >
+  { static const bool value = true; };
 
 
 //
@@ -623,7 +636,7 @@ struct is_basevec< const subview_elem1<eT,T1> >
 
 
 template<typename T1>
-struct is_arma_type
+struct is_arma_type2
   {
   static const bool value
   =  is_Mat<T1>::value
@@ -641,6 +654,17 @@ struct is_arma_type
   || is_subview_elem1<T1>::value
   || is_subview_elem2<T1>::value
   ;
+  };
+
+
+
+// due to rather baroque C++ rules for proving constant expressions,
+// certain compilers may get confused with the combination of conditional inheritance, nested classes and the shenanigans in is_Mat_fixed_only.
+// below we explicitly ensure the type is forced to be const, which seems to eliminate the confusion.
+template<typename T1>
+struct is_arma_type
+  {
+  static const bool value = is_arma_type2<const T1>::value;
   };
 
 

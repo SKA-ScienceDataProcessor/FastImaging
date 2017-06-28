@@ -61,20 +61,8 @@ auto arma_parallel_memset_benchmark = [](benchmark::State& state) {
     m.set_size(0);
 };
 
-auto armadillo_fill_benchmark = [](benchmark::State& state) {
-    int size = pow(2, double(state.range(0) + 19) / 2.0);
-    arma::Mat<cx_real_t> m(size, size);
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(m);
-        m.zeros();
-        benchmark::ClobberMemory();
-    }
-    m.set_size(0);
-};
-
 auto armadillo_zero_benchmark = [](benchmark::State& state) {
-    int size = pow(2, double(state.range(0) + 19) / 2.0);
+    long size = pow(2, double(state.range(0) + 19) / 2.0);
     arma::Mat<cx_real_t> m(size, size);
 
     while (state.KeepRunning()) {

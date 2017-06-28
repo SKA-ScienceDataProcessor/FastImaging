@@ -1,11 +1,17 @@
-// Copyright (C) 2008-2015 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup Row
@@ -128,7 +134,7 @@ Row<eT>::Row(const char* text)
 
 template<typename eT>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const char* text)
   {
   arma_extra_debug_sigprint();
@@ -155,7 +161,7 @@ Row<eT>::Row(const std::string& text)
 
 template<typename eT>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const std::string& text)
   {
   arma_extra_debug_sigprint();
@@ -186,7 +192,7 @@ Row<eT>::Row(const std::vector<eT>& x)
 //! create a row vector from std::vector
 template<typename eT>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const std::vector<eT>& x)
   {
   arma_extra_debug_sigprint();
@@ -220,7 +226,7 @@ Row<eT>::operator=(const std::vector<eT>& x)
   
   template<typename eT>
   inline
-  const Row<eT>&
+  Row<eT>&
   Row<eT>::operator=(const std::initializer_list<eT>& list)
     {
     arma_extra_debug_sigprint();
@@ -274,7 +280,7 @@ Row<eT>::operator=(const std::vector<eT>& x)
   
   template<typename eT>
   inline
-  const Row<eT>&
+  Row<eT>&
   Row<eT>::operator=(Row<eT>&& X)
     {
     arma_extra_debug_sigprint(arma_str::format("this = %x   X = %x") % this % &X);
@@ -315,7 +321,7 @@ Row<eT>::Row(const SpRow<eT>& X)
 
 template<typename eT>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const eT val)
   {
   arma_extra_debug_sigprint();
@@ -329,7 +335,7 @@ Row<eT>::operator=(const eT val)
 
 template<typename eT>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const Row<eT>& X)
   {
   arma_extra_debug_sigprint();
@@ -357,7 +363,7 @@ Row<eT>::Row(const Base<eT,T1>& X)
 template<typename eT>
 template<typename T1>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const Base<eT,T1>& X)
   {
   arma_extra_debug_sigprint();
@@ -430,7 +436,7 @@ Row<eT>::Row(const BaseCube<eT,T1>& X)
 template<typename eT>
 template<typename T1>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const BaseCube<eT,T1>& X)
   {
   arma_extra_debug_sigprint();
@@ -457,7 +463,7 @@ Row<eT>::Row(const subview_cube<eT>& X)
 
 template<typename eT>
 inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::operator=(const subview_cube<eT>& X)
   {
   arma_extra_debug_sigprint();
@@ -1175,7 +1181,7 @@ Row<eT>::fixed<fixed_n_elem>::fixed(const std::string& text)
 template<typename eT>
 template<uword fixed_n_elem>
 template<typename T1>
-const Row<eT>&
+Row<eT>&
 Row<eT>::fixed<fixed_n_elem>::operator=(const Base<eT,T1>& A)
   {
   arma_extra_debug_sigprint();
@@ -1189,7 +1195,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const Base<eT,T1>& A)
 
 template<typename eT>
 template<uword fixed_n_elem>
-const Row<eT>&
+Row<eT>&
 Row<eT>::fixed<fixed_n_elem>::operator=(const eT val)
   {
   arma_extra_debug_sigprint();
@@ -1203,7 +1209,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const eT val)
 
 template<typename eT>
 template<uword fixed_n_elem>
-const Row<eT>&
+Row<eT>&
 Row<eT>::fixed<fixed_n_elem>::operator=(const char* text)
   {
   arma_extra_debug_sigprint();
@@ -1217,7 +1223,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const char* text)
 
 template<typename eT>
 template<uword fixed_n_elem>
-const Row<eT>&
+Row<eT>&
 Row<eT>::fixed<fixed_n_elem>::operator=(const std::string& text)
   {
   arma_extra_debug_sigprint();
@@ -1231,7 +1237,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const std::string& text)
 
 template<typename eT>
 template<uword fixed_n_elem>
-const Row<eT>&
+Row<eT>&
 Row<eT>::fixed<fixed_n_elem>::operator=(const subview_cube<eT>& X)
   {
   arma_extra_debug_sigprint();
@@ -1261,7 +1267,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const subview_cube<eT>& X)
   template<typename eT>
   template<uword fixed_n_elem>
   inline
-  const Row<eT>&
+  Row<eT>&
   Row<eT>::fixed<fixed_n_elem>::operator=(const std::initializer_list<eT>& list)
     {
     arma_extra_debug_sigprint();
@@ -1286,7 +1292,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const subview_cube<eT>& X)
 template<typename eT>
 template<uword fixed_n_elem>
 arma_inline
-const Row<eT>&
+Row<eT>&
 Row<eT>::fixed<fixed_n_elem>::operator=(const fixed<fixed_n_elem>& X)
   {
   arma_extra_debug_sigprint();
@@ -1310,7 +1316,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const fixed<fixed_n_elem>& X)
   template<uword fixed_n_elem>
   template<typename T1, typename eop_type>
   inline
-  const Row<eT>&
+  Row<eT>&
   Row<eT>::fixed<fixed_n_elem>::operator=(const eOp<T1, eop_type>& X)
     {
     arma_extra_debug_sigprint();
@@ -1343,7 +1349,7 @@ Row<eT>::fixed<fixed_n_elem>::operator=(const fixed<fixed_n_elem>& X)
   template<uword fixed_n_elem>
   template<typename T1, typename T2, typename eglue_type>
   inline
-  const Row<eT>&
+  Row<eT>&
   Row<eT>::fixed<fixed_n_elem>::operator=(const eGlue<T1, T2, eglue_type>& X)
     {
     arma_extra_debug_sigprint();

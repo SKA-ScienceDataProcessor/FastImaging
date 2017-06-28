@@ -1,12 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
-// Written by Stanislav Funiak
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup debug
@@ -330,7 +335,7 @@ inline
 void
 arma_check(const bool state, const T1& x)
   {
-  if(state == true)  { arma_stop_logic_error(arma_str::str_wrapper(x)); }
+  if(state)  { arma_stop_logic_error(arma_str::str_wrapper(x)); }
   }
 
 
@@ -340,7 +345,7 @@ inline
 void
 arma_check(const bool state, const T1& x, const T2& y)
   {
-  if(state == true)  { arma_stop_logic_error( std::string(x) + std::string(y) ); }
+  if(state)  { arma_stop_logic_error( std::string(x) + std::string(y) ); }
   }
 
 
@@ -350,7 +355,7 @@ inline
 void
 arma_check_bad_alloc(const bool state, const T1& x)
   {
-  if(state == true)  { arma_stop_bad_alloc(x); }
+  if(state)  { arma_stop_bad_alloc(x); }
   }
 
 
@@ -1267,8 +1272,8 @@ arma_assert_atlas_size(const T1& A, const T2& B)
             << arma_version::major << '.' << arma_version::minor << '.' << arma_version::patch
             << " (" << nickname << ")\n";
         
-        out << "@ arma_config::use_wrapper  = " << arma_config::use_wrapper  << '\n';
-        out << "@ arma_config::use_cxx11    = " << arma_config::use_cxx11    << '\n';
+        out << "@ arma_config::wrapper      = " << arma_config::wrapper      << '\n';
+        out << "@ arma_config::cxx11        = " << arma_config::cxx11        << '\n';
         out << "@ arma_config::openmp       = " << arma_config::openmp       << '\n';
         out << "@ arma_config::lapack       = " << arma_config::lapack       << '\n';
         out << "@ arma_config::blas         = " << arma_config::blas         << '\n';
@@ -1280,6 +1285,8 @@ arma_assert_atlas_size(const T1& A, const T2& B)
         out << "@ arma_config::good_comp    = " << arma_config::good_comp    << '\n';
         out << "@ arma_config::extra_code   = " << arma_config::extra_code   << '\n';
         out << "@ arma_config::mat_prealloc = " << arma_config::mat_prealloc << '\n';
+        out << "@ arma_config::mp_threshold = " << arma_config::mp_threshold << '\n';
+        out << "@ arma_config::mp_threads   = " << arma_config::mp_threads   << '\n';
         out << "@ sizeof(void*)    = " << sizeof(void*)    << '\n';
         out << "@ sizeof(int)      = " << sizeof(int)      << '\n';
         out << "@ sizeof(long)     = " << sizeof(long)     << '\n';

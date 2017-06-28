@@ -32,29 +32,34 @@ public:
         // Loads the expected results to a arma::mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
 
-        std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > orig_result = image_visibilities(Sinc(width_normalization, threshold), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
-        result.first = arma::conv_to<arma::cx_mat>::from(orig_result.first);
-        result.second = arma::conv_to<arma::cx_mat>::from(orig_result.second);
+        std::pair<arma::Mat<real_t>, arma::Mat<real_t> > orig_result = image_visibilities(Sinc(width_normalization, threshold), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+
+        // Output matrices need to be shifted because image_visibilities does not shift them
+        fftshift(orig_result.first);
+        fftshift(orig_result.second);
+
+        result.first = arma::conv_to<arma::mat>::from(orig_result.first);
+        result.second = arma::conv_to<arma::mat>::from(orig_result.second);
     }
 };
 
 TEST(ImagerSinc, SmallImage)
 {
     imager_test_sinc sinc_small_image("sinc", "small_image");
-    EXPECT_TRUE(arma::approx_equal(sinc_small_image.result.first, sinc_small_image.expected_result.first, "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(sinc_small_image.result.second, sinc_small_image.expected_result.second, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(sinc_small_image.result.first, arma::real(sinc_small_image.expected_result.first), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(sinc_small_image.result.second, arma::real(sinc_small_image.expected_result.second), "absdiff", tolerance));
 }
 
 TEST(ImagerSinc, MediumImage)
 {
     imager_test_sinc sinc_medium_image("sinc", "medium_image");
-    EXPECT_TRUE(arma::approx_equal(sinc_medium_image.result.first, sinc_medium_image.expected_result.first, "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(sinc_medium_image.result.second, sinc_medium_image.expected_result.second, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(sinc_medium_image.result.first, arma::real(sinc_medium_image.expected_result.first), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(sinc_medium_image.result.second, arma::real(sinc_medium_image.expected_result.second), "absdiff", tolerance));
 }
 
 TEST(ImagerSinc, LargeImage)
 {
     imager_test_sinc sinc_large_image("sinc", "large_image");
-    EXPECT_TRUE(arma::approx_equal(sinc_large_image.result.first, sinc_large_image.expected_result.first, "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(sinc_large_image.result.second, sinc_large_image.expected_result.second, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(sinc_large_image.result.first, arma::real(sinc_large_image.expected_result.first), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(sinc_large_image.result.second, arma::real(sinc_large_image.expected_result.second), "absdiff", tolerance));
 }

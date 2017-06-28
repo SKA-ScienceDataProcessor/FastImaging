@@ -71,16 +71,17 @@ int main(int argc, char** argv)
         _logger->info("Configuration parameters:");
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
-        _logger->info(" - estimate_rms={}", cfg.estimate_rms);
-        _logger->info(" - compute_bg_level={}", cfg.compute_bg_level);
-        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
+        _logger->info(" - rms_estimation={}", cfg.estimate_rms);
         _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
+        _logger->info(" - binapprox_median={}", cfg.binapprox_median);
+        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
+        _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
         _logger->info("Running source find");
     }
 
     // Run source find
     stp::source_find_image sfimage = stp::source_find_image(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma,
-        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.compute_bg_level, cfg.compute_barycentre);
+        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.generate_labelmap);
 
     if (use_logger) {
         _logger->info("Finished pipeline execution");

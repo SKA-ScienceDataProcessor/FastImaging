@@ -1,11 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup arma_config
@@ -19,6 +25,20 @@ struct arma_config
     static const uword mat_prealloc = (sword(ARMA_MAT_PREALLOC) > 0) ? uword(ARMA_MAT_PREALLOC) : 1;
   #else
     static const uword mat_prealloc = 16;
+  #endif
+  
+  
+  #if defined(ARMA_OPENMP_THRESHOLD)
+    static const uword mp_threshold = (sword(ARMA_OPENMP_THRESHOLD) > 0) ? uword(ARMA_OPENMP_THRESHOLD) : 384;
+  #else
+    static const uword mp_threshold = 384;
+  #endif
+  
+  
+  #if defined(ARMA_OPENMP_THREADS)
+    static const uword mp_threads = (sword(ARMA_OPENMP_THREADS) > 0) ? uword(ARMA_OPENMP_THREADS) : 8;
+  #else
+    static const uword mp_threads = 8;
   #endif
   
   
@@ -116,20 +136,20 @@ struct arma_config
   
   
   #if defined(ARMA_USE_CXX11)
-    static const bool use_cxx11 = true;
+    static const bool cxx11 = true;
   #else
-    static const bool use_cxx11 = false;
+    static const bool cxx11 = false;
   #endif
   
   
   #if defined(ARMA_USE_WRAPPER)
-    static const bool use_wrapper = true;
+    static const bool wrapper = true;
   #else
-    static const bool use_wrapper = false;
+    static const bool wrapper = false;
   #endif
   
   
-  #if defined(_OPENMP)
+  #if defined(ARMA_USE_OPENMP)
     static const bool openmp = true;
   #else
     static const bool openmp = false;

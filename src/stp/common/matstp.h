@@ -25,12 +25,13 @@ public:
         mem_ptr = std::unique_ptr<T, std::function<void(T*)> >((T*)std::calloc(length, sizeof(T)), [](T* ptr) {
             if (ptr != nullptr) {
                 std::free(ptr);
+                ptr = nullptr;
             }
         });
         num_elems = length;
     }
 
-    // Delete copy and assign constructors
+    // Delete copy and assignment constructors
     ZeroMemAlloc(ZeroMemAlloc const&) = delete;
     ZeroMemAlloc& operator=(ZeroMemAlloc const&) = delete;
 
@@ -38,26 +39,36 @@ public:
     ZeroMemAlloc(ZeroMemAlloc&& other)
         : mem_ptr(std::move(other.mem_ptr))
     {
+        other.mem_ptr = nullptr;
     }
 
-    size_t num_elems;
+    // Define move assignment operator
+    ZeroMemAlloc& operator=(ZeroMemAlloc&& other)
+    {
+        // Self-assignment detection
+        if (&other == this)
+            return *this;
+
+        mem_ptr = std::move(other.mem_ptr);
+        num_elems = other.num_elems;
+
+        return *this;
+    }
+
     std::unique_ptr<T, std::function<void(T*)> > mem_ptr;
+    size_t num_elems;
 };
 
 template <typename T>
 class MatStp : private ZeroMemAlloc<T>, public arma::Mat<T> {
 public:
     // Default constructor
-    MatStp()
-        : ZeroMemAlloc<T>()
-        , arma::Mat<T>()
-    {
-    }
+    MatStp() = default;
 
     // Constructor
     MatStp(arma::uword n_rows, arma::uword n_cols)
         : ZeroMemAlloc<T>(n_rows * n_cols + CACHE_LINE_SIZE)
-        , arma::Mat<T>(aligned_mem_ptr(), n_rows, n_cols, false, true)
+        , arma::Mat<T>(aligned_mem_ptr(), n_rows, n_cols, false, false)
     {
     }
 
@@ -66,6 +77,31 @@ public:
         : ZeroMemAlloc<T>(std::move(other))
         , arma::Mat<T>(std::move(other))
     {
+    }
+
+    // Move assignment operator
+    MatStp<T>& operator=(MatStp&& other)
+    {
+        // Self-assignment detection
+        if (&other == this)
+            return *this;
+
+        ZeroMemAlloc<T>::operator=(std::move(other));
+        arma::Mat<T>::operator=(std::move(other));
+        return *this;
+    }
+
+    // Sum assignment operator
+    MatStp<T>& operator+=(MatStp& other)
+    {
+        arma::Mat<T>::operator+=(other);
+        return *this;
+    }
+
+    // Deletes matrix buffer
+    void delete_matrix_buffer()
+    {
+        ZeroMemAlloc<T>::mem_ptr.reset();
     }
 
 private:

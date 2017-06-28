@@ -1,12 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
-// Written by Ryan Curtin
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup Mat
@@ -57,63 +62,63 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename fill_type> inline Mat(const uword in_rows, const uword in_cols, const fill::fill_class<fill_type>& f);
   template<typename fill_type> inline Mat(const SizeMat& s,                         const fill::fill_class<fill_type>& f);
   
-  inline                  Mat(const char*        text);
-  inline const Mat& operator=(const char*        text);
+  inline            Mat(const char*        text);
+  inline Mat& operator=(const char*        text);
   
-  inline                  Mat(const std::string& text);
-  inline const Mat& operator=(const std::string& text);
+  inline            Mat(const std::string& text);
+  inline Mat& operator=(const std::string& text);
   
-  inline                  Mat(const std::vector<eT>& x);
-  inline const Mat& operator=(const std::vector<eT>& x);
+  inline            Mat(const std::vector<eT>& x);
+  inline Mat& operator=(const std::vector<eT>& x);
   
   #if defined(ARMA_USE_CXX11)
-  inline                  Mat(const std::initializer_list<eT>& list);
-  inline const Mat& operator=(const std::initializer_list<eT>& list);
+  inline            Mat(const std::initializer_list<eT>& list);
+  inline Mat& operator=(const std::initializer_list<eT>& list);
   
-  inline                  Mat(const std::initializer_list< std::initializer_list<eT> >& list);
-  inline const Mat& operator=(const std::initializer_list< std::initializer_list<eT> >& list);
+  inline            Mat(const std::initializer_list< std::initializer_list<eT> >& list);
+  inline Mat& operator=(const std::initializer_list< std::initializer_list<eT> >& list);
   
-  inline                  Mat(Mat&& m);
-  inline const Mat& operator=(Mat&& m);
+  inline            Mat(Mat&& m);
+  inline Mat& operator=(Mat&& m);
   #endif
   
   inline Mat(      eT* aux_mem, const uword aux_n_rows, const uword aux_n_cols, const bool copy_aux_mem = true, const bool strict = false);
   inline Mat(const eT* aux_mem, const uword aux_n_rows, const uword aux_n_cols);
   
-  arma_inline const Mat&  operator=(const eT val);
-  arma_inline const Mat& operator+=(const eT val);
-  arma_inline const Mat& operator-=(const eT val);
-  arma_inline const Mat& operator*=(const eT val);
-  arma_inline const Mat& operator/=(const eT val);
+  inline Mat&  operator=(const eT val);
+  inline Mat& operator+=(const eT val);
+  inline Mat& operator-=(const eT val);
+  inline Mat& operator*=(const eT val);
+  inline Mat& operator/=(const eT val);
   
-  inline                   Mat(const Mat& m);
-  inline const Mat&  operator=(const Mat& m);
-  inline const Mat& operator+=(const Mat& m);
-  inline const Mat& operator-=(const Mat& m);
-  inline const Mat& operator*=(const Mat& m);
-  inline const Mat& operator%=(const Mat& m);
-  inline const Mat& operator/=(const Mat& m);
+  inline             Mat(const Mat& m);
+  inline Mat&  operator=(const Mat& m);
+  inline Mat& operator+=(const Mat& m);
+  inline Mat& operator-=(const Mat& m);
+  inline Mat& operator*=(const Mat& m);
+  inline Mat& operator%=(const Mat& m);
+  inline Mat& operator/=(const Mat& m);
   
-  template<typename T1> inline                   Mat(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Mat&  operator=(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Mat& operator+=(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Mat& operator-=(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Mat& operator*=(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Mat& operator%=(const BaseCube<eT,T1>& X);
-  template<typename T1> inline const Mat& operator/=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline             Mat(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Mat&  operator=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Mat& operator+=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Mat& operator-=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Mat& operator*=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Mat& operator%=(const BaseCube<eT,T1>& X);
+  template<typename T1> inline Mat& operator/=(const BaseCube<eT,T1>& X);
   
   template<typename T1, typename T2>
   inline explicit Mat(const Base<pod_type,T1>& A, const Base<pod_type,T2>& B);
   
   inline explicit          Mat(const subview<eT>& X, const bool use_colmem);  // only to be used by the quasi_unwrap class
   
-  inline                   Mat(const subview<eT>& X);
-  inline const Mat&  operator=(const subview<eT>& X);
-  inline const Mat& operator+=(const subview<eT>& X);
-  inline const Mat& operator-=(const subview<eT>& X);
-  inline const Mat& operator*=(const subview<eT>& X);
-  inline const Mat& operator%=(const subview<eT>& X);
-  inline const Mat& operator/=(const subview<eT>& X);
+  inline             Mat(const subview<eT>& X);
+  inline Mat&  operator=(const subview<eT>& X);
+  inline Mat& operator+=(const subview<eT>& X);
+  inline Mat& operator-=(const subview<eT>& X);
+  inline Mat& operator*=(const subview<eT>& X);
+  inline Mat& operator%=(const subview<eT>& X);
+  inline Mat& operator/=(const subview<eT>& X);
   
   inline Mat(const subview_row_strans<eT>& X);  // subview_row_strans can only be generated by the Proxy class
   inline Mat(const subview_row_htrans<eT>& X);  // subview_row_htrans can only be generated by the Proxy class
@@ -122,54 +127,54 @@ class Mat : public Base< eT, Mat<eT> >
   template<bool do_conj>
   inline Mat(const xtrans_mat<eT,do_conj>& X);  //        xtrans_mat can only be generated by the Proxy class
   
-  inline                   Mat(const subview_cube<eT>& X);
-  inline const Mat&  operator=(const subview_cube<eT>& X);
-  inline const Mat& operator+=(const subview_cube<eT>& X);
-  inline const Mat& operator-=(const subview_cube<eT>& X);
-  inline const Mat& operator*=(const subview_cube<eT>& X);
-  inline const Mat& operator%=(const subview_cube<eT>& X);
-  inline const Mat& operator/=(const subview_cube<eT>& X);
+  inline             Mat(const subview_cube<eT>& X);
+  inline Mat&  operator=(const subview_cube<eT>& X);
+  inline Mat& operator+=(const subview_cube<eT>& X);
+  inline Mat& operator-=(const subview_cube<eT>& X);
+  inline Mat& operator*=(const subview_cube<eT>& X);
+  inline Mat& operator%=(const subview_cube<eT>& X);
+  inline Mat& operator/=(const subview_cube<eT>& X);
   
-  inline                   Mat(const diagview<eT>& X);
-  inline const Mat&  operator=(const diagview<eT>& X);
-  inline const Mat& operator+=(const diagview<eT>& X);
-  inline const Mat& operator-=(const diagview<eT>& X);
-  inline const Mat& operator*=(const diagview<eT>& X);
-  inline const Mat& operator%=(const diagview<eT>& X);
-  inline const Mat& operator/=(const diagview<eT>& X);
+  inline             Mat(const diagview<eT>& X);
+  inline Mat&  operator=(const diagview<eT>& X);
+  inline Mat& operator+=(const diagview<eT>& X);
+  inline Mat& operator-=(const diagview<eT>& X);
+  inline Mat& operator*=(const diagview<eT>& X);
+  inline Mat& operator%=(const diagview<eT>& X);
+  inline Mat& operator/=(const diagview<eT>& X);
   
-  inline                   Mat(const spdiagview<eT>& X);
-  inline const Mat&  operator=(const spdiagview<eT>& X);
-  inline const Mat& operator+=(const spdiagview<eT>& X);
-  inline const Mat& operator-=(const spdiagview<eT>& X);
-  inline const Mat& operator*=(const spdiagview<eT>& X);
-  inline const Mat& operator%=(const spdiagview<eT>& X);
-  inline const Mat& operator/=(const spdiagview<eT>& X);
+  inline             Mat(const spdiagview<eT>& X);
+  inline Mat&  operator=(const spdiagview<eT>& X);
+  inline Mat& operator+=(const spdiagview<eT>& X);
+  inline Mat& operator-=(const spdiagview<eT>& X);
+  inline Mat& operator*=(const spdiagview<eT>& X);
+  inline Mat& operator%=(const spdiagview<eT>& X);
+  inline Mat& operator/=(const spdiagview<eT>& X);
   
-  template<typename T1> inline                   Mat(const subview_elem1<eT,T1>& X);
-  template<typename T1> inline const Mat& operator= (const subview_elem1<eT,T1>& X);
-  template<typename T1> inline const Mat& operator+=(const subview_elem1<eT,T1>& X);
-  template<typename T1> inline const Mat& operator-=(const subview_elem1<eT,T1>& X);
-  template<typename T1> inline const Mat& operator*=(const subview_elem1<eT,T1>& X);
-  template<typename T1> inline const Mat& operator%=(const subview_elem1<eT,T1>& X);
-  template<typename T1> inline const Mat& operator/=(const subview_elem1<eT,T1>& X);
+  template<typename T1> inline             Mat(const subview_elem1<eT,T1>& X);
+  template<typename T1> inline Mat& operator= (const subview_elem1<eT,T1>& X);
+  template<typename T1> inline Mat& operator+=(const subview_elem1<eT,T1>& X);
+  template<typename T1> inline Mat& operator-=(const subview_elem1<eT,T1>& X);
+  template<typename T1> inline Mat& operator*=(const subview_elem1<eT,T1>& X);
+  template<typename T1> inline Mat& operator%=(const subview_elem1<eT,T1>& X);
+  template<typename T1> inline Mat& operator/=(const subview_elem1<eT,T1>& X);
   
-  template<typename T1, typename T2> inline                   Mat(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator= (const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator+=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator-=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator*=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator%=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator/=(const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline             Mat(const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline Mat& operator= (const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline Mat& operator+=(const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline Mat& operator-=(const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline Mat& operator*=(const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline Mat& operator%=(const subview_elem2<eT,T1,T2>& X);
+  template<typename T1, typename T2> inline Mat& operator/=(const subview_elem2<eT,T1,T2>& X);
   
   // Operators on sparse matrices (and subviews)
-  template<typename T1> inline explicit          Mat(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat&  operator=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator+=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator-=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator*=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator%=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator/=(const SpBase<eT, T1>& m);
+  template<typename T1> inline explicit    Mat(const SpBase<eT, T1>& m);
+  template<typename T1> inline Mat&  operator=(const SpBase<eT, T1>& m);
+  template<typename T1> inline Mat& operator+=(const SpBase<eT, T1>& m);
+  template<typename T1> inline Mat& operator-=(const SpBase<eT, T1>& m);
+  template<typename T1> inline Mat& operator*=(const SpBase<eT, T1>& m);
+  template<typename T1> inline Mat& operator%=(const SpBase<eT, T1>& m);
+  template<typename T1> inline Mat& operator/=(const SpBase<eT, T1>& m);
   
   inline mat_injector<Mat> operator<<(const eT val);
   inline mat_injector<Mat> operator<<(const injector_end_of_row<>& x);
@@ -297,64 +302,64 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename T1> inline void insert_cols(const uword col_num, const Base<eT,T1>& X);
   
   
-  template<typename T1, typename gen_type> inline                   Mat(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat&  operator=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator+=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator-=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator*=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator%=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator/=(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline             Mat(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline Mat&  operator=(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline Mat& operator+=(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline Mat& operator-=(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline Mat& operator*=(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline Mat& operator%=(const Gen<T1, gen_type>& X);
+  template<typename T1, typename gen_type> inline Mat& operator/=(const Gen<T1, gen_type>& X);
   
-  template<typename T1, typename op_type> inline                   Mat(const Op<T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat&  operator=(const Op<T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator+=(const Op<T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator-=(const Op<T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator*=(const Op<T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator%=(const Op<T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator/=(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline             Mat(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat&  operator=(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator+=(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator-=(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator*=(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator%=(const Op<T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator/=(const Op<T1, op_type>& X);
   
-  template<typename T1, typename eop_type> inline                   Mat(const eOp<T1, eop_type>& X);
-  template<typename T1, typename eop_type> inline const Mat&  operator=(const eOp<T1, eop_type>& X);
-  template<typename T1, typename eop_type> inline const Mat& operator+=(const eOp<T1, eop_type>& X);
-  template<typename T1, typename eop_type> inline const Mat& operator-=(const eOp<T1, eop_type>& X);
-  template<typename T1, typename eop_type> inline const Mat& operator*=(const eOp<T1, eop_type>& X);
-  template<typename T1, typename eop_type> inline const Mat& operator%=(const eOp<T1, eop_type>& X);
-  template<typename T1, typename eop_type> inline const Mat& operator/=(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline             Mat(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline Mat&  operator=(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline Mat& operator+=(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline Mat& operator-=(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline Mat& operator*=(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline Mat& operator%=(const eOp<T1, eop_type>& X);
+  template<typename T1, typename eop_type> inline Mat& operator/=(const eOp<T1, eop_type>& X);
   
-  template<typename T1, typename op_type> inline                   Mat(const mtOp<eT, T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat&  operator=(const mtOp<eT, T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator+=(const mtOp<eT, T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator-=(const mtOp<eT, T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator*=(const mtOp<eT, T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator%=(const mtOp<eT, T1, op_type>& X);
-  template<typename T1, typename op_type> inline const Mat& operator/=(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline             Mat(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat&  operator=(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator+=(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator-=(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator*=(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator%=(const mtOp<eT, T1, op_type>& X);
+  template<typename T1, typename op_type> inline Mat& operator/=(const mtOp<eT, T1, op_type>& X);
   
-  template<typename T1, typename T2, typename glue_type> inline                   Mat(const Glue<T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat&  operator=(const Glue<T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator+=(const Glue<T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator-=(const Glue<T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator*=(const Glue<T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator%=(const Glue<T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator/=(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline             Mat(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat&  operator=(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator+=(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator-=(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator*=(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator%=(const Glue<T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator/=(const Glue<T1, T2, glue_type>& X);
   
-  template<typename T1, typename T2>                     inline const Mat& operator+=(const Glue<T1, T2, glue_times>& X);
-  template<typename T1, typename T2>                     inline const Mat& operator-=(const Glue<T1, T2, glue_times>& X);
+  template<typename T1, typename T2>                     inline Mat& operator+=(const Glue<T1, T2, glue_times>& X);
+  template<typename T1, typename T2>                     inline Mat& operator-=(const Glue<T1, T2, glue_times>& X);
   
-  template<typename T1, typename T2, typename eglue_type> inline                   Mat(const eGlue<T1, T2, eglue_type>& X);
-  template<typename T1, typename T2, typename eglue_type> inline const Mat&  operator=(const eGlue<T1, T2, eglue_type>& X);
-  template<typename T1, typename T2, typename eglue_type> inline const Mat& operator+=(const eGlue<T1, T2, eglue_type>& X);
-  template<typename T1, typename T2, typename eglue_type> inline const Mat& operator-=(const eGlue<T1, T2, eglue_type>& X);
-  template<typename T1, typename T2, typename eglue_type> inline const Mat& operator*=(const eGlue<T1, T2, eglue_type>& X);
-  template<typename T1, typename T2, typename eglue_type> inline const Mat& operator%=(const eGlue<T1, T2, eglue_type>& X);
-  template<typename T1, typename T2, typename eglue_type> inline const Mat& operator/=(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline             Mat(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline Mat&  operator=(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline Mat& operator+=(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline Mat& operator-=(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline Mat& operator*=(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline Mat& operator%=(const eGlue<T1, T2, eglue_type>& X);
+  template<typename T1, typename T2, typename eglue_type> inline Mat& operator/=(const eGlue<T1, T2, eglue_type>& X);
   
-  template<typename T1, typename T2, typename glue_type> inline                   Mat(const mtGlue<eT, T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat&  operator=(const mtGlue<eT, T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator+=(const mtGlue<eT, T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator-=(const mtGlue<eT, T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator*=(const mtGlue<eT, T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator%=(const mtGlue<eT, T1, T2, glue_type>& X);
-  template<typename T1, typename T2, typename glue_type> inline const Mat& operator/=(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline             Mat(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat&  operator=(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator+=(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator-=(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator*=(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator%=(const mtGlue<eT, T1, T2, glue_type>& X);
+  template<typename T1, typename T2, typename glue_type> inline Mat& operator/=(const mtGlue<eT, T1, T2, glue_type>& X);
   
   
   arma_inline arma_warn_unused const eT& at_alt     (const uword ii) const;
@@ -428,7 +433,7 @@ class Mat : public Base< eT, Mat<eT> >
   inline void  reshape(const uword in_rows, const uword in_cols);
   inline void  reshape(const SizeMat& s);
   
-  arma_deprecated inline void reshape(const uword in_rows, const uword in_cols, const uword dim);  //!< NOTE: don't use this form: it's deprecated
+  arma_deprecated inline void reshape(const uword in_rows, const uword in_cols, const uword dim);  //!< NOTE: don't use this form: it will be removed
   
   
   template<typename functor> inline const Mat&  for_each(functor F);
@@ -762,18 +767,18 @@ class Mat<eT>::fixed : public Mat<eT>
   using Mat<eT>::operator();
   
   #if defined(ARMA_USE_CXX11)
-    inline                fixed(const std::initializer_list<eT>& list);
-    inline const Mat& operator=(const std::initializer_list<eT>& list);
+    inline          fixed(const std::initializer_list<eT>& list);
+    inline Mat& operator=(const std::initializer_list<eT>& list);
     
-    inline                fixed(const std::initializer_list< std::initializer_list<eT> >& list);
-    inline const Mat& operator=(const std::initializer_list< std::initializer_list<eT> >& list);
+    inline          fixed(const std::initializer_list< std::initializer_list<eT> >& list);
+    inline Mat& operator=(const std::initializer_list< std::initializer_list<eT> >& list);
   #endif
   
-  arma_inline const Mat& operator=(const fixed<fixed_n_rows, fixed_n_cols>& X);
+  arma_inline Mat& operator=(const fixed<fixed_n_rows, fixed_n_cols>& X);
   
   #if defined(ARMA_GOOD_COMPILER)
-    template<typename T1,              typename   eop_type> inline const Mat& operator=(const   eOp<T1,       eop_type>& X);
-    template<typename T1, typename T2, typename eglue_type> inline const Mat& operator=(const eGlue<T1, T2, eglue_type>& X);
+    template<typename T1,              typename   eop_type> inline Mat& operator=(const   eOp<T1,       eop_type>& X);
+    template<typename T1, typename T2, typename eglue_type> inline Mat& operator=(const eGlue<T1, T2, eglue_type>& X);
   #endif
   
   arma_inline const Op< Mat_fixed_type, op_htrans >  t() const;
@@ -813,17 +818,17 @@ class Mat_aux
   {
   public:
 
-  template<typename eT> arma_inline static void prefix_pp(Mat<eT>& x);
-  template<typename T>  arma_inline static void prefix_pp(Mat< std::complex<T> >& x);
+  template<typename eT> inline static void prefix_pp(Mat<eT>& x);
+  template<typename T>  inline static void prefix_pp(Mat< std::complex<T> >& x);
   
-  template<typename eT> arma_inline static void postfix_pp(Mat<eT>& x);
-  template<typename T>  arma_inline static void postfix_pp(Mat< std::complex<T> >& x);
+  template<typename eT> inline static void postfix_pp(Mat<eT>& x);
+  template<typename T>  inline static void postfix_pp(Mat< std::complex<T> >& x);
   
-  template<typename eT> arma_inline static void prefix_mm(Mat<eT>& x);
-  template<typename T>  arma_inline static void prefix_mm(Mat< std::complex<T> >& x);
+  template<typename eT> inline static void prefix_mm(Mat<eT>& x);
+  template<typename T>  inline static void prefix_mm(Mat< std::complex<T> >& x);
   
-  template<typename eT> arma_inline static void postfix_mm(Mat<eT>& x);
-  template<typename T>  arma_inline static void postfix_mm(Mat< std::complex<T> >& x);
+  template<typename eT> inline static void postfix_mm(Mat<eT>& x);
+  template<typename T>  inline static void postfix_mm(Mat< std::complex<T> >& x);
   
   template<typename eT, typename T1> inline static void set_real(Mat<eT>&                out, const Base<eT,T1>& X);
   template<typename T,  typename T1> inline static void set_real(Mat< std::complex<T> >& out, const Base< T,T1>& X);

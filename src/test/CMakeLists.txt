@@ -11,7 +11,7 @@ set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
 
 # For convenience all link libraries required by
 # the tests are put in one variable
-set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main Threads::Threads)
+set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main Threads::Threads armadillo)
 
 # Copy configuration files to the binary directory
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../configs/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
@@ -30,15 +30,15 @@ add_definitions ( -D_CNPYTESTPATH="${CNPY_DATA_PATH}/")
 function(add_unit_test unit_test_name unit_test_source)
     add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/fixtures.h ../auxiliary/gaussian2d.cpp
         ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp imager/load_json_imager.cpp)
-    add_dependencies(${unit_test_name} stp cnpy-static gtest gtest_main benchmark)
+    add_dependencies(${unit_test_name} stp cnpy-static gtest gtest_main benchmark armadillo)
     target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary
         ${RAPIDJSON_INCLUDE_PATH})
     target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
 endfunction()
 
-# Test Cases: Vector Math Functions ------------------------------------------------------------------------------------
+# Test Cases: Matrix Math Functions ------------------------------------------------------------------------------------
 
-add_unit_test(test_vector_math_funcs vectormath/test_vector_math_funcs.cpp)
+add_unit_test(test_matrix_math_funcs matrixmath/test_matrix_math_funcs.cpp)
 
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
@@ -106,6 +106,9 @@ add_unit_test(test_gridder_kernel_caching gridder/gridder_test_KernelCaching.cpp
 # Oversampled Gridding
 add_unit_test(test_gridder_oversampled_gridding gridder/gridder_test_OversampledGridding.cpp)
 
+# HalfPlane Shifted Gridding
+add_unit_test(test_gridder_halfplane_shifted_gridding gridder/gridder_test_HalfPlaneShiftedGridding.cpp)
+
 # Test Cases: Imager Functions -----------------------------------------------------------------------------------------
 
 # Triangle
@@ -152,8 +155,8 @@ add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp
 # Pass the test cases to CTest
 # Note: for practicality each unit test has its own executable.
 
-#Vector math
-add_test(NAME VectorMathFunctions COMMAND test_vector_math_funcs)
+# Matrix math
+add_test(NAME MatrixMathFunctions COMMAND test_matrix_math_funcs)
 
 # Convolution
 add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle)

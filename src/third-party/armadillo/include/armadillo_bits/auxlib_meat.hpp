@@ -1,16 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
-// Written by James Sanders
-// Written by Stanislav Funiak
-// Written by Eric Jon Sundstrom
-// Written by Michael McNeil Forbes
-// Written by Keith O'Hara
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 //! \addtogroup auxlib
@@ -686,6 +687,8 @@ auxlib::log_det(eT& out_val, typename get_pod_type<eT>::result& out_sign, const 
     arma_extra_debug_print("atlas::clapack_getrf()");
     const int info = atlas::clapack_getrf(atlas::CblasColMajor, tmp.n_rows, tmp.n_cols, tmp.memptr(), tmp.n_rows, ipiv.memptr());
     
+    if(info < 0)  { return false; }
+    
     // on output tmp appears to be L+U_alt, where U_alt is U with the main diagonal set to zero
     
     sword sign = (is_complex<eT>::value == false) ? ( (access::tmp_real( tmp.at(0,0) ) < T(0)) ? -1 : +1 ) : +1;
@@ -710,7 +713,7 @@ auxlib::log_det(eT& out_val, typename get_pod_type<eT>::result& out_sign, const 
     out_val  = val;
     out_sign = T(sign);
     
-    return (info == 0);
+    return true;
     }
   #elif defined(ARMA_USE_LAPACK)
     {
@@ -734,6 +737,8 @@ auxlib::log_det(eT& out_val, typename get_pod_type<eT>::result& out_sign, const 
     
     arma_extra_debug_print("lapack::getrf()");
     lapack::getrf(&n_rows, &n_cols, tmp.memptr(), &n_rows, ipiv.memptr(), &info);
+    
+    if(info < 0)  { return false; }
     
     // on output tmp appears to be L+U_alt, where U_alt is U with the main diagonal set to zero
     
@@ -759,7 +764,7 @@ auxlib::log_det(eT& out_val, typename get_pod_type<eT>::result& out_sign, const 
     out_val  = val;
     out_sign = T(sign);
     
-    return (info == 0);
+    return true;
     }
   #else
     {

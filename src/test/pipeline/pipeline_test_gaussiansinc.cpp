@@ -8,7 +8,7 @@ using namespace stp;
 std::string data_path(_PIPELINE_DATAPATH);
 std::string input_npz("simdata_nstep10.npz");
 
-const double dtolerance(1.0e-7);
+const double dtolerance(1.0e-4);
 
 stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& model_vis, arma::cx_mat& data_vis, int image_size, double cell_size, double detection_n_sigma, double analysis_n_sigma, int kernel_support = 3, bool kernel_exact = true, int oversampling = 1)
 {
@@ -16,9 +16,9 @@ stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& model_v
     arma::cx_mat residual_vis = data_vis - model_vis;
 
     stp::GaussianSinc kernel_func(kernel_support);
-    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t> > result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size, cell_size, kernel_support, kernel_exact, oversampling);
 
-    return stp::source_find_image(arma::real(result.first), detection_n_sigma, analysis_n_sigma, 0.0, true);
+    return stp::source_find_image(result.first, detection_n_sigma, analysis_n_sigma, 0.0, true);
 }
 
 TEST(PipelineGaussianSincExact, test_gaussian_sinc_exact)

@@ -30,11 +30,13 @@ public:
 
     void run()
     {
-        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize);
+        // The last two parameters (false, false) force the use of the full gridder without uv shifting
+        std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> res = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize, false, false);
+        result = std::make_pair(static_cast<arma::Mat<cx_real_t>>(res.first), static_cast<arma::Mat<cx_real_t>>(res.second));
     }
 
     arma::mat uv = { { -2., 0 } };
-    std::pair<arma::Mat<cx_real_t>, arma::Mat<real_t> > result;
+    std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t>> result;
     arma::cx_mat vis;
     arma::Mat<real_t> expected_result = {
         { 0., 0., 0., 0., 0., 0., 0., 0. },
@@ -57,11 +59,11 @@ TEST_F(GridderMultiPixelPillbox, equal)
 TEST_F(GridderMultiPixelPillbox, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t> >::from(std::get<vis_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t>>::from(std::get<vis_grid_index>(result)), "absdiff", tolerance));
 }
 
 TEST_F(GridderMultiPixelPillbox, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, std::get<sampling_grid_index>(result), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t>>::from(std::get<sampling_grid_index>(result)), "absdiff", tolerance));
 }

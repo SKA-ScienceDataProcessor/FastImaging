@@ -1,11 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 
@@ -312,6 +318,10 @@
 
 #if defined(__INTEL_COMPILER)
   
+  #if (__INTEL_COMPILER == 9999)
+    #error "*** Need a newer compiler ***"
+  #endif
+  
   #if (__INTEL_COMPILER < 1300)
     #error "*** Need a newer compiler ***"
   #endif
@@ -348,6 +358,8 @@
     #endif
   #endif
   
+  #undef  arma_deprecated
+  #define arma_deprecated __declspec(deprecated)
   // #undef  arma_inline
   // #define arma_inline inline __forceinline
   
@@ -444,6 +456,32 @@
 
 #undef ARMA_PRINT_CXX98_WARNING
 #undef ARMA_PRINT_CXX11_WARNING
+
+
+#if ( defined(ARMA_USE_OPENMP) && (!defined(_OPENMP) || (defined(_OPENMP) && (_OPENMP < 200805))) )
+  // we require OpenMP 3.0 to enable parallelisation of for loops with unsigned integers;
+  // earlier versions of OpenMP can only handle signed integers
+  #undef  ARMA_USE_OPENMP
+  #undef  ARMA_PRINT_OPENMP_WARNING
+  #define ARMA_PRINT_OPENMP_WARNING
+#endif
+
+
+#if ( (defined(_OPENMP) && (_OPENMP < 200805)) && !defined(ARMA_DONT_USE_OPENMP) )
+  // if the compiler has an ancient version of OpenMP and use of OpenMP hasn't been explicitly disabled,
+  // print a warning to ensure there is no confusion about OpenMP support
+  #undef  ARMA_USE_OPENMP
+  #undef  ARMA_PRINT_OPENMP_WARNING
+  #define ARMA_PRINT_OPENMP_WARNING
+#endif
+
+
+#if defined(ARMA_PRINT_OPENMP_WARNING) && !defined(ARMA_DONT_PRINT_OPENMP_WARNING)
+  #pragma message ("WARNING: use of OpenMP disabled; this compiler doesn't support OpenMP 3.0+")
+#endif
+
+
+#undef ARMA_PRINT_OPENMP_WARNING
 
 
 #if defined(log2)

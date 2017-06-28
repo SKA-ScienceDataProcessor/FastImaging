@@ -19,8 +19,7 @@ std::string wisdom_path(_WISDOM_FILEPATH);
 static void imager_test_benchmark(benchmark::State& state)
 {
     int image_size = pow(2, state.range(0));
-    std::string wisdom_filename = wisdom_path + "WisdomFile_cof" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
-    std::string wisdom_filename_r2c = wisdom_path + "WisdomFile_rof" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
+    std::string wisdom_filename = wisdom_path + "WisdomFile_rob" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
 
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
@@ -36,15 +35,11 @@ static void imager_test_benchmark(benchmark::State& state)
     stp::GaussianSinc kernel_func(cfg.kernel_support);
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::image_visibilities(kernel_func, residual_vis, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true, stp::FFTW_WISDOM_FFT, wisdom_filename, wisdom_filename_r2c));
+        benchmark::DoNotOptimize(stp::image_visibilities(kernel_func, residual_vis, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true, stp::FFTW_WISDOM_FFT, wisdom_filename, wisdom_filename));
     }
 }
 
 BENCHMARK(imager_test_benchmark)
-    ->Args({ 10 })
-    ->Args({ 11 })
-    ->Args({ 12 })
-    ->Args({ 13 })
-    ->Args({ 14 })
+    ->DenseRange(10, 14) // 10,11,12,13,14
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN()

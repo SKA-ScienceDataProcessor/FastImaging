@@ -1,12 +1,17 @@
-// Copyright (C) 2008-2016 National ICT Australia (NICTA)
+// Copyright 2008-2016 Conrad Sanderson (http://conradsanderson.id.au)
+// Copyright 2008-2016 National ICT Australia (NICTA)
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// -------------------------------------------------------------------
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
-// Written by Conrad Sanderson - http://conradsanderson.id.au
-// Written by Ryan Curtin
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ------------------------------------------------------------------------
 
 
 
@@ -26,7 +31,7 @@
 #endif
 
 #if !defined(ARMA_USE_NEWARP)
-//#define ARMA_USE_NEWARP
+#define ARMA_USE_NEWARP
 //// Uncomment the above line to enable the built-in partial emulation of ARPACK.
 //// This is used for eigen decompositions of real (non-complex) sparse matrices, eg. eigs_sym(), svds() 
 #endif
@@ -82,9 +87,15 @@
 //// Make sure the directory has a trailing /
 
 #if !defined(ARMA_USE_CXX11)
-#define ARMA_USE_CXX11
+// #define ARMA_USE_CXX11
 //// Uncomment the above line to forcefully enable use of C++11 features (eg. initialiser lists).
 //// Note that ARMA_USE_CXX11 is automatically enabled when a C++11 compiler is detected.
+#endif
+
+#if !defined(ARMA_USE_OPENMP)
+// #define ARMA_USE_OPENMP
+//// Uncomment the above line to forcefully enable use of OpenMP for parallelisation.
+//// Note that ARMA_USE_OPENMP is automatically enabled when a compiler supporting OpenMP 3.0 is detected.
 #endif
 
 #if !defined(ARMA_64BIT_WORD)
@@ -116,6 +127,18 @@
 //// it must be an integer that is at least 1.
 //// If you mainly use lots of very small vectors (eg. <= 4 elements),
 //// change the number to the size of your vectors.
+
+#if !defined(ARMA_OPENMP_THRESHOLD)
+  #define ARMA_OPENMP_THRESHOLD 384
+#endif
+//// The minimum number of elements in a matrix to allow OpenMP based parallelisation;
+//// it must be an integer that is at least 1.
+
+#if !defined(ARMA_OPENMP_THREADS)
+  #define ARMA_OPENMP_THREADS 8
+#endif
+//// The maximum number of threads to use for OpenMP based parallelisation;
+//// it must be an integer that is at least 1.
 
 #if !defined(ARMA_SPMAT_CHUNKSIZE)
   #define ARMA_SPMAT_CHUNKSIZE 256
@@ -183,6 +206,10 @@
 #if defined(ARMA_DONT_USE_CXX11)
   #undef ARMA_USE_CXX11
   #undef ARMA_USE_EXTERN_CXX11_RNG
+#endif
+
+#if defined(ARMA_DONT_USE_OPENMP)
+  #undef ARMA_USE_OPENMP
 #endif
 
 #if defined(ARMA_USE_WRAPPER)

@@ -73,7 +73,10 @@ public:
     void run()
     {
         img += evaluate_model_on_pixel_grid(ydim, xdim, negative_src);
+        // Input data needs to be shifted because source_find assumes it is shifted
+        fftshift(img);
         source_find_image sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        fftshift(img);
         found_src = sf.islands[0];
 
         total_islands0 = sf.islands.size();
@@ -84,7 +87,9 @@ public:
         absolute_ybar = std::abs(found_src.ybar - negative_src.y_mean);
 
         img += evaluate_model_on_pixel_grid(ydim, xdim, bright_src);
+        fftshift(img);
         sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        fftshift(img);
         total_islands1 = sf.islands.size();
 
         for (arma::uword l_idx(0); l_idx < sf.islands.size(); ++l_idx) {

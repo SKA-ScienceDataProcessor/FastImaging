@@ -24,7 +24,7 @@ rapidjson::Value set_up_json(const std::string& typeConvolution, const std::stri
 struct ImagerHandler {
     rapidjson::Value val;
     std::pair<arma::cx_mat, arma::cx_mat> expected_result;
-    std::pair<arma::cx_mat, arma::cx_mat> result;
+    std::pair<arma::mat, arma::mat> result;
 
     double image_size;
     double cell_size;
