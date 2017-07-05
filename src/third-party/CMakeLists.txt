@@ -81,7 +81,7 @@ if(USE_FLOAT)
 else()
     target_link_libraries(${FFTW_TARGET_NAME} INTERFACE ${FFTW_INSTALL_DIR}/lib/libfftw3.a ${FFTW_INSTALL_DIR}/lib/libfftw3_threads.a)
 endif()
-target_include_directories(${FFTW_TARGET_NAME} INTERFACE ${FFTW_INSTALL_DIR}/include)
+target_include_directories(${FFTW_TARGET_NAME} SYSTEM INTERFACE ${FFTW_INSTALL_DIR}/include)
 add_dependencies(${FFTW_TARGET_NAME} ${FFTW_PROJECT_NAME})
 
 
@@ -118,7 +118,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
     target_link_libraries(${TBB_TARGET_NAME} INTERFACE ${TBB_INSTALL_DIR}/libtbb.a ${TBB_INSTALL_DIR}/libtbbmalloc.a)
 endif()
-target_include_directories(${TBB_TARGET_NAME} INTERFACE ${TBB_INSTALL_DIR}/include)
+target_include_directories(${TBB_TARGET_NAME} SYSTEM INTERFACE ${TBB_INSTALL_DIR}/include)
 add_dependencies(${TBB_TARGET_NAME} ${TBB_PROJECT_NAME})
 
 
@@ -146,7 +146,7 @@ ExternalProject_Add(
 # Specify the target for the external library
 add_library(${OPENBLAS_TARGET_NAME} INTERFACE)
 target_link_libraries(${OPENBLAS_TARGET_NAME} INTERFACE ${OPENBLAS_INSTALL_DIR}/lib/libopenblas.a)
-target_include_directories(${OPENBLAS_TARGET_NAME} INTERFACE ${OPENBLAS_INSTALL_DIR}/include)
+target_include_directories(${OPENBLAS_TARGET_NAME} SYSTEM INTERFACE ${OPENBLAS_INSTALL_DIR}/include)
 add_dependencies(${OPENBLAS_TARGET_NAME} ${OPENBLAS_PROJECT_NAME})
 
 
@@ -169,7 +169,7 @@ ExternalProject_Add(
 
 # Specify the target for the external library
 add_library(${ARMADILLO_TARGET_NAME} INTERFACE)
-target_include_directories(${ARMADILLO_TARGET_NAME} INTERFACE ${ARMADILLO_INSTALL_DIR}/include)
+target_include_directories(${ARMADILLO_TARGET_NAME} SYSTEM INTERFACE ${ARMADILLO_INSTALL_DIR}/include)
 # Armadillo is used as a pure template library (-DARMA_DONT_USE_WRAPPER) so the following line is commented:
 #target_link_libraries(${ARMADILLO_TARGET_NAME} INTERFACE ${ARMADILLO_INSTALL_DIR}/lib/libarmadillo.a)
 # Use DARMA_BLAS_LONG_LONG because openblas is compiled with INTERFACE64=1

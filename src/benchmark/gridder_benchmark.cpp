@@ -15,12 +15,15 @@ std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 
-void prepare_gridder(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support)
+void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support)
 {
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
+
+    // Generate model visibilities from the skymodel and UVW-baselines
+    arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
 
     // Subtract model-generated visibilities from incoming data
     residual_vis = input_vis - input_model;
@@ -45,7 +48,7 @@ static void gridder_exact_benchmark(benchmark::State& state)
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
+    load_data(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
 
     stp::GaussianSinc kernel_func(state.range(1));
 
@@ -62,7 +65,7 @@ static void gridder_oversampling_benchmark(benchmark::State& state)
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    prepare_gridder(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
+    load_data(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
 
     stp::GaussianSinc kernel_func(state.range(1));
 

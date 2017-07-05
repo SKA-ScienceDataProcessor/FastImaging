@@ -9,7 +9,7 @@
 
 #include "load_json_imager.h"
 
-rapidjson::Value set_up_json(const std::string& typeConvolution, const std::string& typeTest)
+rapidjson::Value ImagerHandler::set_up_json(const std::string& typeConvolution, const std::string& typeTest)
 {
     // Loads the json file
     std::ifstream file("conf_tests.json");
@@ -17,7 +17,7 @@ rapidjson::Value set_up_json(const std::string& typeConvolution, const std::stri
         std::istreambuf_iterator<char>());
     file.close();
 
-    // Parses the json to the node with the our convolution and test type
+    // Parses the json file
     rapidjson::Document doc_aux;
     doc_aux.Parse(str.c_str());
 

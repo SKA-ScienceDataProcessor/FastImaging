@@ -45,6 +45,7 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
 #else
         if (!fftw_import_wisdom_from_filename(wisdom_filename.c_str())) {
 #endif
+            throw std::runtime_error("Failed to read FFTW wisdom file: " + wisdom_filename);
         }
         break;
     default:
@@ -62,6 +63,11 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
         fftw_flag);
 
     assert(plan != NULL);
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
+
     fftwf_execute(plan);
     fftwf_destroy_plan(plan);
     fftwf_cleanup_threads();
@@ -119,6 +125,7 @@ void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRou
 #else
         if (!fftw_import_wisdom_from_filename(wisdom_filename.c_str())) {
 #endif
+            throw std::runtime_error("Failed to read FFTW wisdom file: " + wisdom_filename);
             assert(0);
         }
         break;
@@ -136,6 +143,11 @@ void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRou
         fftw_flag);
 
     assert(plan != NULL);
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
+
     fftwf_execute(plan);
     fftwf_destroy_plan(plan);
     fftwf_cleanup_threads();

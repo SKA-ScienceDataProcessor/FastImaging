@@ -13,7 +13,7 @@ find_package(Threads REQUIRED)
 set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
 
 # Configures the location of the test data
-get_filename_component(PIPELINE_DATAPATH "../../test-data/visibilities" ABSOLUTE)
+get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-tests" ABSOLUTE)
 add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
 
 # Configures the location of the configuration files

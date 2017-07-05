@@ -44,6 +44,7 @@ OPTION        | Description
  USE_GLIBCXX_PARALLEL  | Uses GLIBCXX parallel mode (default=ON)
  USE_FLOAT             | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
  WITH_FUNCTION_TIMINGS | Measures function execution times from the reduce executable (default=ON)
+ USE_SERIAL_GRIDDER    | Uses serial implementation of gridder (default=OFF)
 
 The USE_FLOAT option is important, as it may affect the STP algorithm accuracy.
 When compiled with USE_FLOAT=ON, most algorithm data structures of real or complex numbers will use single-precision floating-point type instead of double-precision floating-point type. 
@@ -113,8 +114,8 @@ The reduce executable is located in build-directory/reduce. It accepts the follo
 
 Argument | Usage  | Description
 ---------| -------| -------------
-<input-file-json>  | required | Input JSON filename with configuration parameters.
-<input-file-npz>   | required | Input NPZ filename with simulation data (uvw_lambda, model, vis).
+<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. projectroot/configs/reduce/fastimg_oversampling_config.json)
+<input-file-npz>   | required | Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. projectroot/test-data/pipeline-tests/simdata_nstep10.npz) 
 <output-file-json> | required | Output JSON filename for detected islands.
 <output-file-npz>  | optional | Output NPZ filename for label map matrix (label_map).
 -d, --diff | optional | Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
@@ -122,7 +123,7 @@ Argument | Usage  | Description
 
 Example:
 ```sh
-$ ./reduce projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/visibilities/simdata_nstep10.npz detected_islands.json -d -l
+$ ./reduce projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/pipeline-tests/simdata_nstep10.npz detected_islands.json -d -l
 ```
 Note that the provided fastimg_oversampling_config.json file assumes that the FFTW wisdom files (with the pre-generated plans) are located in the current directory.
 Thus, the path of the wisdom files in the JSON configuration file shall be properly setup. Otherwise, the wisdom files shall be copied from the projectroot/scripts/fftw-wisdom/wisdomfiles (or wisdomfiles_f when USE_FLOAT=ON) to the reduce directory.
@@ -140,11 +141,17 @@ $ cd path/to/build/directory
 $ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
 $ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/visibilities/simdata_nstep10.npz detected_islands.json -d -l
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/pipeline-tests/simdata_nstep10.npz detected_islands.json -d -l
 $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 5 July 2017
+- Implemented generation of model visibilities from input skymodel and UVW baselines
+- Updated test data 
+- Improved/fixed python-bindings
+- Improved/fixed unit tests and benchmarks
+
 ### 28 June 2017
 - Implemented HalfComplex-to-Real FFT
 - Removed matrix shifting steps before and after FFT

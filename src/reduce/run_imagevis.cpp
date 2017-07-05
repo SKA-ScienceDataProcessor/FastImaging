@@ -79,12 +79,6 @@ int main(int argc, char** argv)
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
 
-    // Parse fft routine string
-    stp::FFTRoutine r_fft = parse_fft_routine(cfg.fft_routine);
-
-    // Parse kernel function string
-    KernelFunction kernel_func = parse_kernel_function(cfg.kernel_func);
-
     if (use_logger) {
         _logger->info("Configuration parameters:");
         _logger->info(" - image_size={}", cfg.image_size);
@@ -94,51 +88,52 @@ int main(int argc, char** argv)
         _logger->info(" - oversampling={}", cfg.oversampling);
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
-        _logger->info(" - kernel_function={}", cfg.kernel_func);
-        _logger->info(" - fft_routine={}", cfg.fft_routine);
+        _logger->info(" - kernel_function={}", cfg.s_kernel_function);
+        _logger->info(" - fft_routine={}", cfg.s_fft_routine);
         _logger->info(" - image_fft_wisdom={}", cfg.image_wisdom_filename);
         _logger->info(" - beam_fft_wisdom={}", cfg.beam_wisdom_filename);
+        _logger->info(" - normalize_beam={}", cfg.normalize_beam);
         _logger->info("Running image visibilities");
     }
 
     // Create output matrix
-    std::pair<arma::Mat<real_t>, arma::Mat<real_t> > result;
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result;
 
     // Run image_visibilities
-    switch (kernel_func) {
-    case KernelFunction::TopHat: {
+    switch (cfg.kernel_function) {
+    case stp::KernelFunction::TopHat: {
         stp::TopHat kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
-    case KernelFunction::Triangle: {
+    case stp::KernelFunction::Triangle: {
         stp::Triangle kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
-    case KernelFunction::Sinc: {
+    case stp::KernelFunction::Sinc: {
         stp::Sinc kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
-    case KernelFunction::Gaussian: {
+    case stp::KernelFunction::Gaussian: {
         stp::Gaussian kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
-    case KernelFunction::GaussianSinc: {
+    case stp::KernelFunction::GaussianSinc: {
         stp::GaussianSinc kernel_function(cfg.kernel_support);
         result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
             cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            r_fft, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
     };
         break;
     default:

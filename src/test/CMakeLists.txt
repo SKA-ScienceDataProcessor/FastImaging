@@ -17,14 +17,18 @@ set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main Threads::Threads armadi
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../configs/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
 
 # Configures the location of the test data
-get_filename_component(IMAGER_DATAPATH "../../test-data/imager-tests" ABSOLUTE)
-add_definitions ( -D_IMAGER_TESTPATH="${IMAGER_DATAPATH}/")
-get_filename_component(PIPELINE_DATAPATH "../../test-data/visibilities" ABSOLUTE)
-add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
-
-# Configures the location of the cnpy test data
 get_filename_component(CNPY_DATA_PATH "../../test-data/cnpy-tests" ABSOLUTE)
 add_definitions ( -D_CNPYTESTPATH="${CNPY_DATA_PATH}/")
+get_filename_component(IMAGER_DATAPATH "../../test-data/imager-tests" ABSOLUTE)
+add_definitions ( -D_IMAGER_TESTPATH="${IMAGER_DATAPATH}/")
+get_filename_component(VISIBILITY_DATAPATH "../../test-data/visibility-tests" ABSOLUTE)
+add_definitions ( -D_VISIBILITY_TESTPATH="${VISIBILITY_DATAPATH}/")
+get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-tests" ABSOLUTE)
+add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
+
+# Configures the location of the pipeline config files
+get_filename_component(PIPELINE_CONFIGPATH "../../configs/pipeline-tests" ABSOLUTE)
+add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # Helper function for test target specification
 function(add_unit_test unit_test_name unit_test_source)
@@ -125,6 +129,11 @@ add_unit_test(test_imager_gaussian imager/imager_test_Gaussian.cpp)
 
 # GaussianSinc
 add_unit_test(test_imager_gaussiansinc imager/imager_test_GaussianSinc.cpp)
+
+# Test Cases: Visibility Functions -----------------------------------------------------------------------------------------
+
+# Model visibilities
+add_unit_test(test_visibility_model_generation visibility/visibility_test_ModelGeneration.cpp)
 
 # Test Cases: Cnpy Functions -------------------------------------------------------------------------------------------
 

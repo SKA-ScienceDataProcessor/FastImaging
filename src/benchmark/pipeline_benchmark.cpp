@@ -21,13 +21,13 @@ std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 std::string wisdom_path(_WISDOM_FILEPATH);
 
-stp::source_find_image run_pipeline(arma::mat uvw_lambda, arma::cx_mat residual_vis, int image_size, ConfigurationFile& cfg)
+stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_vis, int image_size, ConfigurationFile& cfg)
 {
     std::string wisdom_filename = wisdom_path + "WisdomFile_rob" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, std::move(residual_vis), std::move(uvw_lambda),
-        image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true, stp::FFTW_WISDOM_FFT, wisdom_filename, wisdom_filename);
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, uvw_lambda, image_size,
+        cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true, false, stp::FFTW_WISDOM_FFT, wisdom_filename, wisdom_filename);
     result.second.reset();
 
     return stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
@@ -40,14 +40,17 @@ static void pipeline_kernel_exact_benchmark(benchmark::State& state)
 
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
 
-    // Load all configurations from json configuration file
-    ConfigurationFile cfg(config_path + config_file_exact);
+    // Generate model visibilities from the skymodel and UVW-baselines
+    arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
 
     // Subtract model-generated visibilities from incoming data
     arma::cx_mat residual_vis = input_vis - input_model;
+
+    // Load all configurations from json configuration file
+    ConfigurationFile cfg(config_path + config_file_exact);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(run_pipeline(input_uvw, residual_vis, image_size, cfg));
@@ -60,8 +63,11 @@ static void pipeline_kernel_oversampling_benchmark(benchmark::State& state)
 
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
+
+    // Generate model visibilities from the skymodel and UVW-baselines
+    arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_oversampling);

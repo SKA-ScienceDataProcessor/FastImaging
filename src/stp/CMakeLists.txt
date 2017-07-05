@@ -21,7 +21,7 @@ set(STP_TARGET_NAME "stp")
 set(STP_SOURCE_FILES
     stp.h types.h
     common/fft.cpp common/ccl.cpp common/matrix_math.cpp common/matstp.h
-    convolution/conv_func.cpp gridder/gridder.cpp sourcefind/sourcefind.cpp imager/imager.cpp
+    convolution/conv_func.cpp gridder/gridder.cpp sourcefind/sourcefind.cpp imager/imager.cpp visibility/visibility.cpp
     # The following third-party include files are added just to be noticed by IDE
     ../third-party/armadillo/include/armadillo ../third-party/fftw/api/fftw3.h ../third-party/tbb/include/tbb/tbb.h ../third-party/openblas/cblas.h
 )

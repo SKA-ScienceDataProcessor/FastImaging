@@ -190,7 +190,7 @@ std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> convolve_to_grid(const T& kernel
         const arma::field<arma::mat> kernel_cache = populate_kernel_cache(kernel_creator, support, oversampling, pad, normalize);
         arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
-        /*
+#ifdef SERIAL_GRIDDER
         // Single-threaded implementation of oversampled gridder
         good_vis_idx.for_each([&](arma::uvec::elem_type& val) {
             const int gc_x = kernel_centre_on_grid(val, 0);
@@ -220,8 +220,8 @@ std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> convolve_to_grid(const T& kernel
                     }
                 }
             }
-        });*/
-
+        });
+#else
         // Multi-threaded implementation of oversampled gridder (20-25% faster)
         tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&](const tbb::blocked_range<size_t>& r) {
 
@@ -296,6 +296,7 @@ std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> convolve_to_grid(const T& kernel
                 }
             }
         });
+#endif
 
     } else {
         // Exact gridder (slower but with more accuracy)

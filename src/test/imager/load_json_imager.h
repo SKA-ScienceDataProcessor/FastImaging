@@ -19,9 +19,8 @@
 #define _IMAGER_TESTPATH 0
 #endif
 
-rapidjson::Value set_up_json(const std::string& typeConvolution, const std::string& typeTest);
-
-struct ImagerHandler {
+class ImagerHandler {
+public:
     rapidjson::Value val;
     std::pair<arma::cx_mat, arma::cx_mat> expected_result;
     std::pair<arma::mat, arma::mat> result;
@@ -34,7 +33,6 @@ struct ImagerHandler {
     bool pad;
     bool normalize;
 
-public:
     ImagerHandler() = default;
     ImagerHandler(const std::string& typeConvolution, const std::string& typeTest)
         : val(set_up_json(typeConvolution, typeTest))
@@ -47,4 +45,7 @@ public:
         , normalize(val["normalize"].GetBool())
     {
     }
+
+private:
+    rapidjson::Value set_up_json(const std::string& typeConvolution, const std::string& typeTest);
 };

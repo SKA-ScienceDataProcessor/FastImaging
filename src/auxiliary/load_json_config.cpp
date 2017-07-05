@@ -1,9 +1,13 @@
 #include "load_json_config.h"
 
-rapidjson::Document load_json_configuration(std::string& cfg)
+rapidjson::Document ConfigurationFile::load_json_configuration(const std::string& cfg)
 {
     std::ifstream file(cfg);
     std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    if (str.empty()) {
+        throw std::runtime_error("Failed to read configuration file: " + cfg);
+    }
 
     rapidjson::Document aux;
     aux.Parse(str.c_str());
@@ -11,26 +15,26 @@ rapidjson::Document load_json_configuration(std::string& cfg)
     return aux;
 }
 
-KernelFunction parse_kernel_function(const std::string& kernel)
+stp::KernelFunction ConfigurationFile::parse_kernel_function(const std::string& kernel)
 {
     // Convert kernel function string to KernelFunction enum
-    KernelFunction k_func = KernelFunction::GaussianSinc;
+    stp::KernelFunction k_func = stp::KernelFunction::GaussianSinc;
     if (kernel == "TopHat") {
-        k_func = KernelFunction::TopHat;
+        k_func = stp::KernelFunction::TopHat;
     } else if (kernel == "Triangle") {
-        k_func = KernelFunction::Triangle;
+        k_func = stp::KernelFunction::Triangle;
     } else if (kernel == "Sinc") {
-        k_func = KernelFunction::Sinc;
+        k_func = stp::KernelFunction::Sinc;
     } else if (kernel == "Gaussian") {
-        k_func = KernelFunction::Gaussian;
+        k_func = stp::KernelFunction::Gaussian;
     } else if (kernel == "GaussianSinc") {
-        k_func = KernelFunction::GaussianSinc;
+        k_func = stp::KernelFunction::GaussianSinc;
     }
 
     return k_func;
 }
 
-stp::FFTRoutine parse_fft_routine(const std::string& fft)
+stp::FFTRoutine ConfigurationFile::parse_fft_routine(const std::string& fft)
 {
     // Convert fft routine string to enum
     stp::FFTRoutine r_fft = stp::FFTW_ESTIMATE_FFT;

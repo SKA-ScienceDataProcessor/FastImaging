@@ -21,6 +21,25 @@ namespace stp {
 extern std::vector<std::chrono::high_resolution_clock::time_point> times_sf;
 
 /**
+ * @brief Represents a floation-point number that can be accessed using the integer type.
+ *        This union allows to perform bitwise operations using the integer type interface.
+ */
+union FloatTwiddler {
+public:
+    FloatTwiddler(real_t num = 0.0f)
+        : f(num)
+    {
+    }
+
+    real_t f;
+#ifdef USE_FLOAT
+    int32_t i;
+#else
+    int64_t i;
+#endif
+};
+
+/**
  * @brief Perform sigma-clip and estimate RMS of input matrix
  *
  * Compute Root mean square of input data after sigma-clipping (combines RMS estimation and sigma clip functions for improved computational performance).
@@ -89,7 +108,6 @@ struct island_params {
 class source_find_image {
 
 public:
-    arma::Mat<real_t> data;
     stp::MatStp<int> label_map;
     arma::Col<real_t> label_extrema_val_pos;
     arma::Col<real_t> label_extrema_val_neg;
@@ -123,25 +141,28 @@ public:
      * @param[in] compute_barycentre (bool): Compute barycentric centre of each island.
      */
     source_find_image(
-        arma::Mat<real_t> input_data,
+        const arma::Mat<real_t>& input_data,
         double input_detection_n_sigma,
         double input_analysis_n_sigma,
         double input_rms_est = 0.0,
         bool find_negative_sources = true,
-        uint sigmaclip_iters = 5,
+        uint sigma_clip_iters = 5,
         bool binapprox_median = false,
         bool compute_barycentre = true,
         bool generate_labelmap = true);
 
 private:
-    /** @brief _label_detection_islands function
+    /**
+     * @brief Function to find connected regions which peak above or below a given threshold.
      *
-     *  Function to find connected regions which peak above or below a given threshold.
+     * @param[in] data (arma::Mat): Image data.
+     * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
+     * @param[in] compute_barycentre (bool): Compute barycentric centre of each island.
      *
-     *  @return (uint) Number of valid labels
+     * @return (uint) Number of valid labels
      */
     template <bool generateLabelMap>
-    uint _label_detection_islands(bool find_negative_islands = true, bool computeBarycentre = true);
+    uint _label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources = true, bool computeBarycentre = true);
 };
 }
 

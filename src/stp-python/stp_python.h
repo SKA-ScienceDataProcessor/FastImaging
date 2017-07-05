@@ -14,21 +14,10 @@
 
 namespace stp_python {
 
-/**
- * @brief The KernelFunction enum
- */
-enum struct KernelFunction {
-    TopHat = 0,
-    Triangle,
-    Sinc,
-    Gaussian,
-    GaussianSinc
-};
-
-using np_complex_array = pybind11::array_t<std::complex<real_t>, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
-using np_real_array = pybind11::array_t<real_t, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
 using np_complex_double_array = pybind11::array_t<std::complex<double>, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
 using np_double_array = pybind11::array_t<double, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
+using np_complex_real_array = pybind11::array_t<std::complex<real_t>, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
+using np_real_array = pybind11::array_t<real_t, pybind11::array::f_style | pybind11::array::forcecast>; // set fortran_style (motivated by armadillo matrices)
 
 /**
  * @brief Convenience wrapper over image_visibilities function.
@@ -51,23 +40,29 @@ using np_double_array = pybind11::array_t<double, pybind11::array::f_style | pyb
  *                             Default = true.
  * @param kernel_oversampling (int): Controls kernel-generation if 'kernel_exact == False'. Larger values give a finer-sampled set of pre-cached kernels.
  *                                   Default = 9.
- * @param normalize (bool): Whether or not the returned image and beam should be normalized such that the beam peaks at a value of 1.0 Jansky.
- *                          You normally want this to be true, but it may be interesting to check the raw values for debugging purposes.
- *                          Default = true.
+ * @param[in] normalize_image (bool): Whether or not the returned image should be normalized by the maximum beam value.
+ *                                    You normally want this to be true, but it may be interesting to check the raw values for debugging purposes.
+ *                                    Default = true.
+ * @param[in] normalize_beam (bool): Whether or not the returned beam should be normalized such that the beam peaks at a value of 1.0 Jansky.
+ *                                   Default = true.
  *
  * @return (pybind11::tuple): Tuple of numpy.ndarrays representing the image map and beam model (image, beam).
  */
 pybind11::tuple image_visibilities_wrapper(
     np_complex_double_array vis, // numpy.ndarray<np.complex_>
     np_double_array uvw_lambda, // numpy.ndarray<np.float_>
-    int image_size, // int
-    double cell_size, // double
-    KernelFunction kernel_func = KernelFunction::GaussianSinc, // enum
-    double kernel_trunc_radius = 3.0, // double
-    int kernel_support = 3, // int
-    bool kernel_exact = true, // bool
-    int kernel_oversampling = 9, // int
-    bool normalize = true); // bool
+    int image_size,
+    double cell_size,
+    stp::KernelFunction kernel_func, // enum
+    double kernel_trunc_radius,
+    int kernel_support,
+    bool kernel_exact,
+    int kernel_oversampling,
+    bool normalize_image,
+    bool normalize_beam,
+    stp::FFTRoutine r_fft, // enum
+    std::string image_wisdom_filename,
+    std::string beam_wisdom_filename);
 
 /**
  * @brief Convenience wrapper over source_find_image function.
@@ -87,11 +82,16 @@ pybind11::tuple image_visibilities_wrapper(
  *                             - 'x_idx,y_idx' (int) are the pixel-index of the extremum value;
  *                             - 'xbar, ybar' (double) are 'centre-of-mass' locations for the source-detection island.
  */
-std::vector<std::tuple<int, double, int, int, double, double> > source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, double, double>> source_find_wrapper(
     np_real_array image_data, // numpy.ndarray<np.float_>
-    double detection_n_sigma, // double
-    double analysis_n_sigma, // double
-    double rms_est = 0.0); // double
+    double detection_n_sigma,
+    double analysis_n_sigma,
+    double rms_est,
+    bool find_negative_sources,
+    uint sigma_clip_iters,
+    bool binapprox_median,
+    bool compute_barycentre,
+    bool generate_labelmap);
 }
 
 #endif /* STP_PYTHON_H */

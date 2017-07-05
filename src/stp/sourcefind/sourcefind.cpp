@@ -36,11 +36,14 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
     // Auxiliary variables storing the sum, squared sum and number of elements in the valid data
     DoublePair total_accu(double(mean) * double(n_elem), (double(sigma) * double(sigma) + double(mean) * double(mean)) * double(n_elem));
     size_t valid_n_elem = n_elem;
-    real_t prev_upper_sigma = std::numeric_limits<real_t>::max();
+
+    // Represents a floation-point number that can be accessed using the integer type.
+    FloatTwiddler prev_upper_sigma(std::numeric_limits<real_t>::max());
 
     // Perform sigma clip for the defined number of iterations
     for (uint i = 0; i < iters; i++) {
-        real_t upper_sigma = num_sigma * sigma;
+        // Represents a floation-point number that can be accessed using the integer type.
+        FloatTwiddler upper_sigma(num_sigma * sigma);
 
         tbb::combinable<DoublePair> rem_accu(DoublePair(0.0, 0.0));
         tbb::combinable<size_t> rem_elem(0);
@@ -58,8 +61,8 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
             if ((rend - j) > 4) {
                 rend -= 2;
                 for (; j < rend; j += 2) {
-                    const real_t val = data[j] - median;
-                    const real_t val2 = data[j + 1] - median;
+                    const FloatTwiddler val(data[j] - median);
+                    const FloatTwiddler val2(data[j + 1] - median);
 
 // Replace the comparison of float types (commented 'if' lines below) by a faster method using integer comparison.
 // Provided about 10% of speedup in estimate_rms function. This technique is described in: Optimizing software in C++, by Agner Fog.
@@ -68,14 +71,14 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
 //if (std::fabs(val) > upper_sigma) {
 //    if (!(std::fabs(val) > prev_upper_sigma)) {
 #ifdef USE_FLOAT
-                    if (((*(int*)&val) & 0x7FFFFFFF) > (*(int*)&upper_sigma)) {
-                        if (!(((*(int*)&val) & 0x7FFFFFFF) > (*(int*)&prev_upper_sigma))) {
+                    if ((val.i & 0x7FFFFFFF) > upper_sigma.i) {
+                        if (!((val.i & 0x7FFFFFFF) > prev_upper_sigma.i)) {
 #else
-                        if (((*(long*)&val) & 0x7FFFFFFFFFFFFFFF) > (*(long*)&upper_sigma)) {
-                            if (!(((*(long*)&val) & 0x7FFFFFFFFFFFFFFF) > (*(long*)&prev_upper_sigma))) {
+                        if ((val.i & 0x7FFFFFFFFFFFFFFF) > upper_sigma.i) {
+                            if (!((val.i & 0x7FFFFFFFFFFFFFFF) > prev_upper_sigma.i)) {
 #endif
-                            tmp_accu += val;
-                            tmp_sqaccu += (val * val);
+                            tmp_accu += val.f;
+                            tmp_sqaccu += (val.f * val.f);
                             tmp_rem_elem++;
                         }
                     }
@@ -83,14 +86,14 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
 //if (std::fabs(val2) > upper_sigma) {
 //    if (!(std::fabs(val2) > prev_upper_sigma)) {
 #ifdef USE_FLOAT
-                    if (((*(int*)&val2) & 0x7FFFFFFF) > (*(int*)&upper_sigma)) {
-                        if (!(((*(int*)&val2) & 0x7FFFFFFF) > (*(int*)&prev_upper_sigma))) {
+                    if ((val2.i & 0x7FFFFFFF) > upper_sigma.i) {
+                        if (!((val2.i & 0x7FFFFFFF) > prev_upper_sigma.i)) {
 #else
-                        if (((*(long*)&val2) & 0x7FFFFFFFFFFFFFFF) > (*(long*)&upper_sigma)) {
-                            if (!(((*(long*)&val2) & 0x7FFFFFFFFFFFFFFF) > (*(long*)&prev_upper_sigma))) {
+                        if ((val2.i & 0x7FFFFFFFFFFFFFFF) > upper_sigma.i) {
+                            if (!((val2.i & 0x7FFFFFFFFFFFFFFF) > prev_upper_sigma.i)) {
 #endif
-                            tmp_accu += val2;
-                            tmp_sqaccu += (val2 * val2);
+                            tmp_accu += val2.f;
+                            tmp_sqaccu += (val2.f * val2.f);
                             tmp_rem_elem++;
                         }
                     }
@@ -99,19 +102,19 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
             }
 
             for (; j < rend; j++) {
-                const real_t val = data[j] - median;
+                const FloatTwiddler val(data[j] - median);
 
 //if (std::fabs(val) > upper_sigma) {
 //    if (!(std::fabs(val) > prev_upper_sigma)) {
 #ifdef USE_FLOAT
-                if (((*(int*)&val) & 0x7FFFFFFF) > (*(int*)&upper_sigma)) {
-                    if (!(((*(int*)&val) & 0x7FFFFFFF) > (*(int*)&prev_upper_sigma))) {
+                if ((val.i & 0x7FFFFFFF) > upper_sigma.i) {
+                    if (!((val.i & 0x7FFFFFFF) > prev_upper_sigma.i)) {
 #else
-                        if (((*(long*)&val) & 0x7FFFFFFFFFFFFFFF) > (*(long*)&upper_sigma)) {
-                            if (!(((*(long*)&val) & 0x7FFFFFFFFFFFFFFF) > (*(long*)&prev_upper_sigma))) {
+                        if ((val.i & 0x7FFFFFFFFFFFFFFF) > upper_sigma.i) {
+                            if (!((val.i & 0x7FFFFFFFFFFFFFFF) > prev_upper_sigma.i)) {
 #endif
-                        tmp_accu += val;
-                        tmp_sqaccu += (val * val);
+                        tmp_accu += val.f;
+                        tmp_sqaccu += (val.f * val.f);
                         tmp_rem_elem++;
                     }
                 }
@@ -132,19 +135,19 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
         total_accu.d2 -= tmpaccu.d2;
         // Update sigma value
         sigma = std::sqrt(total_accu.d2 / double(valid_n_elem) - (total_accu.d1 / double(valid_n_elem)) * (total_accu.d1 / double(valid_n_elem)));
-        prev_upper_sigma = upper_sigma;
+        prev_upper_sigma.f = upper_sigma.f;
     }
 
     return sigma;
 }
 
 source_find_image::source_find_image(
-    arma::Mat<real_t> input_data,
+    const arma::Mat<real_t>& input_data,
     double input_detection_n_sigma,
     double input_analysis_n_sigma,
     double input_rms_est,
     bool find_negative_sources,
-    uint sigmaclip_iters,
+    uint sigma_clip_iters,
     bool binapprox_median,
     bool compute_barycentre,
     bool generate_labelmap)
@@ -156,16 +159,13 @@ source_find_image::source_find_image(
     times_sf.push_back(std::chrono::high_resolution_clock::now());
 #endif
 
-    // Set data matrix
-    data = std::move(input_data);
-
     // Compute statistics: mean, sigma, median
     DataStats data_stats(arma::datum::nan, arma::datum::nan, arma::datum::nan);
     if (binapprox_median) {
-        data_stats = mat_median_binapprox(data);
+        data_stats = mat_median_binapprox(input_data);
         bg_level = data_stats.median;
     } else {
-        arma::Col<real_t> v(data.memptr(), data.n_elem, false, false);
+        arma::Col<real_t> v(input_data); //(input_data.memptr(), input_data.n_elem, false, false);
         real_t median = arma::median(v);
         bg_level = median;
     }
@@ -175,7 +175,7 @@ source_find_image::source_find_image(
 #endif
 
     // Estimate RMS value, if rms_est is less or equal to 0.0
-    rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(data, 3, sigmaclip_iters, data_stats);
+    rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(input_data, 3, sigma_clip_iters, data_stats);
 
 #ifdef FUNCTION_TIMINGS
     times_sf.push_back(std::chrono::high_resolution_clock::now());
@@ -184,9 +184,9 @@ source_find_image::source_find_image(
     // Perform label detection (for both positive and negative sources)
     uint numValidLabels = 0;
     if (generate_labelmap) {
-        numValidLabels = _label_detection_islands<true>(find_negative_sources, compute_barycentre);
+        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, compute_barycentre);
     } else {
-        numValidLabels = _label_detection_islands<false>(find_negative_sources, compute_barycentre);
+        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, compute_barycentre);
     }
 
 #ifdef FUNCTION_TIMINGS
@@ -198,13 +198,13 @@ source_find_image::source_find_image(
     // Build vector of islands
     islands.reserve(numValidLabels);
 
-    int h_shift = data.n_cols / 2;
-    int v_shift = data.n_rows / 2;
+    int h_shift = input_data.n_cols / 2;
+    int v_shift = input_data.n_rows / 2;
 
     // Process positive islands
     for (size_t i = 0; i < label_extrema_id_pos.n_elem; i++) {
         if (label_extrema_id_pos.at(i)) {
-            arma::uvec coord = arma::ind2sub(arma::size(data), label_extrema_linear_idx_pos.at(i));
+            arma::uvec coord = arma::ind2sub(arma::size(input_data), label_extrema_linear_idx_pos.at(i));
             // Shift coordinates because source find assumed input image was shifted
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
@@ -215,7 +215,7 @@ source_find_image::source_find_image(
     // Process negative islands
     for (size_t i = 0; i < label_extrema_id_neg.n_elem; i++) {
         if (label_extrema_id_neg.at(i)) {
-            arma::uvec coord = arma::ind2sub(arma::size(data), label_extrema_linear_idx_neg.at(i));
+            arma::uvec coord = arma::ind2sub(arma::size(input_data), label_extrema_linear_idx_neg.at(i));
             // Shift coordinates because source find assumed input image was shifted
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
@@ -231,7 +231,7 @@ source_find_image::source_find_image(
 }
 
 template <bool generateLabelMap>
-uint source_find_image::_label_detection_islands(bool find_negative_islands, bool computeBarycentre)
+uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool computeBarycentre)
 {
     // Compute analysis and detection thresholds
     const real_t analysis_thresh_pos = bg_level + analysis_n_sigma * rms_est;
@@ -241,7 +241,7 @@ uint source_find_image::_label_detection_islands(bool find_negative_islands, boo
     std::tuple<MatStp<int>, MatStp<uint>, size_t, size_t> labeling_output;
 
     // Perform connected components labeling algorithm
-    if (find_negative_islands) {
+    if (find_negative_sources) {
         labeling_output = labeling<true>(data, analysis_thresh_pos, analysis_thresh_neg);
     } else {
         labeling_output = labeling<false>(data, analysis_thresh_pos, analysis_thresh_neg);
@@ -458,7 +458,7 @@ island_params::island_params(
     const int l_extremum_coord_x,
     const real_t barycentre_y,
     const real_t barycentre_x)
-    : label_idx(label) // Index of region in label-map of source image.
+    : label_idx(label) // Label index
     , extremum_val(l_extremum)
     , extremum_y_idx(l_extremum_coord_y)
     , extremum_x_idx(l_extremum_coord_x)

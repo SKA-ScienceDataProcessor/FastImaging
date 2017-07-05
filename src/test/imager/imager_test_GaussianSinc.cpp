@@ -31,10 +31,10 @@ public:
         arma::cx_mat vis(load_npy_complex_array(val["input_file"].GetString(), "vis"));
         arma::mat uvw_lambda(load_npy_double_array(val["input_file"].GetString(), "uvw"));
 
-        // Loads the expected results to a arma::mat pair
+        // Loads the expected results to a arma::Mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
 
-        std::pair<arma::Mat<real_t>, arma::Mat<real_t> > orig_result = image_visibilities(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+        std::pair<arma::Mat<real_t>, arma::Mat<real_t>> orig_result = image_visibilities(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
 
         // Output matrices need to be shifted because image_visibilities does not shift them
         fftshift(orig_result.first);

@@ -24,7 +24,8 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 {
     stp::FFTRoutine r_fft = (stp::FFTRoutine)state.range(0);
 
-    int image_size = pow(2, double(state.range(1) + 19) / 2.0);
+    int image_size = pow(2, double(state.range(1)));
+    int kernel_support = 3;
 
     std::string wisdom_filename;
     if (r_fft == stp::FFTW_WISDOM_INPLACE_FFT) {
@@ -35,14 +36,17 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_model = load_npy_complex_array(data_path + input_npz, "model");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
 
-    // Load all configurations from json configuration file
-    ConfigurationFile cfg(config_path + config_file_oversampling);
+    // Generate model visibilities from the skymodel and UVW-baselines
+    arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
 
     // Subtract model-generated visibilities from incoming data
     arma::cx_mat residual_vis = input_vis - input_model;
+
+    // Load all configurations from json configuration file
+    ConfigurationFile cfg(config_path + config_file_oversampling);
 
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cfg.cell_size) * double(image_size)));
@@ -51,22 +55,13 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
     // Remove W column
     uv_in_pixels.shed_col(2);
 
-    // If a visibility point is located in the left half-plane, move it to the right half-plane by inverting both x and y values
-    for (size_t i = 0; i < uv_in_pixels.n_rows; ++i) {
-        if (uv_in_pixels.at(i, 1) < 0.0) {
-            uv_in_pixels.at(i) *= (-1);
-            residual_vis.at(i) = std::conj(residual_vis.at(i));
-        }
-    }
+    // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
+    stp::convert_to_halfplane_visibilities(uv_in_pixels, residual_vis, kernel_support);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
     auto gridded_data = convolve_to_grid(kernel_func, cfg.kernel_support, image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, cfg.oversampling);
 
     // Compute FFT of first matrix (beam)
-    if (cfg.kernel_exact) {
-        // Shift beam if kernel_exact is true
-        stp::fftshift(gridded_data.first, false);
-    }
     arma::Mat<real_t> fft_result_image;
     // Reuse gridded_data buffer if FFT is INPLACE
     if (r_fft == stp::FFTW_WISDOM_INPLACE_FFT) {
@@ -159,56 +154,36 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(fft_c2r_test_benchmark)
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 1 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 2 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 3 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 4 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 5 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 6 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 7 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 9 })
+    ->Args({ stp::FFTW_ESTIMATE_FFT, 10 })
     ->Args({ stp::FFTW_ESTIMATE_FFT, 11 })
+    ->Args({ stp::FFTW_ESTIMATE_FFT, 12 })
     ->Args({ stp::FFTW_ESTIMATE_FFT, 13 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 1 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 2 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 3 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 4 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 5 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 6 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 7 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 9 })
+    ->Args({ stp::FFTW_ESTIMATE_FFT, 14 })
+    ->Args({ stp::FFTW_ESTIMATE_FFT, 15 })
+    ->Args({ stp::FFTW_MEASURE_FFT, 10 })
     ->Args({ stp::FFTW_MEASURE_FFT, 11 })
+    ->Args({ stp::FFTW_MEASURE_FFT, 12 })
     ->Args({ stp::FFTW_MEASURE_FFT, 13 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 1 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 2 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 3 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 4 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 5 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 6 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 7 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 9 })
+    ->Args({ stp::FFTW_MEASURE_FFT, 14 })
+    ->Args({ stp::FFTW_MEASURE_FFT, 15 })
+    ->Args({ stp::FFTW_PATIENT_FFT, 10 })
     ->Args({ stp::FFTW_PATIENT_FFT, 11 })
+    ->Args({ stp::FFTW_PATIENT_FFT, 12 })
     ->Args({ stp::FFTW_PATIENT_FFT, 13 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 1 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 2 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 3 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 4 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 5 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 6 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 7 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 9 })
+    ->Args({ stp::FFTW_PATIENT_FFT, 14 })
+    ->Args({ stp::FFTW_PATIENT_FFT, 15 })
+    ->Args({ stp::FFTW_WISDOM_FFT, 10 })
     ->Args({ stp::FFTW_WISDOM_FFT, 11 })
+    ->Args({ stp::FFTW_WISDOM_FFT, 12 })
     ->Args({ stp::FFTW_WISDOM_FFT, 13 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 1 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 2 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 3 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 4 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 5 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 6 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 7 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 9 })
+    ->Args({ stp::FFTW_WISDOM_FFT, 14 })
+    ->Args({ stp::FFTW_WISDOM_FFT, 15 })
+    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 10 })
     ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 11 })
+    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 12 })
     ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 13 })
+    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 14 })
+    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 15 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

@@ -28,16 +28,7 @@ option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
 option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
 option(USE_FLOAT "Builds STP using 'float' type to represent real numbers" ON)
 option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
-
-# Use float rather than double to represent real numbers (less memory usage)
-if(USE_FLOAT)
-    add_definitions(-DUSE_FLOAT)
-endif()
-
-# Measure function execution times from the reduce executable
-if(WITH_FUNCTION_TIMINGS)
-    add_definitions(-DFUNCTION_TIMINGS)
-endif()
+option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
 
 # Check libstdc++ parallel mode
 # This needs to be done here, otherwise reduce, tests and benchmark fail linking
@@ -67,6 +58,21 @@ endif()
 # Sub-project: third-party dependencies (Google Test, Google Benchmark)
 set(THIRD_PARTY_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 add_subdirectory(${THIRD_PARTY_SOURCE_DIRECTORY})
+
+# If ON, use float rather than double to represent real numbers (less memory usage)
+if(USE_FLOAT)
+    add_definitions(-DUSE_FLOAT)
+endif()
+
+# Measure function execution times from the reduce executable
+if(WITH_FUNCTION_TIMINGS)
+    add_definitions(-DFUNCTION_TIMINGS)
+endif()
+
+# Use serial implementation of gridder
+if(USE_SERIAL_GRIDDER)
+    add_definitions(-DSERIAL_GRIDDER)
+endif()
 
 # Sub-project: STP Library
 set(STP_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp)
