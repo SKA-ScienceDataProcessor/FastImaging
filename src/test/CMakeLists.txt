@@ -44,6 +44,8 @@ endfunction()
 
 add_unit_test(test_matrix_math_funcs matrixmath/test_matrix_math_funcs.cpp)
 
+add_unit_test(test_median_funcs matrixmath/test_median_funcs.cpp)
+
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
 # Triangle

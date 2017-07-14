@@ -32,6 +32,15 @@
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [spdlog](https://github.com/gabime/spdlog) [0.11.0]
 
+### Clone
+
+```sh
+$ git clone https://github.com/SKA-ScienceDataProcessor/FastImaging.git
+$ cd <path/to/project>
+$ git submodule init
+$ git submodule update
+```
+
 ### Build
 
 STP prototype is compiled using CMake tools. 
@@ -146,6 +155,10 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 14 July 2017
+- Implemented alternative method to compute exact median based on the binmedian algorithm - it is faster than nth_element when run in multiple cores
+- Improved/fixed unit tests and benchmarks
+
 ### 5 July 2017
 - Implemented generation of model visibilities from input skymodel and UVW baselines
 - Updated test data 

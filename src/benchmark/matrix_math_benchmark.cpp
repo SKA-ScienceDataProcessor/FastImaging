@@ -11,11 +11,11 @@
 
 #define DIVCONST 0.03549
 
-std::vector<long> g_vsize = { 1024, 1448, 2048, 2896, 4096, 5792, 8192, 11586, 16384, 23170, 32768 };
+std::vector<long> g_vsize = { 512, 1024, 1448, 2048, 2896, 4096, 5792, 8192, 11586, 16384, 23170, 32768 };
 
 auto armadillo_accumulate_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Col<real_t> v = arma::vectorise(data);
 
     while (state.KeepRunning()) {
@@ -24,8 +24,8 @@ auto armadillo_accumulate_benchmark = [](benchmark::State& state) {
 };
 
 auto m_accumulate_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::mat_accumulate(data));
@@ -33,8 +33,8 @@ auto m_accumulate_benchmark = [](benchmark::State& state) {
 };
 
 auto m_accumulate_parallel_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::mat_accumulate_parallel(data));
@@ -42,8 +42,8 @@ auto m_accumulate_parallel_benchmark = [](benchmark::State& state) {
 };
 
 auto armadillo_mean_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Col<real_t> v = arma::vectorise(data);
 
     while (state.KeepRunning()) {
@@ -52,8 +52,8 @@ auto armadillo_mean_benchmark = [](benchmark::State& state) {
 };
 
 auto m_mean_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::mat_mean(data));
@@ -61,8 +61,8 @@ auto m_mean_benchmark = [](benchmark::State& state) {
 };
 
 auto m_mean_parallel_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::mat_mean_parallel(data));
@@ -70,8 +70,8 @@ auto m_mean_parallel_benchmark = [](benchmark::State& state) {
 };
 
 auto armadillo_stddev_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Col<real_t> v = arma::vectorise(data);
 
     while (state.KeepRunning()) {
@@ -80,8 +80,8 @@ auto armadillo_stddev_benchmark = [](benchmark::State& state) {
 };
 
 auto m_stddev_parallel_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::mat_stddev_parallel(data));
@@ -89,8 +89,8 @@ auto m_stddev_parallel_benchmark = [](benchmark::State& state) {
 };
 
 auto m_mean_stddev_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::mat_mean_and_stddev(data));
@@ -98,8 +98,8 @@ auto m_mean_stddev_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_arma_inplace_div_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -109,8 +109,8 @@ auto matrix_arma_inplace_div_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_serial_inplace_div_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -123,8 +123,8 @@ auto matrix_serial_inplace_div_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_tbb_inplace_div_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -140,8 +140,8 @@ auto matrix_tbb_inplace_div_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_cblas_inplace_div_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     double a = DIVCONST;
 
     while (state.KeepRunning()) {
@@ -157,12 +157,11 @@ auto matrix_cblas_inplace_div_benchmark = [](benchmark::State& state) {
 };
 
 auto arma_shift_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::arma_rng::set_seed(1);
-    arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Mat<real_t> out;
 
-    int shift = std::copysign(1, state.range(1)) * pow(2, std::abs(double(state.range(1) + 19) / 2.0));
+    int shift = std::copysign(1, state.range(1)) * g_vsize[state.range(1)];
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(out);
@@ -172,12 +171,11 @@ auto arma_shift_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_shift_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0) - 1];
-    arma::arma_rng::set_seed(1);
-    arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size);
+    long size = g_vsize[state.range(0)];
+    arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Mat<real_t> out;
 
-    int shift = std::copysign(1, state.range(1)) * pow(2, std::abs(double(state.range(1) + 19) / 2.0));
+    int shift = std::copysign(1, state.range(1)) * g_vsize[state.range(1)];
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(out);

@@ -20,10 +20,15 @@ arma::Mat<real_t> uncorrelated_gaussian_noise_background(
     double rows,
     double cols,
     double sigma = 1.0,
-    double mean = 0.0)
+    double mean = 0.0,
+    long seed = -1)
 {
-    arma::arma_rng::set_seed_random();
-    return (sigma * arma::randn<arma::Mat<real_t> >(rows, cols)) + mean;
+    if (seed == -1) {
+        arma::arma_rng::set_seed_random();
+    } else {
+        arma::arma_rng::set_seed(seed);
+    }
+    return (sigma * arma::randn<arma::Mat<real_t>>(rows, cols)) + mean;
 }
 
 /** @brief evaluate_model_on_pixel_grid function

@@ -58,6 +58,7 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
             size_t j = r.begin();
             size_t rend = r.end();
             // Process 2 elements per loop iteration, only when range size is larger than 4
+            // Benchmarks show that processing 2 elements per iteration is faster than processing 1 element
             if ((rend - j) > 4) {
                 rend -= 2;
                 for (; j < rend; j += 2) {
@@ -101,6 +102,7 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
                 rend += 2;
             }
 
+            // Process remaining elements
             for (; j < rend; j++) {
                 const FloatTwiddler val(data[j] - median);
 
@@ -165,9 +167,8 @@ source_find_image::source_find_image(
         data_stats = mat_median_binapprox(input_data);
         bg_level = data_stats.median;
     } else {
-        arma::Col<real_t> v(input_data); //(input_data.memptr(), input_data.n_elem, false, false);
-        real_t median = arma::median(v);
-        bg_level = median;
+        data_stats = mat_binmedian(input_data);
+        bg_level = data_stats.median;
     }
 
 #ifdef FUNCTION_TIMINGS

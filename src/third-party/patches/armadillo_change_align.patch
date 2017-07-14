@@ -1,0 +1,13 @@
+diff --git include/armadillo_bits/memory.hpp include/armadillo_bits/memory.hpp
+index 1dc44cdf..efade323 100644
+--- include/armadillo_bits/memory.hpp
++++ include/armadillo_bits/memory.hpp
+@@ -76,7 +76,7 @@ memory::acquire(const uword n_elem)
+     {
+     eT* memptr;
+     
+-    const size_t alignment = 16;  // change the 16 to 64 if you wish to align to the cache line
++    const size_t alignment = 128;  // change the 16 to 64 if you wish to align to the cache line
+     
+     int status = posix_memalign((void **)&memptr, ( (alignment >= sizeof(void*)) ? alignment : sizeof(void*) ), sizeof(eT)*n_elem);
+     

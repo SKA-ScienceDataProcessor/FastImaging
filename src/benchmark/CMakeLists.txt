@@ -51,6 +51,9 @@ add_benchmark_test(memset_benchmark memset_benchmark.cpp)
 # Matrix Math
 add_benchmark_test(matrix_math_benchmark matrix_math_benchmark.cpp)
 
+# Median Math
+add_benchmark_test(median_benchmark median_benchmark.cpp)
+
 # Convolution_function
 add_benchmark_test(conv_benchmark conv_benchmark.cpp)
 

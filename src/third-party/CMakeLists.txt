@@ -163,6 +163,7 @@ include(ExternalProject)
 ExternalProject_Add(
     ${ARMADILLO_PROJECT_NAME}
     URL ${ARMADILLO_SOURCE_DIR}
+    PATCH_COMMAND patch -N -s -p0 -i ${CMAKE_CURRENT_SOURCE_DIR}/patches/armadillo_change_align.patch || :
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF -Dopenblas_LIBRARY=${OPENBLAS_INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${ARMADILLO_INSTALL_DIR}
 )

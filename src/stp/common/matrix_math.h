@@ -91,6 +91,28 @@ struct SumStdDev {
 };
 
 /**
+ * @brief Compute exact median using nth_element function.
+ *
+ * @param[in] data (arma::Mat): Input matrix.
+ *
+ * @return (double): Exact median.
+ */
+double mat_median_exact(const arma::Mat<real_t>& data);
+
+/**
+ * @brief Compute exact median using a method that combines sucessive binning and nth_element function.
+ *
+ * Provides parallel implementation of modified binmedian - a fast method to find exact median.
+ * The method is based on binmedian algorithm (by Ryan Tibshirani) available at:
+ * http://www.stat.cmu.edu/~ryantibs/median/
+ *
+ * @param[in] data (arma::Mat): Input matrix.
+ *
+ * @return (DataStats): Exact median, mean and sigma.
+ */
+DataStats mat_binmedian(const arma::Mat<real_t>& data);
+
+/**
  * @brief Compute approximation of the median using the binapprox method.
  *
  * Provides parallel implementation of the binapprox method to compute an approximation of the median.
@@ -100,7 +122,7 @@ struct SumStdDev {
  *
  * @param[in] data (arma::Mat): Input matrix.
  *
- * @return (DataStats): Approximation of the median value.
+ * @return (DataStats): Approximation of the median value. Also returns mean and sigma.
  */
 DataStats mat_median_binapprox(const arma::Mat<real_t>& data);
 

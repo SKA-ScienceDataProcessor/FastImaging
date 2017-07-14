@@ -121,18 +121,6 @@ TEST(MatrixShiftFunction, MatrixShift)
     EXPECT_TRUE(arma::approx_equal(arma_out, matrix_out, "absdiff", 0));
 }
 
-// Test the Matrix median function
-TEST(MatrixMedianFunction, Median)
-{
-    double sigma = 0.5;
-    double tolerance = sigma / 800; // In theory, the maximum error of binapprox median is sigma/1000
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, 0);
-    double arma_median = arma::median(arma::vectorise(data));
-    auto d_stats = mat_median_binapprox(data);
-
-    EXPECT_NEAR(arma_median, d_stats.median, tolerance);
-}
-
 // Test the Matrix mean and stddev functions
 TEST(MatrixMeanStdDevFunction, MeanStdDev)
 {
