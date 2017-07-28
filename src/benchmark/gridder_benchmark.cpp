@@ -15,11 +15,12 @@ std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 
-void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_size, double cell_size, int kernel_support)
+void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& snr_weights, int image_size, double cell_size, int kernel_support)
 {
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
     arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
@@ -36,7 +37,7 @@ void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, int image_si
     uv_in_pixels.shed_col(2);
 
     // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
-    stp::convert_to_halfplane_visibilities(uv_in_pixels, residual_vis, kernel_support);
+    stp::convert_to_halfplane_visibilities(uv_in_pixels, residual_vis, snr_weights, kernel_support);
 }
 
 static void gridder_exact_benchmark(benchmark::State& state)
@@ -48,12 +49,13 @@ static void gridder_exact_benchmark(benchmark::State& state)
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    load_data(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
+    arma::mat snr_weights;
+    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size, cfg.kernel_support);
 
     stp::GaussianSinc kernel_func(state.range(1));
 
     while (state.KeepRunning())
-        benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, 1));
+        benchmark::DoNotOptimize(stp::convolve_to_grid<false>(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, snr_weights, cfg.kernel_exact, 1));
 }
 
 static void gridder_oversampling_benchmark(benchmark::State& state)
@@ -65,12 +67,13 @@ static void gridder_oversampling_benchmark(benchmark::State& state)
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
-    load_data(uv_in_pixels, residual_vis, image_size, cfg.cell_size, cfg.kernel_support);
+    arma::mat snr_weights;
+    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size, cfg.kernel_support);
 
     stp::GaussianSinc kernel_func(state.range(1));
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::convolve_to_grid(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, cfg.kernel_exact, cfg.oversampling));
+        benchmark::DoNotOptimize(stp::convolve_to_grid<false>(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, snr_weights, cfg.kernel_exact, cfg.oversampling));
     }
 }
 

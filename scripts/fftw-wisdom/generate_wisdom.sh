@@ -9,7 +9,7 @@ BUILDTYPE="Debug"
 EXEC="fftw-wisdom"
 OUTDIR="wisdomfiles"
 
-while getopts "drifh" OPTION
+while getopts "drifhsn" OPTION
 do
 	case $OPTION in
 		d)

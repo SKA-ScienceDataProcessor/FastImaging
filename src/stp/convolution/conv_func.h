@@ -20,7 +20,7 @@ namespace stp {
 #ifdef USE_FLOAT
 const double tolerance = 1.0e-5;
 #else
-const double tolerance = 1.0e-14;
+const double tolerance = 1.0e-12;
 #endif
 
 /**

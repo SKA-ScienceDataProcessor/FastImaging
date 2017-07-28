@@ -6,6 +6,8 @@ NUMCORES=$(nproc)
 BUILDTYPE="Debug"
 # Default USE_FLOAT=OFF
 USEFLOAT="OFF"
+# Disable FFT shift
+FFTSHIFT="OFF"
 # Generate fftw plans
 GENFFT=1
 
@@ -24,6 +26,9 @@ do
 		f)
 			USEFLOAT="ON"
 			;;
+		s)
+			FFTSHIFT="ON"
+			;;
 		n)
 			GENFFT=0
 			;;
@@ -33,10 +38,11 @@ do
 			echo "Usage: ./build.sh <OPTIONS>"
 			echo
 			echo "Available OPTIONS:"
-			echo " -d    Use BUILDTYPE=Debug (default)"
-			echo " -r    Use BUILDTYPE=Release"
-			echo " -i    Use BUILDTYPE=RelWithDebInfo"
-			echo " -f    Use USE_FLOAT=ON (default is USE_FLOAT=OFF)"
+			echo " -d    Set BUILDTYPE=Debug (default)"
+			echo " -r    Set BUILDTYPE=Release"
+			echo " -i    Set BUILDTYPE=RelWithDebInfo"
+			echo " -f    Set USE_FLOAT=ON (default is USE_FLOAT=OFF)"
+			echo " -s    Set USE_FFTSHIFT=ON (default is USE_FFTSHIFT=OFF)"
 			echo " -n    Disable generation of fftw plans (enabled by default)"
 			echo
 			exit 1
@@ -60,7 +66,7 @@ mkdir -p build/$BUILDTYPE
 cd build/$BUILDTYPE
 
 # Run CMake
-COMMAND="cmake -DCMAKE_BUILD_TYPE="$BUILDTYPE" -DUSE_FLOAT=${USEFLOAT} ../../src/"
+COMMAND="cmake -DCMAKE_BUILD_TYPE="$BUILDTYPE" -DUSE_FLOAT=${USEFLOAT} -DUSE_FFTSHIFT=${FFTSHIFT} ../../src/"
 echo
 echo " >> Run cmake and compile"
 echo $COMMAND

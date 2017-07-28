@@ -9,7 +9,7 @@
 #include <fixtures.h>
 #include <stp.h>
 
-#define DIVCONST 0.03549
+#define CONST 0.03549
 
 std::vector<long> g_vsize = { 512, 1024, 1448, 2048, 2896, 4096, 5792, 8192, 11586, 16384, 23170, 32768 };
 
@@ -97,60 +97,60 @@ auto m_mean_stddev_benchmark = [](benchmark::State& state) {
     }
 };
 
-auto matrix_arma_inplace_div_benchmark = [](benchmark::State& state) {
+auto matrix_arma_inplace_mul_benchmark = [](benchmark::State& state) {
     long size = g_vsize[state.range(0)];
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
-    double a = DIVCONST;
+    real_t a = CONST;
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(data /= a);
+        benchmark::DoNotOptimize(data *= a);
         benchmark::ClobberMemory();
     }
 };
 
-auto matrix_serial_inplace_div_benchmark = [](benchmark::State& state) {
+auto matrix_serial_inplace_mul_benchmark = [](benchmark::State& state) {
     long size = g_vsize[state.range(0)];
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
-    double a = DIVCONST;
+    real_t a = CONST;
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(data.memptr());
-        for (uint i = 0; i != data.n_elem; i++) {
-            data.at(i) /= a;
+        for (uint i = 0; i != data.n_elem; ++i) {
+            data[i] *= a;
         }
         benchmark::ClobberMemory();
     }
 };
 
-auto matrix_tbb_inplace_div_benchmark = [](benchmark::State& state) {
+auto matrix_tbb_inplace_mul_benchmark = [](benchmark::State& state) {
     long size = g_vsize[state.range(0)];
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
-    double a = DIVCONST;
+    real_t a = CONST;
 
     while (state.KeepRunning()) {
         uint n_elem = data.n_elem;
         benchmark::DoNotOptimize(data.memptr());
         tbb::parallel_for(tbb::blocked_range<size_t>(0, n_elem), [&](const tbb::blocked_range<size_t>& r) {
-            for (uint i = r.begin(); i != r.end(); i++) {
-                data[i] /= a;
+            for (uint i = r.begin(); i < r.end(); i++) {
+                data[i] *= a;
             }
         });
         benchmark::ClobberMemory();
     }
 };
 
-auto matrix_cblas_inplace_div_benchmark = [](benchmark::State& state) {
+auto matrix_cblas_inplace_mul_benchmark = [](benchmark::State& state) {
     long size = g_vsize[state.range(0)];
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
-    double a = DIVCONST;
+    real_t a = CONST;
 
     while (state.KeepRunning()) {
         uint n_elem = data.n_elem;
         benchmark::DoNotOptimize(data.memptr());
 #ifdef USE_FLOAT
-        cblas_sscal(n_elem, (1.0f / a), reinterpret_cast<real_t*>(data.memptr()), 1); // division by a
+        cblas_sscal(n_elem, a, reinterpret_cast<real_t*>(data.memptr()), 1); // multiplication by a
 #else
-        cblas_dscal(n_elem, (1.0 / a), reinterpret_cast<real_t*>(data.memptr()), 1); // division by a
+        cblas_dscal(n_elem, a, reinterpret_cast<real_t*>(data.memptr()), 1); // multiplication by a
 #endif
         benchmark::ClobberMemory();
     }
@@ -214,18 +214,18 @@ int main(int argc, char** argv)
         ->DenseRange(1, 11)
         ->Unit(benchmark::kMicrosecond);
 
-    // Inplace division
+    // Inplace multiplication
 
-    benchmark::RegisterBenchmark("matrix_arma_inplace_div_benchmark", matrix_arma_inplace_div_benchmark)
+    benchmark::RegisterBenchmark("matrix_arma_inplace_mul_benchmark", matrix_arma_inplace_mul_benchmark)
         ->DenseRange(1, 11)
         ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("matrix_serial_inplace_div_benchmark", matrix_serial_inplace_div_benchmark)
+    benchmark::RegisterBenchmark("matrix_serial_inplace_mul_benchmark", matrix_serial_inplace_mul_benchmark)
         ->DenseRange(1, 11)
         ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("matrix_tbb_inplace_div_benchmark", matrix_tbb_inplace_div_benchmark)
+    benchmark::RegisterBenchmark("matrix_tbb_inplace_mul_benchmark", matrix_tbb_inplace_mul_benchmark)
         ->DenseRange(1, 11)
         ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("matrix_cblas_inplace_div_benchmark", matrix_cblas_inplace_div_benchmark)
+    benchmark::RegisterBenchmark("matrix_cblas_inplace_mul_benchmark", matrix_cblas_inplace_mul_benchmark)
         ->DenseRange(1, 11)
         ->Unit(benchmark::kMicrosecond);
 

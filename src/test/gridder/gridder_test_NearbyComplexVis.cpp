@@ -25,28 +25,30 @@ public:
         oversampling = 1;
         pad = false;
         normalize = true;
-        uv = { { -2., 1 }, { 0, -1 } };
+        uv = { { -1., 1 }, { 0, -1 } };
 
         vis = arma::ones<arma::cx_mat>(uv.n_rows);
+        vis_weights = arma::ones<arma::mat>(uv.n_rows);
     }
 
     void run()
     {
         // The last two parameters (false, false) force the use of the full gridder without uv shifting
-        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize, false, false);
+        result = convolve_to_grid<true>(TopHat(half_base_width), support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, pad, normalize, false, false);
     }
 
     arma::mat uv;
     arma::cx_mat vis;
-    std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> result;
+    arma::mat vis_weights;
+    GridderOutput result;
     arma::Mat<cx_real_t> expected_vis_grid = {
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, v, v, v, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, v, v, v, 0.0, 0.0 },
-        { 0.0, v, v, real_t(2.) * v, v, v, 0.0, 0.0 },
-        { 0.0, v, v, v, 0.0, 0.0, 0.0, 0.0 },
-        { 0.0, v, v, v, 0.0, 0.0, 0.0, 0.0 },
+        { 0.0, 0.0, v, real_t(2.) * v, real_t(2.) * v, v, 0.0, 0.0 },
+        { 0.0, 0.0, v, v, v, 0.0, 0.0, 0.0 },
+        { 0.0, 0.0, v, v, v, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }
     };
 };
@@ -54,17 +56,17 @@ public:
 TEST_F(GridderNearbyComplexVis, equal)
 {
     run();
-    EXPECT_TRUE(std::abs(accu(static_cast<arma::Mat<cx_real_t>>(std::get<vis_grid_index>(result))) - cx_real_t(accu(vis))) < tolerance);
+    EXPECT_TRUE(std::abs(accu(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)) - cx_real_t(accu(vis))) < tolerance);
 }
 
 TEST_F(GridderNearbyComplexVis, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(std::get<vis_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(result.vis_grid), "absdiff", tolerance));
 }
 
 TEST_F(GridderNearbyComplexVis, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(std::get<sampling_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(result.sampling_grid), "absdiff", tolerance));
 }

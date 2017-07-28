@@ -32,6 +32,7 @@ public:
     int support;
     bool pad;
     bool normalize;
+    bool gen_beam;
 
     ImagerHandler() = default;
     ImagerHandler(const std::string& typeConvolution, const std::string& typeTest)
@@ -43,6 +44,7 @@ public:
         , oversampling(val["oversampling"].GetInt())
         , pad(val["pad"].GetBool())
         , normalize(val["normalize"].GetBool())
+        , gen_beam(true)
     {
     }
 

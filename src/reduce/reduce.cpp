@@ -74,6 +74,7 @@ int main(int argc, char** argv)
     //Load simulated data (UVW-baselines and visibilities) from input_npz
     arma::mat input_uvw = load_npy_double_array(_inNpzFileArg.getValue(), "uvw_lambda");
     arma::cx_mat input_vis = load_npy_complex_array(_inNpzFileArg.getValue(), "vis");
+    arma::mat input_snr_weights = load_npy_double_array(_inNpzFileArg.getValue(), "snr_weights");
 
     if (use_residual) {
         // Load skymodel data
@@ -102,14 +103,13 @@ int main(int argc, char** argv)
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
         _logger->info(" - kernel_function={}", cfg.s_kernel_function);
         _logger->info(" - fft_routine={}", cfg.s_fft_routine);
-        _logger->info(" - image_fft_wisdom={}", cfg.image_wisdom_filename);
-        _logger->info(" - beam_fft_wisdom={}", cfg.beam_wisdom_filename);
+        _logger->info(" - fft_wisdom_file={}", cfg.fft_wisdom_filename);
         _logger->info(" - rms_estimation={}", cfg.estimate_rms);
         _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
         _logger->info(" - binapprox_median={}", cfg.binapprox_median);
         _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
         _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
-        _logger->info(" - normalize_beam={}", cfg.normalize_beam);
+        _logger->info(" - generate_beam={}", cfg.generate_beam);
         _logger->info("Running pipeline");
     }
 
@@ -124,37 +124,37 @@ int main(int argc, char** argv)
     switch (cfg.kernel_function) {
     case stp::KernelFunction::TopHat: {
         stp::TopHat kernel_function(cfg.kernel_support);
-        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
-            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_snr_weights),
+            std::move(input_uvw), cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling,
+            cfg.generate_beam, cfg.fft_routine, cfg.fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::Triangle: {
         stp::Triangle kernel_function(cfg.kernel_support);
-        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
-            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_snr_weights),
+            std::move(input_uvw), cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling,
+            cfg.generate_beam, cfg.fft_routine, cfg.fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::Sinc: {
         stp::Sinc kernel_function(cfg.kernel_support);
-        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
-            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_snr_weights),
+            std::move(input_uvw), cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling,
+            cfg.generate_beam, cfg.fft_routine, cfg.fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::Gaussian: {
         stp::Gaussian kernel_function(cfg.kernel_support);
-        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
-            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_snr_weights),
+            std::move(input_uvw), cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling,
+            cfg.generate_beam, cfg.fft_routine, cfg.fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::GaussianSinc: {
         stp::GaussianSinc kernel_function(cfg.kernel_support);
-        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_uvw),
-            cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, true,
-            cfg.normalize_beam, cfg.fft_routine, cfg.image_wisdom_filename, cfg.beam_wisdom_filename);
+        result = stp::image_visibilities(kernel_function, std::move(input_vis), std::move(input_snr_weights),
+            std::move(input_uvw), cfg.image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling,
+            cfg.generate_beam, cfg.fft_routine, cfg.fft_wisdom_filename);
     };
         break;
     default:

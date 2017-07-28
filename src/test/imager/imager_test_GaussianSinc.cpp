@@ -30,15 +30,18 @@ public:
 
         arma::cx_mat vis(load_npy_complex_array(val["input_file"].GetString(), "vis"));
         arma::mat uvw_lambda(load_npy_double_array(val["input_file"].GetString(), "uvw"));
+        arma::mat vis_weights = arma::ones<arma::mat>(arma::size(vis));
 
         // Loads the expected results to a arma::Mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
 
-        std::pair<arma::Mat<real_t>, arma::Mat<real_t>> orig_result = image_visibilities(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+        std::pair<arma::Mat<real_t>, arma::Mat<real_t>> orig_result = image_visibilities(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc), vis, vis_weights, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling, gen_beam);
 
+#ifndef FFTSHIFT
         // Output matrices need to be shifted because image_visibilities does not shift them
         fftshift(orig_result.first);
         fftshift(orig_result.second);
+#endif
 
         result.first = arma::conv_to<arma::mat>::from(orig_result.first);
         result.second = arma::conv_to<arma::mat>::from(orig_result.second);
@@ -48,7 +51,7 @@ public:
 TEST(ImagerGaussianSinc, SmallImage)
 {
     imager_test_gaussiansinc gaussiansinc_small_image("gaussiansinc", "small_image");
-    EXPECT_TRUE(arma::approx_equal(gaussiansinc_small_image.result.first, arma::real(gaussiansinc_small_image.expected_result.first), "absdiff", tolerance));
+    EXPECT_NEAR(arma::accu(gaussiansinc_small_image.result.first), arma::accu(arma::real(gaussiansinc_small_image.expected_result.first)), tolerance);
     EXPECT_TRUE(arma::approx_equal(gaussiansinc_small_image.result.second, arma::real(gaussiansinc_small_image.expected_result.second), "absdiff", tolerance));
 }
 

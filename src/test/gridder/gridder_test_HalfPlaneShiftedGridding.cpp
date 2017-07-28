@@ -23,7 +23,9 @@ TEST(GridderOversampledGridding, equal)
     };
 
     arma::cx_mat vis;
+    arma::mat vis_weights;
     vis = arma::ones<arma::cx_mat>(uv.n_rows, 1);
+    vis_weights = arma::ones<arma::mat>(uv.n_rows, 1);
     arma::Mat<real_t> expected_result = {
         { 0., v, v, v, 0., v, v, v },
         { 0., v, v, 2 * v, v, 2 * v, v, v },
@@ -33,16 +35,16 @@ TEST(GridderOversampledGridding, equal)
     };
 
     // Convert visibilities to single halfplane
-    convert_to_halfplane_visibilities(uv, vis, support);
+    convert_to_halfplane_visibilities(uv, vis, vis_weights, support);
 
-    std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> shifted_res = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling);
-    arma::Mat<cx_real_t> result_image = matrix_shift(shifted_res.first, image_size / 2, 1);
-    arma::Mat<cx_real_t> result_beam = matrix_shift(shifted_res.second, image_size / 2, 1);
+    GridderOutput shifted_res = convolve_to_grid<true>(TopHat(half_base_width), support, image_size, uv, vis, vis_weights, kernel_exact, oversampling);
+    arma::Mat<cx_real_t> result_image = matrix_shift(shifted_res.sampling_grid, image_size / 2, 1);
+    arma::Mat<cx_real_t> result_beam = matrix_shift(shifted_res.vis_grid, image_size / 2, 1);
 
     kernel_exact = 1;
-    std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> shifted_res_exact = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling);
-    arma::Mat<cx_real_t> result_image_exact = matrix_shift(shifted_res_exact.first, image_size / 2, 1);
-    arma::Mat<cx_real_t> result_beam_exact = matrix_shift(shifted_res_exact.second, image_size / 2, 1);
+    GridderOutput shifted_res_exact = convolve_to_grid<true>(TopHat(half_base_width), support, image_size, uv, vis, vis_weights, kernel_exact, oversampling);
+    arma::Mat<cx_real_t> result_image_exact = matrix_shift(shifted_res_exact.sampling_grid, image_size / 2, 1);
+    arma::Mat<cx_real_t> result_beam_exact = matrix_shift(shifted_res_exact.vis_grid, image_size / 2, 1);
 
     EXPECT_TRUE(arma::accu(arma::real(result_image)) - arma::accu(arma::real(vis)) < tolerance);
     EXPECT_NEAR(arma::accu(arma::real(result_image) - arma::real(result_image_exact)), 0.0, tolerance);

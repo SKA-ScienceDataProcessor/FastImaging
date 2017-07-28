@@ -29,6 +29,7 @@ option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
 option(USE_FLOAT "Builds STP using 'float' type to represent real numbers" ON)
 option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
 option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
+option(USE_FFTSHIFT "Performs fft shift operation on the image and beam output matrices" OFF)
 
 # Check libstdc++ parallel mode
 # This needs to be done here, otherwise reduce, tests and benchmark fail linking
@@ -72,6 +73,11 @@ endif()
 # Use serial implementation of gridder
 if(USE_SERIAL_GRIDDER)
     add_definitions(-DSERIAL_GRIDDER)
+endif()
+
+# Perform fft shift operation on the image and beam matrices
+if(USE_FFTSHIFT)
+    add_definitions(-DFFTSHIFT)
 endif()
 
 # Sub-project: STP Library

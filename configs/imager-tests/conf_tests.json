@@ -164,7 +164,7 @@
 		"small_image": {
 			"width_normalization_gaussian": 2.52,
 			"width_normalization_sinc": 1.55,
-			"trunc": 5.0,
+			"trunc": 3.0,
 			"support": 3,
                         "kernel_exact": true,
 			"oversampling": 1,
@@ -178,7 +178,7 @@
 		"medium_image": {
 			"width_normalization_gaussian": 2.52,
 			"width_normalization_sinc": 1.55,
-			"trunc": 5.0,
+			"trunc": 3.0,
 			"support": 3,
                         "kernel_exact": true,
 			"oversampling": 1,
@@ -192,7 +192,7 @@
 		"large_image": {
 			"width_normalization_gaussian": 2.52,
 			"width_normalization_sinc": 1.55,
-			"trunc": 5.0,
+			"trunc": 3.0,
 			"support": 3,
                         "kernel_exact": true,
 			"oversampling": 1,

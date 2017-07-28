@@ -10,6 +10,7 @@ using ptr_double = double*;
 
 pybind11::tuple image_visibilities_wrapper(
     np_complex_double_array vis,
+    np_double_array snr_weights,
     np_double_array uvw_lambda,
     int image_size,
     double cell_size,
@@ -18,11 +19,9 @@ pybind11::tuple image_visibilities_wrapper(
     int kernel_support,
     bool kernel_exact,
     int kernel_oversampling,
-    bool normalize_image,
-    bool normalize_beam,
+    bool generate_beam,
     stp::FFTRoutine r_fft,
-    std::string image_wisdom_filename,
-    std::string beam_wisdom_filename)
+    std::string fft_wisdom_filename)
 {
     assert(vis.request().ndim == 1); // vis is a 1D array
     assert(uvw_lambda.request().ndim == 2); // uv_pixels is a 2D array
@@ -33,6 +32,13 @@ pybind11::tuple image_visibilities_wrapper(
         1, // vis is a vector (ndim = 1), so there is no shape[1]
         false, // copy_aux_mem - do not copy memory for better performance (it will not be modified)
         true); // strict
+
+    arma::mat snr_weights_arma(
+        static_cast<ptr_double>(snr_weights.request().ptr),
+        uvw_lambda.request().shape[0], // n_rows
+        1, // n_cols
+        false,
+        true);
 
     arma::mat uvw_lambda_arma(
         static_cast<ptr_double>(uvw_lambda.request().ptr),
@@ -48,33 +54,38 @@ pybind11::tuple image_visibilities_wrapper(
     // Inheritance could be used instead, but virtual function calls would impose an unnecessary performance penalty.
     switch (kernel_func) {
     case stp::KernelFunction::TopHat: {
-        stp::TopHat th_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(th_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
-            kernel_support, kernel_exact, kernel_oversampling, normalize_image, normalize_beam, r_fft, image_wisdom_filename, beam_wisdom_filename);
+        stp::TopHat kernel(kernel_trunc_radius);
+        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
+            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
+            generate_beam, r_fft, fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::Triangle: {
-        stp::Triangle tg_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(tg_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
-            kernel_support, kernel_exact, kernel_oversampling, normalize_image, normalize_beam, r_fft, image_wisdom_filename, beam_wisdom_filename);
+        stp::Triangle kernel(kernel_trunc_radius);
+        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
+            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
+            generate_beam, r_fft, fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::Sinc: {
-        stp::Sinc s_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(s_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
-            kernel_support, kernel_exact, kernel_oversampling, normalize_image, normalize_beam, r_fft, image_wisdom_filename, beam_wisdom_filename);
+        stp::Sinc kernel(kernel_trunc_radius);
+        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
+            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
+            generate_beam, r_fft, fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::Gaussian: {
-        stp::Gaussian g_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(g_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
-            kernel_support, kernel_exact, kernel_oversampling, normalize_image, normalize_beam, r_fft, image_wisdom_filename, beam_wisdom_filename);
+        stp::Gaussian kernel(kernel_trunc_radius);
+        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
+            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
+            generate_beam, r_fft, fft_wisdom_filename);
     };
         break;
     case stp::KernelFunction::GaussianSinc: {
-        stp::GaussianSinc gs_kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(gs_kernel, std::move(vis_arma), std::move(uvw_lambda_arma), image_size, cell_size,
-            kernel_support, kernel_exact, kernel_oversampling, normalize_image, normalize_beam, r_fft, image_wisdom_filename, beam_wisdom_filename);
+        stp::GaussianSinc kernel(kernel_trunc_radius);
+        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
+            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
+            generate_beam, r_fft, fft_wisdom_filename);
     };
         break;
     default:
@@ -170,11 +181,11 @@ PYBIND11_PLUGIN(stp_python)
         .value("FFTW_WISDOM_INPLACE_FFT", stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT);
 
     m.def("image_visibilities_wrapper", &image_visibilities_wrapper, "Compute image visibilities (gridding + ifft).",
-        pybind11::arg("vis"), pybind11::arg("uvw_lambda"), pybind11::arg("image_size"), pybind11::arg("cell_size"),
+        pybind11::arg("vis"), pybind11::arg("snr_weights"), pybind11::arg("uvw_lambda"), pybind11::arg("image_size"), pybind11::arg("cell_size"),
         pybind11::arg("kernel_func") = stp::KernelFunction::GaussianSinc, pybind11::arg("kernel_trunc_radius") = 3.0,
         pybind11::arg("kernel_support") = 3, pybind11::arg("kernel_exact") = true, pybind11::arg("kernel_oversampling") = 9,
-        pybind11::arg("normalize_image") = true, pybind11::arg("normalize_beam") = true, pybind11::arg("r_fft") = stp::FFTRoutine::FFTW_ESTIMATE_FFT,
-        pybind11::arg("image_wisdom_filename") = std::string(), pybind11::arg("beam_wisdom_filename") = std::string());
+        pybind11::arg("generate_beam") = false, pybind11::arg("r_fft") = stp::FFTRoutine::FFTW_ESTIMATE_FFT,
+        pybind11::arg("fft_wisdom_filename") = std::string());
 
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,

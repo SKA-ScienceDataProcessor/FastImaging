@@ -34,12 +34,13 @@ const uint beam_slice = 1;
 /**
  * @brief Convert the input visibilities to an array of half-plane visibilities.
  *
- * @param[in] vis (arma::cx_mat): Complex visibilities to be converted (1D array).
  * @param[in] uvw_lambda (arma::mat): UVW-coordinates of complex visibilities to be converted.
  *                                    2D double array with 3 columns. Assumed ordering is u,v,w.
+ * @param[in] vis (arma::cx_mat): Complex visibilities to be converted (1D array).
+ * @param[in] vis_weights (arma::mat): Visibility weights (1D array).
  * @param[in] kernel_support (int): Kernel support radius.
  */
-void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vis, int kernel_support);
+void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vis, arma::mat& vis_weights, int kernel_support);
 
 /**
  * @brief Generates image and beam data from input visibilities.
@@ -49,6 +50,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vi
  *
  * @param[in] kernel_creator (typename T): Callable object that returns a convolution kernel.
  * @param[in] vis (arma::cx_mat): Complex visibilities (1D array).
+ * @param[in] vis_weights (arma::mat): Visibility weights (1D array).
  * @param[in] uvw_lambda (arma::mat): UVW-coordinates of complex visibilities. Units are multiples of wavelength.
  *                                    2D double array with 3 columns. Assumed ordering is u,v,w.
  * @param[in] image_size (int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space.
@@ -61,8 +63,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vi
  *                                    You normally want this to be true, but it may be interesting to check the raw values for debugging purposes.
  * @param[in] normalize_beam (bool): Whether or not the returned beam should be normalized such that the beam peaks at a value of 1.0 Jansky.
  * @param[in] r_fft (FFTRoutine): Selects FFT routine to be used.
- * @param[in] image_wisdom_filename (string): FFTW wisdom filename for the image matrix (c2c fft).
- * @param[in] beam_wisdom_filename (string): FFTW wisdom filename for the beam matrix (r2c fft).
+ * @param[in] fft_wisdom_filename (string): FFTW wisdom filename for the image and beam (c2r fft).
  *
  * @return (std::pair<arma::mat, arma::mat>): Two matrices representing the generated image map and beam model (image, beam).
  */
@@ -70,22 +71,22 @@ template <typename T>
 std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     const T kernel_creator,
     const arma::cx_mat& vis,
+    const arma::mat& vis_weights,
     const arma::mat& uvw_lambda,
     int image_size,
     double cell_size,
     int kernel_support,
     bool kernel_exact = true,
     int oversampling = 1,
-    bool normalize_image = true,
-    bool normalize_beam = true,
+    bool generate_beam = false,
     FFTRoutine r_fft = FFTW_ESTIMATE_FFT,
-    const std::string image_wisdom_filename = std::string(),
-    const std::string beam_wisdom_filename = std::string())
+    const std::string fft_wisdom_filename = std::string())
 {
     assert(kernel_exact || (oversampling >= 1)); // If kernel exact is false, then oversampling must be >= 1
     assert(image_size > 0);
     assert(kernel_support > 0);
     assert(cell_size > 0.0);
+    assert(vis.n_elem == vis_weights.n_elem);
 
 #ifdef FUNCTION_TIMINGS
     times_iv.reserve(NUM_TIME_INST);
@@ -96,15 +97,21 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * double(image_size)));
     arma::mat uv_in_pixels = (uvw_lambda / grid_pixel_width_lambda);
     arma::cx_mat conv_vis = vis;
+    arma::mat conv_vis_weights = vis_weights;
 
     // Remove W column
     uv_in_pixels.shed_col(2);
 
     // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
-    convert_to_halfplane_visibilities(uv_in_pixels, conv_vis, kernel_support);
+    convert_to_halfplane_visibilities(uv_in_pixels, conv_vis, conv_vis_weights, kernel_support);
 
     // Perform convolutional gridding of complex visibilities
-    std::pair<MatStp<cx_real_t>, MatStp<cx_real_t>> gridded_data = convolve_to_grid(kernel_creator, kernel_support, image_size, uv_in_pixels, conv_vis, kernel_exact, oversampling);
+    GridderOutput gridded_data;
+    if (generate_beam) {
+        gridded_data = convolve_to_grid<true>(kernel_creator, kernel_support, image_size, uv_in_pixels, conv_vis, conv_vis_weights, kernel_exact, oversampling);
+    } else {
+        gridded_data = convolve_to_grid<false>(kernel_creator, kernel_support, image_size, uv_in_pixels, conv_vis, conv_vis_weights, kernel_exact, oversampling);
+    }
 
 #ifdef FUNCTION_TIMINGS
     times_iv.push_back(std::chrono::high_resolution_clock::now());
@@ -115,55 +122,54 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
 
     // Reuse gridded_data buffer if FFT is INPLACE
     if (r_fft == stp::FFTW_WISDOM_INPLACE_FFT) {
-        fft_result_image = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.first.memptr()), (gridded_data.first.n_rows) * 2, gridded_data.first.n_cols, false, false));
-        fft_result_beam = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.second.memptr()), (gridded_data.second.n_rows) * 2, gridded_data.second.n_cols, false, false));
+        fft_result_image = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.vis_grid.memptr()), (gridded_data.vis_grid.n_rows) * 2, gridded_data.vis_grid.n_cols, false, false));
+        fft_result_beam = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.sampling_grid.memptr()), (gridded_data.sampling_grid.n_rows) * 2, gridded_data.sampling_grid.n_cols, false, false));
     }
 
     // Run iFFT over convolved matrices
     // First: FFT of image matrix
-    fft_fftw_c2r(gridded_data.first, fft_result_image, r_fft, image_wisdom_filename);
+    fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft, fft_wisdom_filename);
     // Delete gridded image matrix (only if FFT is not inplace)
     if (r_fft != stp::FFTW_WISDOM_INPLACE_FFT) {
-        gridded_data.first.delete_matrix_buffer();
+        gridded_data.vis_grid.delete_matrix_buffer();
     }
+#ifdef FFTSHIFT
+    fftshift(fft_result_image);
+#endif
 
-    // Second: FFT of beam matrix
-    fft_fftw_c2r(gridded_data.second, fft_result_beam, r_fft, beam_wisdom_filename);
-    // Delete gridded beam matrix (only if FFT is not inplace)
-    if (r_fft != stp::FFTW_WISDOM_INPLACE_FFT) {
-        gridded_data.second.delete_matrix_buffer();
+    // Second: FFT of beam matrix (optional)
+    if (generate_beam) {
+        fft_fftw_c2r(gridded_data.sampling_grid, fft_result_beam, r_fft, fft_wisdom_filename);
+        // Delete gridded beam matrix (only if FFT is not inplace)
+        if (r_fft != stp::FFTW_WISDOM_INPLACE_FFT) {
+            gridded_data.sampling_grid.delete_matrix_buffer();
+        }
+#ifdef FFTSHIFT
+        fftshift(fft_result_beam);
+#endif
     }
 
 #ifdef FUNCTION_TIMINGS
     times_iv.push_back(std::chrono::high_resolution_clock::now());
 #endif
 
-    // Normalize image and beam such that the beam peaks at a value of 1.0 Jansky.
-    if (normalize_image || normalize_beam) {
-#ifdef USE_FLOAT
-        size_t beam_max_idx = cblas_isamax(fft_result_beam.n_elem, fft_result_beam.memptr(), 1);
-#else
-        size_t beam_max_idx = cblas_idamax(fft_result_beam.n_elem, fft_result_beam.memptr(), 1);
-#endif
-        real_t beam_max = fft_result_beam.at(beam_max_idx);
-        assert(std::abs(beam_max) > 0.0);
-#ifdef USE_FLOAT
-        // Use cblas for better performance
-        if (normalize_image) {
-            cblas_sscal(fft_result_image.n_elem, 1.0f / beam_max, fft_result_image.memptr(), 1); // Equivalent to: fft_result_image /= beam_max;
+    // Normalize image and beam
+    if (gridded_data.sample_grid_total > 0.0) {
+        real_t normalization_factor = 1.0 / (gridded_data.sample_grid_total);
+        // Image
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, fft_result_image.n_elem), [&](const tbb::blocked_range<size_t>& r) {
+            for (arma::uword i = r.begin(); i < r.end(); ++i) {
+                fft_result_image[i] *= normalization_factor;
+            }
+        });
+        // Beam is optional
+        if (generate_beam) {
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, fft_result_beam.n_elem), [&](const tbb::blocked_range<size_t>& r) {
+                for (arma::uword i = r.begin(); i < r.end(); ++i) {
+                    fft_result_beam[i] *= normalization_factor;
+                }
+            });
         }
-        if (normalize_beam) {
-            cblas_sscal(fft_result_beam.n_elem, 1.0f / beam_max, fft_result_beam.memptr(), 1); // Equivalent to: fft_result_beam /= beam_max;
-        }
-#else
-        // Use cblas for better performance
-        if (normalize_image) {
-            cblas_dscal(fft_result_image.n_elem, 1.0 / beam_max, fft_result_image.memptr(), 1); // Equivalent to: fft_result_image /= beam_max;
-        }
-        if (normalize_beam) {
-            cblas_dscal(fft_result_beam.n_elem, 1.0 / beam_max, fft_result_beam.memptr(), 1); // Equivalent to: fft_result_beam /= beam_max;
-        }
-#endif
     }
 
 #ifdef FUNCTION_TIMINGS

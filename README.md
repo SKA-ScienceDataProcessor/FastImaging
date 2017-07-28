@@ -76,11 +76,12 @@ $ ./build.sh <OPTIONS>
 ```
 OPTION | Description
 -------| --------------
- -d    | Use CMAKE_BUILD_TYPE=Debug (default)
- -r    | Use CMAKE_BUILD_TYPE=Release
- -i    | Use CMAKE_BUILD_TYPE=RelWithDebInfo
- -f    | Use USE_FLOAT=ON (default is USE_FLOAT=OFF)
-
+ -d    | Set CMAKE_BUILD_TYPE=Debug (default)
+ -r    | Set CMAKE_BUILD_TYPE=Release
+ -i    | Set CMAKE_BUILD_TYPE=RelWithDebInfo
+ -f    | Set USE_FLOAT=ON (default is USE_FLOAT=OFF)
+ -s    | Set USE_FFTSHIFT=ON (default is USE_FFTSHIFT=OFF)                                                                                                                                     
+ -n    | Disable generation of fftw plans (enabled by default) 
 
 #### Manually
 ```sh
@@ -155,6 +156,13 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 28 July 2017
+- Implemented baseline weighting feature
+- Changed normalisation of fft output by using weighting information
+- Made generation of beam signal an optional step
+- Added CMake option to explicitly use fftshift function after the FFT step and perform labeling over shifted matrices
+- Fixed issue on derivation of out-of-bound kernels that could result in a non-symmetric gridded matrix
+
 ### 14 July 2017
 - Implemented alternative method to compute exact median based on the binmedian algorithm - it is faster than nth_element when run in multiple cores
 - Improved/fixed unit tests and benchmarks

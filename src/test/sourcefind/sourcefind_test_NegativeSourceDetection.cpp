@@ -67,16 +67,20 @@ public:
         faint_src = gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude);
         negative_src = gaussian_point_source(negative_x_centre, negative_y_centre, negative_amplitude);
 
-        img = arma::zeros<arma::Mat<real_t> >(ydim, xdim);
+        img = arma::zeros<arma::Mat<real_t>>(ydim, xdim);
     }
 
     void run()
     {
         img += evaluate_model_on_pixel_grid(ydim, xdim, negative_src);
-        // Input data needs to be shifted because source_find assumes it is shifted
+#ifndef FFTSHIFT
+        // Input data needs to be shifted because source_find assumes it is shifted (required when FFTSHIFT option is disabled)
         fftshift(img);
+#endif
         source_find_image sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+#ifndef FFTSHIFT
         fftshift(img);
+#endif
         found_src = sf.islands[0];
 
         total_islands0 = sf.islands.size();
@@ -87,9 +91,13 @@ public:
         absolute_ybar = std::abs(found_src.ybar - negative_src.y_mean);
 
         img += evaluate_model_on_pixel_grid(ydim, xdim, bright_src);
+#ifndef FFTSHIFT
         fftshift(img);
+#endif
         sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+#ifndef FFTSHIFT
         fftshift(img);
+#endif
         total_islands1 = sf.islands.size();
 
         for (arma::uword l_idx(0); l_idx < sf.islands.size(); ++l_idx) {

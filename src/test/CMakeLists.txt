@@ -41,9 +41,9 @@ function(add_unit_test unit_test_name unit_test_source)
 endfunction()
 
 # Test Cases: Matrix Math Functions ------------------------------------------------------------------------------------
-
 add_unit_test(test_matrix_math_funcs matrixmath/test_matrix_math_funcs.cpp)
 
+# Test Cases: Median Functions -----------------------------------------------------------------------------------------
 add_unit_test(test_median_funcs matrixmath/test_median_funcs.cpp)
 
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
@@ -115,6 +115,9 @@ add_unit_test(test_gridder_oversampled_gridding gridder/gridder_test_Oversampled
 # HalfPlane Shifted Gridding
 add_unit_test(test_gridder_halfplane_shifted_gridding gridder/gridder_test_HalfPlaneShiftedGridding.cpp)
 
+# Sample Weighting
+add_unit_test(test_gridder_sample_weighting gridder/gridder_test_SampleWeighting.cpp)
+
 # Test Cases: Imager Functions -----------------------------------------------------------------------------------------
 
 # Triangle
@@ -160,6 +163,9 @@ add_unit_test(test_sourcefind_negative_source_detection sourcefind/sourcefind_te
 # RmsEstimation
 add_unit_test(test_sourcefind_rms_estimation sourcefind/sourcefind_test_RmsEstimation.cpp)
 
+# Labeling
+add_unit_test(test_sourcefind_labeling sourcefind/sourcefind_test_Labeling.cpp)
+
 # Test Cases: Pipeline Functions ---------------------------------------------------------------------------------------
 add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp)
 
@@ -168,6 +174,9 @@ add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp
 
 # Matrix math
 add_test(NAME MatrixMathFunctions COMMAND test_matrix_math_funcs)
+
+# Median
+add_test(NAME MedianFunctions COMMAND test_median_funcs)
 
 # Convolution
 add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle)
@@ -194,6 +203,8 @@ add_test(NAME GridderFractionalCoordToOversampledIndexMath COMMAND test_gridder_
 add_test(NAME GridderFractionalCoordIn2DCase COMMAND test_gridder_fractional_coord_in_2d_case)
 add_test(NAME GridderKernelCaching COMMAND test_gridder_kernel_caching)
 add_test(NAME GridderOversampledGridding COMMAND test_gridder_oversampled_gridding)
+add_test(NAME GridderHalfplaneShiftedGridding COMMAND test_gridder_halfplane_shifted_gridding)
+add_test(NAME GridderSampleWeighting COMMAND test_gridder_sample_weighting)
 
 # Imager
 add_test(NAME ImagerTopHat COMMAND test_imager_tophat)
@@ -201,6 +212,9 @@ add_test(NAME ImagerTriangle COMMAND test_imager_triangle)
 add_test(NAME ImagerSinc COMMAND test_imager_sinc)
 add_test(NAME ImagerGaussian COMMAND test_imager_gaussian)
 add_test(NAME ImagerGaussianSinc COMMAND test_imager_gaussiansinc)
+
+# Visibility
+add_test(NAME VisibilityModelGeneration COMMAND test_visibility_model_generation)
 
 # Cnpy
 add_test(NAME CnpyLoadComplex COMMAND test_cnpy_load_complex)
@@ -213,6 +227,7 @@ add_test(NAME FixturesModelGenerationEvaluation COMMAND test_fixtures_model_gene
 add_test(NAME SourceFindBasicSourceDetection COMMAND test_sourcefind_basic_source_detection)
 add_test(NAME SourceFindNegativeSourceDetection COMMAND test_sourcefind_negative_source_detection)
 add_test(NAME SourceFindRmsEstimation COMMAND test_sourcefind_rms_estimation)
+add_test(NAME SourceFindLabeling COMMAND test_sourcefind_labeling)
 
 # Pipeline Functions
 add_test(NAME PipelineGaussianSincFunc COMMAND test_pipeline_gaussiansinc)

@@ -27,17 +27,21 @@ public:
         normalize = false;
 
         vis = vis_amplitude * arma::ones<arma::cx_mat>(uv.n_cols);
+        vis_weights = arma::ones<arma::mat>(uv.n_cols);
     }
 
     void run()
     {
         // The last two parameters (false, false) force the use of the full gridder without uv shifting
-        result = convolve_to_grid(TopHat(half_base_width), support, image_size, uv, vis, kernel_exact, oversampling, pad, normalize, false, false);
+        GridderOutput res = convolve_to_grid<true>(TopHat(half_base_width), support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, pad, normalize, false, false);
+        result = std::make_pair(static_cast<arma::Mat<cx_real_t>>(res.vis_grid), static_cast<arma::Mat<cx_real_t>>(res.sampling_grid));
     }
 
     arma::mat uv = { { -2., 0 }, { -2, 0 } };
     arma::cx_mat vis;
+    arma::mat vis_weights;
     std::pair<arma::Mat<cx_real_t>, arma::Mat<cx_real_t>> result;
+
     arma::Mat<real_t> expected_result = {
         { 0., 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 0., 0., 0., 0., 0. },
@@ -53,17 +57,17 @@ public:
 TEST_F(GridderSinglePixelOverlapPillbox, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(arma::real(std::get<vis_grid_index>(result))) }, arma::cx_mat{ accu(arma::real(vis)) }, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(arma::real(result.first)) }, arma::cx_mat{ accu(arma::real(vis)) }, "absdiff", tolerance));
 }
 
 TEST_F(GridderSinglePixelOverlapPillbox, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal((expected_result * accu(arma::real(vis))), arma::real(std::get<vis_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal((expected_result * accu(arma::real(vis))), arma::real(result.first), "absdiff", tolerance));
 }
 
 TEST_F(GridderSinglePixelOverlapPillbox, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal((expected_result * uv.n_cols), arma::real(std::get<sampling_grid_index>(result)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal((expected_result * uv.n_cols), arma::real(result.second), "absdiff", tolerance));
 }

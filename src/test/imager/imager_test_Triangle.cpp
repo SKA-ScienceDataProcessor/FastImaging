@@ -27,15 +27,18 @@ public:
 
         arma::cx_mat vis(load_npy_complex_array(val["input_file"].GetString(), "vis"));
         arma::mat uvw_lambda(load_npy_double_array(val["input_file"].GetString(), "uvw"));
+        arma::mat vis_weights = arma::ones<arma::mat>(arma::size(vis));
 
         // Loads the expected results to a arma::mat pair
         expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
 
-        std::pair<arma::Mat<real_t>, arma::Mat<real_t> > orig_result = image_visibilities(Triangle(half_base_width), vis, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling);
+        std::pair<arma::Mat<real_t>, arma::Mat<real_t>> orig_result = image_visibilities(Triangle(half_base_width), vis, vis_weights, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling, gen_beam);
 
+#ifndef FFTSHIFT
         // Output matrices need to be shifted because image_visibilities does not shift them
         fftshift(orig_result.first);
         fftshift(orig_result.second);
+#endif
 
         result.first = arma::conv_to<arma::mat>::from(orig_result.first);
         result.second = arma::conv_to<arma::mat>::from(orig_result.second);

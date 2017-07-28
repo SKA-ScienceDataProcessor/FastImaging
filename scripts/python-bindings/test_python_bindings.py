@@ -9,6 +9,7 @@ with open(vis_filepath, 'rb') as f:
     npz_data_dict = np.load(f)
     uvw_lambda = npz_data_dict['uvw_lambda']
     vis = npz_data_dict['vis']
+    vis_weights = npz_data_dict['snr_weights']
 
 # Parameters of image_visibilities function
 image_size = 8192
@@ -18,15 +19,13 @@ support = 3
 trunc = support
 kernel_exact = False
 oversampling = 9
-normalize_image = True
-normalize_beam = True
+generate_beam = False
 r_fft = stp_python.FFTRoutine.FFTW_WISDOM_FFT
 # The FFTW wisdom files must be located in the current directory
-image_wisdom_filename = 'WisdomFile_rob8192x8192.fftw' 
-beam_wisdom_filename = 'WisdomFile_rob8192x8192.fftw'
+fft_wisdom_filename = 'WisdomFile_rob8192x8192.fftw'
 
 # Call image_visibilities
-cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(vis, uvw_lambda, image_size, cell_size, function, trunc, support, kernel_exact, oversampling, normalize_image, normalize_beam, r_fft, image_wisdom_filename, beam_wisdom_filename)
+cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(vis, vis_weights, uvw_lambda, image_size, cell_size, function, trunc, support, kernel_exact, oversampling, generate_beam, r_fft, fft_wisdom_filename)
 
 # Parameters of source_find function
 detection_n_sigma = 50.0

@@ -46,10 +46,8 @@ public:
                 s_fft_routine = config_document["fft_routine"].GetString();
                 fft_routine = parse_fft_routine(s_fft_routine);
             }
-            if (config_document.HasMember("image_fft_wisdom"))
-                image_wisdom_filename = config_document["image_fft_wisdom"].GetString();
-            if (config_document.HasMember("beam_fft_wisdom"))
-                beam_wisdom_filename = config_document["beam_fft_wisdom"].GetString();
+            if (config_document.HasMember("fft_wisdom_filename"))
+                fft_wisdom_filename = config_document["fft_wisdom_filename"].GetString();
 
             if (config_document.HasMember("rms_estimation"))
                 estimate_rms = config_document["rms_estimation"].GetDouble();
@@ -61,8 +59,8 @@ public:
                 compute_barycentre = config_document["compute_barycentre"].GetBool();
             if (config_document.HasMember("generate_labelmap"))
                 generate_labelmap = config_document["generate_labelmap"].GetBool();
-            if (config_document.HasMember("normalize_beam"))
-                normalize_beam = config_document["normalize_beam"].GetBool();
+            if (config_document.HasMember("generate_beam"))
+                generate_beam = config_document["generate_beam"].GetBool();
         }
     }
 
@@ -88,14 +86,13 @@ public:
     std::string s_fft_routine = "FFTW_ESTIMATE_FFT";
     stp::KernelFunction kernel_function = stp::KernelFunction::GaussianSinc;
     stp::FFTRoutine fft_routine = stp::FFTW_ESTIMATE_FFT;
-    std::string image_wisdom_filename;
-    std::string beam_wisdom_filename;
+    std::string fft_wisdom_filename;
     double estimate_rms = 0.0;
     int sigma_clip_iters = 5;
     bool binapprox_median = true;
     bool compute_barycentre = true;
     bool generate_labelmap = false;
-    bool normalize_beam = false;
+    bool generate_beam = false;
 
 private:
     /**

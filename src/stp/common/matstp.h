@@ -22,7 +22,7 @@ public:
     // Constructor
     ZeroMemAlloc(size_t length)
     {
-        mem_ptr = std::unique_ptr<T, std::function<void(T*)> >((T*)std::calloc(length, sizeof(T)), [](T* ptr) {
+        mem_ptr = std::unique_ptr<T, std::function<void(T*)>>((T*)std::calloc(length, sizeof(T)), [](T* ptr) {
             if (ptr != nullptr) {
                 std::free(ptr);
                 ptr = nullptr;
@@ -55,7 +55,7 @@ public:
         return *this;
     }
 
-    std::unique_ptr<T, std::function<void(T*)> > mem_ptr;
+    std::unique_ptr<T, std::function<void(T*)>> mem_ptr;
     size_t num_elems;
 };
 

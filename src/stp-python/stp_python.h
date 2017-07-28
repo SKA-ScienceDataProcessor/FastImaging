@@ -24,32 +24,33 @@ using np_real_array = pybind11::array_t<real_t, pybind11::array::f_style | pybin
  *
  * This function shall be called from python code.
  *
- * @param vis (numpy.ndarray<np.complex_>): Complex visibilities. 1D array, shape: (n_vis,).
- * @param uvw_lambda (numpy.ndarray<np.float_>): UVW-coordinates of visibilities. Units are multiples of wavelength.
- *                                        2D array, shape: (n_vis, 3). Assumed ordering is u,v,w.
- * @param image_size (int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space.
- * @param cell_size (double): Angular-width of a synthesized pixel in the image to be created (arcsecond).
- * @param kernel_func (KernelFunction): Choice of kernel function from limited selection (see KernelFunction enum structure).
- *                                           Default = KernelFunction::GaussianSinc.
- * @param kernel_trunc_radius (double): Truncation radius of the kernel to be used.
+ * @param[in] vis (numpy.ndarray<np.complex_>): Complex visibilities. 1D array, shape: (n_vis,).
+ * @param[in] snr_weights (numpy.ndarray<np.float_>): Visibility weights. 1D array, shape: (n_vis,).
+ * @param[in] uvw_lambda (numpy.ndarray<np.float_>): UVW-coordinates of visibilities. Units are multiples of wavelength.
+ *                                               2D array, shape: (n_vis, 3). Assumed ordering is u,v,w.
+ * @param[in] image_size (int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space.
+ * @param[in] cell_size (double): Angular-width of a synthesized pixel in the image to be created (arcsecond).
+ * @param[in] kernel_func (KernelFunction): Choice of kernel function from limited selection (see KernelFunction enum structure).
+ *                                      Default = KernelFunction::GaussianSinc.
+ * @param[in] kernel_trunc_radius (double): Truncation radius of the kernel to be used.
  *                                      Default = 3.0.
- * @param kernel_support (int): Defines the 'radius' of the bounding box within which convolution takes place (also known as half-support).
+ * @param[in] kernel_support (int): Defines the 'radius' of the bounding box within which convolution takes place (also known as half-support).
  *                              Box width in pixels = 2*support + 1. The central pixel is the one nearest to the UV co-ordinates.
  *                              Default = 3.
- * @param kernel_exact (bool): If true, calculates exact kernel values for every UV-sample. Otherwise, oversampling is used.
+ * @param[in] kernel_exact (bool): If true, calculates exact kernel values for every UV-sample. Otherwise, oversampling is used.
  *                             Default = true.
- * @param kernel_oversampling (int): Controls kernel-generation if 'kernel_exact == False'. Larger values give a finer-sampled set of pre-cached kernels.
+ * @param[in] kernel_oversampling (int): Controls kernel-generation if 'kernel_exact == False'. Larger values give a finer-sampled set of pre-cached kernels.
  *                                   Default = 9.
- * @param[in] normalize_image (bool): Whether or not the returned image should be normalized by the maximum beam value.
- *                                    You normally want this to be true, but it may be interesting to check the raw values for debugging purposes.
- *                                    Default = true.
- * @param[in] normalize_beam (bool): Whether or not the returned beam should be normalized such that the beam peaks at a value of 1.0 Jansky.
- *                                   Default = true.
+ * @param[in] generate_beam (bool): Whether or not to compute the beam matrix.
+ *                                  Default = false.
+ * @param[in] r_fft (FFTRoutine): Selects FFT routine to be used.
+ * @param[in] fft_wisdom_filename (string): FFTW wisdom filename for the image and beam (c2r fft).
  *
  * @return (pybind11::tuple): Tuple of numpy.ndarrays representing the image map and beam model (image, beam).
  */
 pybind11::tuple image_visibilities_wrapper(
     np_complex_double_array vis, // numpy.ndarray<np.complex_>
+    np_double_array snr_weights, // numpy.ndarray<np.float_>
     np_double_array uvw_lambda, // numpy.ndarray<np.float_>
     int image_size,
     double cell_size,
@@ -58,21 +59,19 @@ pybind11::tuple image_visibilities_wrapper(
     int kernel_support,
     bool kernel_exact,
     int kernel_oversampling,
-    bool normalize_image,
-    bool normalize_beam,
+    bool generate_beam,
     stp::FFTRoutine r_fft, // enum
-    std::string image_wisdom_filename,
-    std::string beam_wisdom_filename);
+    std::string fft_wisdom_filename);
 
 /**
  * @brief Convenience wrapper over source_find_image function.
  *
  * This function shall be called from python code.
  *
- * @param image_data (numpy.ndarray<np.float_>): Real component of iFFT'd image data (typically uses image returned by image_visibilities function).
- * @param detection_n_sigma (double): Detection threshold as multiple of RMS.
- * @param analysis_n_sigma (double): Analysis threshold as multiple of RMS.
- * @param rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
+ * @param[in] image_data (numpy.ndarray<np.float_>): Real component of iFFT'd image data (typically uses image returned by image_visibilities function).
+ * @param[in] detection_n_sigma (double): Detection threshold as multiple of RMS.
+ * @param[in] analysis_n_sigma (double): Analysis threshold as multiple of RMS.
+ * @param[in] rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
  *                          Default = 0.0.
  *
  * @return (pybind11::list): List of tuples representing the source-detections.

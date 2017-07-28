@@ -22,6 +22,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    arma::mat input_snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
     arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
@@ -34,7 +35,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     ConfigurationFile cfg(config_path + config_file_oversampling);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,

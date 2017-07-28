@@ -206,9 +206,14 @@ source_find_image::source_find_image(
     for (size_t i = 0; i < label_extrema_id_pos.n_elem; i++) {
         if (label_extrema_id_pos.at(i)) {
             arma::uvec coord = arma::ind2sub(arma::size(input_data), label_extrema_linear_idx_pos.at(i));
+#ifdef FFTSHIFT
+            int y_idx = (int)coord[0];
+            int x_idx = (int)coord[1];
+#else
             // Shift coordinates because source find assumed input image was shifted
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
+#endif
             islands.push_back(std::move(island_params(label_extrema_id_pos.at(i), label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_barycentre_pos.col(i)(0), label_extrema_barycentre_pos.col(i)(1))));
         }
     }
@@ -217,9 +222,14 @@ source_find_image::source_find_image(
     for (size_t i = 0; i < label_extrema_id_neg.n_elem; i++) {
         if (label_extrema_id_neg.at(i)) {
             arma::uvec coord = arma::ind2sub(arma::size(input_data), label_extrema_linear_idx_neg.at(i));
+#ifdef FFTSHIFT
+            int y_idx = (int)coord[0];
+            int x_idx = (int)coord[1];
+#else
             // Shift coordinates because source find assumed input image was shifted
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
+#endif
             islands.push_back(std::move(island_params(label_extrema_id_neg.at(i), label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_barycentre_neg.col(i)(0), label_extrema_barycentre_neg.col(i)(1))));
         }
     }
@@ -407,16 +417,21 @@ uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, 
                     if (computeBarycentre) {
                         assert(idx > -1);
                         const double val = data.at(li);
+#ifdef FFTSHIFT
+                        const double y_idx = (int)j;
+                        const double x_idx = (int)i;
+#else
                         // Get shifted coordinates centered in the image
-                        int y_idx = (int)j < v_shift ? j + v_shift : (int)j - v_shift;
-                        int x_idx = (int)i < h_shift ? i + h_shift : (int)i - h_shift;
+                        const double y_idx = (int)j < v_shift ? j + v_shift : (int)j - v_shift;
+                        const double x_idx = (int)i < h_shift ? i + h_shift : (int)i - h_shift;
+#endif
                         if (label > 0) {
-                            r_barycentre_pos.at(0, idx) += (double)y_idx * val;
-                            r_barycentre_pos.at(1, idx) += (double)x_idx * val;
+                            r_barycentre_pos.at(0, idx) += y_idx * val;
+                            r_barycentre_pos.at(1, idx) += x_idx * val;
                             r_barycentre_pos.at(2, idx) += val;
                         } else {
-                            r_barycentre_neg.at(0, idx) += (double)y_idx * val;
-                            r_barycentre_neg.at(1, idx) += (double)x_idx * val;
+                            r_barycentre_neg.at(0, idx) += y_idx * val;
+                            r_barycentre_neg.at(1, idx) += x_idx * val;
                             r_barycentre_neg.at(2, idx) += val;
                         }
                     }

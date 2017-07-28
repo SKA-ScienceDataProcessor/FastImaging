@@ -150,17 +150,23 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
         assert(lunique_n >= 0);
         const uint col_start = r.begin();
         const uint col_end = r.end();
-        for (uint c_i = col_start; c_i < col_end; c_i++) {
+        for (uint c_i = col_start; c_i < col_end; ++c_i) {
+#ifdef FFTSHIFT
+            const uint m_c_i = c_i;
+            uint m_c_i_prev = (m_c_i == 0) ? m_c_i : m_c_i - 1;
+#else
             const uint m_c_i = c_i >= cshift ? c_i - cshift : c_i + cshift;
-            assert(m_c_i < cols);
             uint m_c_i_prev = (m_c_i == 0) ? cols - 1 : m_c_i - 1;
+#endif
+            assert(m_c_i < cols);
             assert(m_c_i_prev < cols);
 
             int* Lcol = L.colptr(m_c_i);
             int* Lcol_prev = L.colptr(m_c_i_prev);
             const real_t* Icol = I.colptr(m_c_i);
 
-            const bool T_b_r = !(c_i == r.begin());
+            // Indicate whether the left neighbor is valid or not (it is not valid for the first column of each thread)
+            const bool T_left_valid = !(c_i == r.begin());
             for (uint m_r_i = 0; m_r_i < rows; m_r_i++) {
                 assert(m_r_i < rows);
                 if (*(Icol + m_r_i) > analysis_thresh_pos) {
@@ -168,10 +174,17 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
                     int* curL = Lcol + m_r_i;
                     const int top_pix = *(Lcol + m_r_i_prev);
                     const int left_pix = *(Lcol_prev + m_r_i);
-                    const bool T_b = T_b_r && (left_pix > 0);
-                    const bool T_d = (m_r_i == rshift || m_r_i == 0) ? false : (top_pix > 0);
-                    if (T_b) {
-                        if (T_d) {
+                    // Indicate if it is connected to left pixel
+                    const bool T_left = T_left_valid && (left_pix > 0);
+#ifdef FFTSHIFT
+                    // Indicate if it is connected to top pixel
+                    const bool T_top = (m_r_i == 0) ? false : (top_pix > 0);
+#else
+                    // Indicate if it is connected to top pixel
+                    const bool T_top = (m_r_i == rshift || m_r_i == 0) ? false : (top_pix > 0);
+#endif
+                    if (T_left) {
+                        if (T_top) {
                             // copy(top, left)
                             *curL = set_union(Pp, top_pix, left_pix);
                         } else {
@@ -179,7 +192,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
                             *curL = left_pix;
                         }
                     } else {
-                        if (T_d) {
+                        if (T_top) {
                             // copy(top)
                             *curL = top_pix;
                         } else {
@@ -196,10 +209,17 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
                         int* curL = Lcol + m_r_i;
                         const int top_pix = *(Lcol + m_r_i_prev);
                         const int left_pix = *(Lcol_prev + m_r_i);
-                        const bool T_b = T_b_r && (left_pix < 0);
-                        const bool T_d = (m_r_i == rshift || m_r_i == 0) ? false : (top_pix < 0);
-                        if (T_b) {
-                            if (T_d) {
+                        // Indicate if it is connected to left pixel
+                        const bool T_left = T_left_valid && (left_pix < 0);
+#ifdef FFTSHIFT
+                        // Indicate if it is connected to top pixel
+                        const bool T_top = (m_r_i == 0) ? false : (top_pix < 0);
+#else
+                        // Indicate if it is connected to top pixel
+                        const bool T_top = (m_r_i == rshift || m_r_i == 0) ? false : (top_pix < 0);
+#endif
+                        if (T_left) {
+                            if (T_top) {
                                 // copy(top, left)
                                 *curL = set_union(Pn, -top_pix, -left_pix) * (-1);
                             } else {
@@ -207,7 +227,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
                                 *curL = left_pix;
                             }
                         } else {
-                            if (T_d) {
+                            if (T_top) {
                                 // copy(top)
                                 *curL = top_pix;
                             } else {
@@ -221,10 +241,11 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
                 }
             }
 
-            // Process first pixel of each column
+#ifndef FFTSHIFT
+            // ROW BORDER MERGING (top and bottom matrix margins)
+            // Performs border merging between the first and last rows of the matrix
             const uint m_r_i = 0;
             const uint m_r_i_prev = rows - 1;
-
             int* curL = Lcol + m_r_i;
             if (*curL > 0) {
                 const int top_pix = *(Lcol + m_r_i_prev);
@@ -239,37 +260,42 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
                     }
                 }
             }
+#endif
         }
         uint idx = col_start / (grainsize);
         label_data_per_thread[idx] = LabelDataThread(col_start, lunique_start, lunique_p, lunique_n);
     },
         tbb::static_partitioner());
 
-    // Border merging
-    // for (uint c_i = grainsize; c_i < cols; c_i += grainsize) {
+    // COLUMN BORDER MERGING
     for (auto&& r : label_data_per_thread) {
         uint c_i = r.col_start;
+#ifdef FFTSHIFT
+        const uint m_c_i = c_i;
+        uint m_c_i_prev = m_c_i == 0 ? m_c_i : m_c_i - 1;
+#else
         const uint m_c_i = c_i >= cshift ? c_i - cshift : c_i + cshift;
-        assert(m_c_i < cols);
         uint m_c_i_prev = m_c_i == 0 ? cols - 1 : m_c_i - 1;
+#endif
+        assert(m_c_i < cols);
         assert(m_c_i_prev < cols);
 
         int* const Lcol = L.colptr(m_c_i);
         int* const Lcol_prev = L.colptr(m_c_i_prev);
 
-        const bool T_b_r = (c_i - 1) >= 0;
+        const bool T_left_valid = c_i != 0;
         for (uint m_r_i = 0; m_r_i < rows; m_r_i++) {
             int* curL = Lcol + m_r_i;
             const int cur_pix = *curL;
             if (cur_pix > 0) {
                 const int left_pix = *(Lcol_prev + m_r_i);
-                if (T_b_r && (left_pix > 0)) {
+                if (T_left_valid && (left_pix > 0)) {
                     *curL = set_union(Pp, cur_pix, left_pix);
                 }
             } else {
                 if (findNegative && (cur_pix < 0)) {
                     const int left_pix = *(Lcol_prev + m_r_i);
-                    if (T_b_r && (left_pix < 0)) {
+                    if (T_left_valid && (left_pix < 0)) {
                         *curL = set_union(Pn, -cur_pix, -left_pix) * (-1);
                     }
                 }

@@ -4,22 +4,24 @@ namespace stp {
 
 arma::uvec bounds_check_kernel_centre_locations(arma::imat& kernel_centre_indices, int support, int image_size)
 {
-    arma::uvec out_of_bounds_bool(kernel_centre_indices.n_rows);
+    arma::uvec good_vis(kernel_centre_indices.n_rows);
 
     int col = 0;
-    kernel_centre_indices.each_row([&out_of_bounds_bool, &image_size, &support, &col](arma::imat& r) {
+    kernel_centre_indices.each_row([&](arma::imat& r) {
         const int kc_x = r[0];
         const int kc_y = r[1];
 
-        if ((kc_x - support) < 0 || (kc_y - support) < 0 || (kc_x + support) >= image_size || (kc_y + support) >= image_size) {
-            out_of_bounds_bool[col] = 1;
+        // Note that in-bound kernels that touch the left and top margins are also considered as being out-of-bounds (see comparison: <= 0).
+        // This is to fix the non-symmetric issue on the complex gridded matrix caused by the even matrix size.
+        if ((kc_x - support) <= 0 || (kc_y - support) <= 0 || (kc_x + support) >= image_size || (kc_y + support) >= image_size) {
+            good_vis[col] = 0;
         } else {
-            out_of_bounds_bool[col] = 0;
+            good_vis[col] = 1;
         }
         col++;
     });
 
-    return arma::find(out_of_bounds_bool == 0);
+    return std::move(good_vis);
 }
 
 arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling)
@@ -43,6 +45,6 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
         oversampled_coord.at(i) = val;
     }
 
-    return oversampled_coord;
+    return std::move(oversampled_coord);
 }
 }

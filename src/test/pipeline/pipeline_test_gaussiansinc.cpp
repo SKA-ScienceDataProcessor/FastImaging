@@ -60,6 +60,7 @@ stp::source_find_image PipelineGaussianSincTest::run_pipeline()
     // Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
     arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
+    arma::mat input_snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
     arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
@@ -70,7 +71,8 @@ stp::source_find_image PipelineGaussianSincTest::run_pipeline()
 
     stp::GaussianSinc kernel_func(kernel_support);
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis,
-        input_uvw, image_size, cell_size, kernel_support, kernel_exact, oversampling, true, false, fft_routine);
+        input_snr_weights, input_uvw, image_size, cell_size, kernel_support, kernel_exact, oversampling,
+        false, fft_routine);
 
     return stp::source_find_image(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, true,
         sigma_clip_iters, binapprox_median, compute_barycentre, generate_labelmap);
@@ -98,11 +100,11 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_exact)
 
     EXPECT_EQ(label_idx, 1);
     EXPECT_EQ(sign, 1);
-    EXPECT_NEAR(extremum_val, 0.11044591791004721, tol);
+    EXPECT_NEAR(extremum_val, 0.11045229607808273, tol);
     EXPECT_EQ(extremum_x_idx, 824);
     EXPECT_EQ(extremum_y_idx, 872);
-    EXPECT_NEAR(xbar, 823.48702931776631, tol);
-    EXPECT_NEAR(ybar, 871.63929303122939, tol);
+    EXPECT_NEAR(xbar, 823.43531085768677, tol);
+    EXPECT_NEAR(ybar, 871.6159738346181, tol);
 }
 
 TEST_F(PipelineGaussianSincTest, test_gaussiansinc_oversampling)
@@ -127,9 +129,9 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_oversampling)
 
     EXPECT_EQ(label_idx, 1);
     EXPECT_EQ(sign, 1);
-    EXPECT_NEAR(extremum_val, 0.11010433719666947, tol);
+    EXPECT_NEAR(extremum_val, 0.11011325990132108, tol);
     EXPECT_EQ(extremum_x_idx, 824);
     EXPECT_EQ(extremum_y_idx, 872);
-    EXPECT_NEAR(xbar, 823.48708129637623, tol);
-    EXPECT_NEAR(ybar, 871.63974177729222, tol);
+    EXPECT_NEAR(xbar, 823.47443901655856, tol);
+    EXPECT_NEAR(ybar, 871.59409370275898, tol);
 }
