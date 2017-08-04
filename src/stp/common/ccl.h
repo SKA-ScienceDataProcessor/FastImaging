@@ -93,8 +93,10 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
 {
     const size_t cols = I.n_cols;
     const size_t rows = I.n_rows;
+#ifndef FFTSHIFT
     const size_t cshift = cols / 2;
     const size_t rshift = rows / 2;
+#endif
     assert(cols <= 65536);
     assert(rows <= 65536);
     // Assert cols and rows are power of two

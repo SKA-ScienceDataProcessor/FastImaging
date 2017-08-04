@@ -11,7 +11,7 @@ FFTSHIFT="OFF"
 # Generate fftw plans
 GENFFT=1
 
-while getopts "drifnh" OPTION
+while getopts "drifsnh" OPTION
 do
 	case $OPTION in
 		d)
@@ -56,6 +56,7 @@ echo
 echo " ***************** BUILD STP *****************"
 echo " >> BUILDTYPE = ${BUILDTYPE}"
 echo " >> USE_FLOAT = ${USEFLOAT}"
+echo " >> USE_FFTSHIFT = ${FFTSHIFT}"
 echo 
 echo " >> Create build directory in build/$BUILDTYPE"
 if [ -d build/$BUILDTYPE ] ; then

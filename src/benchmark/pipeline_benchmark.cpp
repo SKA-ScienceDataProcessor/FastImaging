@@ -31,7 +31,7 @@ stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residua
     result.second.reset();
 
     return stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
-        true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.generate_labelmap);
+        true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap);
 }
 
 static void pipeline_kernel_exact_benchmark(benchmark::State& state)

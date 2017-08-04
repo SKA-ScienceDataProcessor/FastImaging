@@ -35,10 +35,11 @@ find_negative = True
 sigma_clip_iters = 5
 binapprox_median = True
 compute_barycentre = True
+gaussian_fitting = True
 generate_labelmap = False
 
 # Call source_find
-islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative, sigma_clip_iters, binapprox_median, compute_barycentre, generate_labelmap)
+islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative, sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap)
 
 # Print result
 print(islands)

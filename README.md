@@ -31,6 +31,8 @@
 - [RapidJSON](https://github.com/miloyip/rapidjson) [1.1.0]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [spdlog](https://github.com/gabime/spdlog) [0.11.0]
+- [eigen](http://eigen.tuxfamily.org/) [3.3.4]
+- [ceres](http://ceres-solver.org/) [1.13.0rc1]
 
 ### Clone
 
@@ -156,6 +158,10 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 4 August 2017
+- Implemented gaussian fitting using ceres-solver
+- Fixed bugs
+
 ### 28 July 2017
 - Implemented baseline weighting feature
 - Changed normalisation of fft output by using weighting information

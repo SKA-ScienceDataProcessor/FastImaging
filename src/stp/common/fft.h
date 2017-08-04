@@ -1,19 +1,11 @@
 #ifndef FFT_H
 #define FFT_H
 
+#include "../types.h"
 #include "matrix_math.h"
 #include <armadillo>
 
 namespace stp {
-
-// Available FFT algorithms
-typedef enum {
-    FFTW_ESTIMATE_FFT,
-    FFTW_MEASURE_FFT,
-    FFTW_PATIENT_FFT,
-    FFTW_WISDOM_FFT,
-    FFTW_WISDOM_INPLACE_FFT, // This routine is not supported (source find will fail)
-} FFTRoutine;
 
 /**
  * @brief Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (complex to real FFT)

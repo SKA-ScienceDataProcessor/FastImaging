@@ -15,18 +15,18 @@ public:
     double theta;
 
     Gaussian2D(
-        double x_mean = 0.0,
-        double y_mean = 0.0,
-        double amplitude = 1.0,
-        double x_stddev = -1.5,
-        double y_stddev = -1.2,
-        double theta = 1.0)
-        : x_mean(x_mean)
-        , y_mean(y_mean)
-        , amplitude(amplitude)
-        , x_stddev(x_stddev)
-        , y_stddev(y_stddev)
-        , theta(theta)
+        double in_x_mean = 0.0,
+        double in_y_mean = 0.0,
+        double in_amplitude = 1.0,
+        double in_x_stddev = -1.5,
+        double in_y_stddev = -1.2,
+        double in_theta = 1.0)
+        : x_mean(in_x_mean)
+        , y_mean(in_y_mean)
+        , amplitude(in_amplitude)
+        , x_stddev(in_x_stddev)
+        , y_stddev(in_y_stddev)
+        , theta(in_theta)
     {
     }
     /**

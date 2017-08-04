@@ -57,6 +57,8 @@ public:
                 binapprox_median = config_document["binapprox_median"].GetBool();
             if (config_document.HasMember("compute_barycentre"))
                 compute_barycentre = config_document["compute_barycentre"].GetBool();
+            if (config_document.HasMember("gaussian_fitting"))
+                gaussian_fitting = config_document["gaussian_fitting"].GetBool();
             if (config_document.HasMember("generate_labelmap"))
                 generate_labelmap = config_document["generate_labelmap"].GetBool();
             if (config_document.HasMember("generate_beam"))
@@ -91,6 +93,7 @@ public:
     int sigma_clip_iters = 5;
     bool binapprox_median = true;
     bool compute_barycentre = true;
+    bool gaussian_fitting = false;
     bool generate_labelmap = false;
     bool generate_beam = false;
 

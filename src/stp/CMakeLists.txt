@@ -28,7 +28,8 @@ set(STP_SOURCE_FILES
 
 # Create the library as static
 add_library(${STP_TARGET_NAME} STATIC ${STP_SOURCE_FILES})
-add_dependencies(${STP_TARGET_NAME} tbb fftw openblas armadillo)
+add_dependencies(${STP_TARGET_NAME} tbb fftw openblas armadillo ceres)
 target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${STP_TARGET_NAME} tbb fftw openblas Threads::Threads armadillo)
+# Eigen target needs to be added, otherwise ceres headers no not find eigen include directory
+target_link_libraries(${STP_TARGET_NAME} tbb fftw openblas Threads::Threads armadillo ceres eigen)
 

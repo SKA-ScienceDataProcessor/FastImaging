@@ -12,7 +12,7 @@ arma::Mat<real_t> Gaussian2D::operator()(arma::uword n_rows, arma::uword n_cols)
     for (arma::uword i = 0; i < n_cols; ++i) {
         for (arma::uword j = 0; j < n_rows; ++j) {
             model.at(j, i) = amplitude * std::exp(-a * (i - x_mean) * (i - x_mean)
-                                             - b * (i - x_mean) * (j - y_mean)
+                                             - 2 * b * (i - x_mean) * (j - y_mean)
                                              - c * (j - y_mean) * (j - y_mean));
         }
     }

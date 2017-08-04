@@ -73,15 +73,25 @@ pybind11::tuple image_visibilities_wrapper(
  * @param[in] analysis_n_sigma (double): Analysis threshold as multiple of RMS.
  * @param[in] rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
  *                          Default = 0.0.
+ * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1). Default = true.
+ * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function. Default = 5.
+ * @param[in] binapprox_median (bool): Compute approximated median using the fast binapprox method. Default = false.
+ * @param[in] compute_barycentre (bool): Compute barycentric centre of each island. Default = true.
+ * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island. Default = false.
+ * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold. Default = true.
  *
  * @return (pybind11::list): List of tuples representing the source-detections.
- *                           Tuple components are as follows: (sign, val, x_idx, y_idx, xbar, ybar), where:
+ *                           Tuple components are as follows: (sign, val, x_idx, y_idx, xbar, ybar,
+ *                           amplitude, x0, y0, x_stddev, y_stddev, theta, ceres_report), where:
  *                             - 'sign' is +1 or -1 (int), representing whether the source is positive or negative;
  *                             - 'val' (double) is the 'extremum_val', i.e. max or min pixel value for the positive or negative source case;
  *                             - 'x_idx,y_idx' (int) are the pixel-index of the extremum value;
  *                             - 'xbar, ybar' (double) are 'centre-of-mass' locations for the source-detection island.
+ * The following are invalid if gaussian fitting is false:
+ *                             - Gaussian parameters (double): 'amplitude', 'x0', 'y0', 'x_stddev', 'y_stddev', 'theta'.
+ *                             - Ceres solver brief report (string).
  */
-std::vector<std::tuple<int, double, int, int, double, double>> source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, double, double, double, double, double, double, double, double, std::string>> source_find_wrapper(
     np_real_array image_data, // numpy.ndarray<np.float_>
     double detection_n_sigma,
     double analysis_n_sigma,
@@ -90,6 +100,7 @@ std::vector<std::tuple<int, double, int, int, double, double>> source_find_wrapp
     uint sigma_clip_iters,
     bool binapprox_median,
     bool compute_barycentre,
+    bool gaussian_fitting,
     bool generate_labelmap);
 }
 

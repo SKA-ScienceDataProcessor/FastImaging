@@ -128,7 +128,7 @@ pybind11::tuple image_visibilities_wrapper(
     return result;
 }
 
-std::vector<std::tuple<int, double, int, int, double, double>> source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, double, double, double, double, double, double, double, double, std::string>> source_find_wrapper(
     np_real_array image_data,
     double detection_n_sigma,
     double analysis_n_sigma,
@@ -137,6 +137,7 @@ std::vector<std::tuple<int, double, int, int, double, double>> source_find_wrapp
     uint sigma_clip_iters,
     bool binapprox_median,
     bool compute_barycentre,
+    bool gaussian_fitting,
     bool generate_labelmap)
 {
     assert(image_data.request().ndim == 2);
@@ -150,15 +151,15 @@ std::vector<std::tuple<int, double, int, int, double, double>> source_find_wrapp
 
     // Call source find function
     stp::source_find_image sfimage = stp::source_find_image(std::move(image_data_arma), detection_n_sigma, analysis_n_sigma, rms_est,
-        find_negative_sources, sigma_clip_iters, binapprox_median, compute_barycentre, generate_labelmap);
+        find_negative_sources, sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap);
 
     // Convert 'vector of stp::island' to 'vector of tuples'
-    std::vector<std::tuple<int, double, int, int, double, double>> v_islands;
+    std::vector<std::tuple<int, double, int, int, double, double, double, double, double, double, double, double, std::string>> v_islands;
     v_islands.reserve(sfimage.islands.size());
     for (auto&& i : sfimage.islands) {
-        v_islands.push_back(std::move(std::make_tuple(i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar)));
+        v_islands.push_back(std::move(std::make_tuple(i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar,
+            i.g_amplitude, i.g_x0, i.g_y0, i.g_x_stddev, i.g_y_stddev, i.g_theta, i.summary.BriefReport())));
     }
-
     return v_islands;
 }
 
@@ -190,7 +191,7 @@ PYBIND11_PLUGIN(stp_python)
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
         pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("binapprox_median") = false,
-        pybind11::arg("compute_barycentre") = true, pybind11::arg("generate_labelmap") = true);
+        pybind11::arg("compute_barycentre") = true, pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true);
 
     return m.ptr();
 }

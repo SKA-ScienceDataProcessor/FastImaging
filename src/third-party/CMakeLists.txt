@@ -38,6 +38,51 @@ add_subdirectory(pybind11)
 
 
 #############################
+# Dependency: eigen (3.3.4) #
+#############################
+set(EIGEN_TARGET_NAME eigen)
+set(EIGEN_PROJECT_NAME eigen_project)
+set(EIGEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${EIGEN_TARGET_NAME})
+set(EIGEN_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${EIGEN_TARGET_NAME})
+# Build from source using cmake.
+include(ExternalProject)
+ExternalProject_Add(
+    ${EIGEN_PROJECT_NAME}
+    URL ${EIGEN_SOURCE_DIR}
+    BUILD_IN_SOURCE 0
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EIGEN_INSTALL_DIR}
+    INSTALL_COMMAND make install
+)
+add_library(${EIGEN_TARGET_NAME} INTERFACE)
+target_include_directories(${EIGEN_TARGET_NAME} SYSTEM INTERFACE ${EIGEN_INSTALL_DIR}/include/eigen3)
+add_dependencies(${EIGEN_TARGET_NAME} ${EIGEN_PROJECT_NAME})
+# add_subdirectory(eigen) is not used because ceres library needs the eigen include directories
+
+
+#################################
+# Dependency: ceres (1.13.0rc1) #
+#################################
+set(BUILD_EXAMPLES OFF CACHE BOOL "Build examples.")
+set(BUILD_TESTING OFF CACHE BOOL "Enable tests.")
+set(CXX11 ON CACHE BOOL "Enable use of C++11 headers if available (requires client code use C++11).")
+set(MINIGLOG ON CACHE BOOL "Use a stripped down version of glog.")
+set(EXPORT_BUILD_DIR ON CACHE BOOL "Export build directory using CMake (enables external use without install).")
+# These variables tell that EIGEN is available, its version and include directories
+set(EIGEN_FOUND ON CACHE INTERNAL "")
+set(EIGEN_VERSION "3.3.4" CACHE INTERNAL "")
+set(EIGENSPARSE OFF CACHE INTERNAL "")
+set(EIGEN_INCLUDE_DIRS ${EIGEN_INSTALL_DIR}/include/eigen3 CACHE INTERNAL "")
+# LAPACK must be off.
+# In systems where Lapack is present, ceres tries to link with the system installed BLAS library, and consequently breaks some Armadillo functions.
+set(LAPACK OFF CACHE INTERNAL "")
+add_subdirectory(ceres)
+add_dependencies(ceres eigen)
+# The ceres CMake script does not export the interface include directory, so it must be explicitly specified here.
+target_include_directories(ceres SYSTEM INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ceres/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ceres/config> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ceres/internal/ceres/miniglog/>)
+
+
+#############################
 # Dependency: FFTW3 (3.3.5) #
 #############################
 set(FFTW_TARGET_NAME fftw)

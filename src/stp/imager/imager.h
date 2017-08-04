@@ -17,21 +17,6 @@ extern std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
 #endif
 
 /**
- * @brief The KernelFunction enum
- */
-enum struct KernelFunction {
-    TopHat = 0,
-    Triangle,
-    Sinc,
-    Gaussian,
-    GaussianSinc
-};
-
-// Image and beam data indices in std::pair structure
-const uint image_slice = 0;
-const uint beam_slice = 1;
-
-/**
  * @brief Convert the input visibilities to an array of half-plane visibilities.
  *
  * @param[in] uvw_lambda (arma::mat): UVW-coordinates of complex visibilities to be converted.

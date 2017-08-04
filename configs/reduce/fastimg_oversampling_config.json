@@ -13,6 +13,7 @@
 	"sigma_clip_iters": 5,
 	"binapprox_median": true,
 	"compute_barycentre": true,
+	"gaussian_fitting": true,
 	"generate_labelmap": false,
 	"generate_beam": false
 }

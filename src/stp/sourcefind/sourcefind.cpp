@@ -8,6 +8,7 @@
 #include "../common/matstp.h"
 #include <cassert>
 #include <tbb/tbb.h>
+#include <thread>
 
 #define NUM_TIME_INST 10
 
@@ -152,6 +153,7 @@ source_find_image::source_find_image(
     uint sigma_clip_iters,
     bool binapprox_median,
     bool compute_barycentre,
+    bool gaussian_fitting,
     bool generate_labelmap)
     : detection_n_sigma(input_detection_n_sigma)
     , analysis_n_sigma(input_analysis_n_sigma)
@@ -185,9 +187,9 @@ source_find_image::source_find_image(
     // Perform label detection (for both positive and negative sources)
     uint numValidLabels = 0;
     if (generate_labelmap) {
-        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, compute_barycentre);
+        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, compute_barycentre, gaussian_fitting);
     } else {
-        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, compute_barycentre);
+        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, compute_barycentre, gaussian_fitting);
     }
 
 #ifdef FUNCTION_TIMINGS
@@ -199,8 +201,10 @@ source_find_image::source_find_image(
     // Build vector of islands
     islands.reserve(numValidLabels);
 
+#ifndef FFTSHIFT
     int h_shift = input_data.n_cols / 2;
     int v_shift = input_data.n_rows / 2;
+#endif
 
     // Process positive islands
     for (size_t i = 0; i < label_extrema_id_pos.n_elem; i++) {
@@ -214,7 +218,8 @@ source_find_image::source_find_image(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            islands.push_back(std::move(island_params(label_extrema_id_pos.at(i), label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_barycentre_pos.col(i)(0), label_extrema_barycentre_pos.col(i)(1))));
+            islands.push_back(std::move(island_params(label_extrema_id_pos.at(i), label_extrema_val_pos.at(i), y_idx, x_idx,
+                label_extrema_barycentre_pos.col(i)(0), label_extrema_barycentre_pos.col(i)(1), label_extrema_boundingbox_pos[i])));
         }
     }
 
@@ -230,10 +235,21 @@ source_find_image::source_find_image(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            islands.push_back(std::move(island_params(label_extrema_id_neg.at(i), label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_barycentre_neg.col(i)(0), label_extrema_barycentre_neg.col(i)(1))));
+            islands.push_back(std::move(island_params(label_extrema_id_neg.at(i), label_extrema_val_neg.at(i), y_idx, x_idx,
+                label_extrema_barycentre_neg.col(i)(0), label_extrema_barycentre_neg.col(i)(1), label_extrema_boundingbox_neg[i])));
         }
     }
 
+    // Perform gaussian fitting for each island
+    if (gaussian_fitting) {
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, islands.size()), [&](const tbb::blocked_range<size_t>& r) {
+            const size_t& begin = r.begin();
+            const size_t& end = r.end();
+            for (size_t i = begin; i < end; i++) {
+                islands[i].fit_gaussian(input_data, label_map);
+            }
+        });
+    }
     assert(islands.size() == numValidLabels);
 
 #ifdef FUNCTION_TIMINGS
@@ -242,7 +258,7 @@ source_find_image::source_find_image(
 }
 
 template <bool generateLabelMap>
-uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool computeBarycentre)
+uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool compute_barycentre, bool gaussian_fitting)
 {
     // Compute analysis and detection thresholds
     const real_t analysis_thresh_pos = bg_level + analysis_n_sigma * rms_est;
@@ -346,7 +362,9 @@ uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, 
     label_extrema_id_neg.set_size(num_l_neg);
     label_extrema_barycentre_pos.set_size(2, num_l_pos);
     label_extrema_barycentre_neg.set_size(2, num_l_neg);
-    if (!computeBarycentre) {
+    label_extrema_boundingbox_pos.resize(num_l_pos);
+    label_extrema_boundingbox_neg.resize(num_l_neg);
+    if (!compute_barycentre) {
         label_extrema_barycentre_pos.zeros();
         label_extrema_barycentre_neg.zeros();
     }
@@ -373,13 +391,21 @@ uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, 
         }
     }
 
-    // Compute barycentric centre or/and generate updated label map (i.e. remove undetected labels)
-    if (computeBarycentre || generateLabelMap) {
+    // Compute barycentric centre or/and generate updated label map (i.e. remove undetected labels) and/or find bounding boxes
+    if (generateLabelMap || compute_barycentre || gaussian_fitting) {
 
         tbb::combinable<arma::Mat<double>> barycentre_pos(arma::Mat<double>(3, num_l_pos).zeros());
         tbb::combinable<arma::Mat<double>> barycentre_neg(arma::Mat<double>(3, num_l_neg).zeros());
-        int h_shift = data.n_cols / 2;
-        int v_shift = data.n_rows / 2;
+
+        // Stores the rectangular boxes defined around each source
+        if (gaussian_fitting) {
+            label_extrema_boundingbox_pos.assign(num_l_pos, BoundingBox(data.n_rows, -1, data.n_cols, -1)); // Init bounding box values
+            label_extrema_boundingbox_neg.assign(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1));
+        }
+#ifndef FFTSHIFT
+        int h_shift = (int)(data.n_cols / 2);
+        int v_shift = (int)(data.n_rows / 2);
+#endif
 
         tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_cols), [&](const tbb::blocked_range<size_t>& r) {
             size_t li = arma::sub2ind(arma::size(data), 0, r.begin());
@@ -414,16 +440,16 @@ uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, 
                         }
                     }
                     // Compute barycentre data
-                    if (computeBarycentre) {
+                    if (compute_barycentre) {
                         assert(idx > -1);
                         const double val = data.at(li);
 #ifdef FFTSHIFT
-                        const double y_idx = (int)j;
-                        const double x_idx = (int)i;
+                        const double y_idx = (double)j;
+                        const double x_idx = (double)i;
 #else
                         // Get shifted coordinates centered in the image
-                        const double y_idx = (int)j < v_shift ? j + v_shift : (int)j - v_shift;
-                        const double x_idx = (int)i < h_shift ? i + h_shift : (int)i - h_shift;
+                        const double y_idx = (int)j < v_shift ? (double)(j + v_shift) : (double)(j - v_shift);
+                        const double x_idx = (int)i < h_shift ? (double)(i + h_shift) : (double)(i - h_shift);
 #endif
                         if (label > 0) {
                             r_barycentre_pos.at(0, idx) += y_idx * val;
@@ -435,12 +461,49 @@ uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, 
                             r_barycentre_neg.at(2, idx) += val;
                         }
                     }
+
+                    if (gaussian_fitting) {
+#ifdef FFTSHIFT
+                        const int col = (int)i;
+                        const int row = (int)j;
+#else
+                        const int col = (int)i < h_shift ? (int)i + h_shift : (int)i - h_shift;
+                        const int row = (int)j < v_shift ? (int)j + v_shift : (int)j - v_shift;
+#endif
+                        if (label > 0) {
+                            if (col < label_extrema_boundingbox_pos[idx].left) {
+                                label_extrema_boundingbox_pos[idx].left = col;
+                            }
+                            if (col > label_extrema_boundingbox_pos[idx].right) {
+                                label_extrema_boundingbox_pos[idx].right = col;
+                            }
+                            if (row < label_extrema_boundingbox_pos[idx].top) {
+                                label_extrema_boundingbox_pos[idx].top = row;
+                            }
+                            if (row > label_extrema_boundingbox_pos[idx].bottom) {
+                                label_extrema_boundingbox_pos[idx].bottom = row;
+                            }
+                        } else {
+                            if (col < label_extrema_boundingbox_neg[idx].left) {
+                                label_extrema_boundingbox_neg[idx].left = col;
+                            }
+                            if (col > label_extrema_boundingbox_neg[idx].right) {
+                                label_extrema_boundingbox_neg[idx].right = col;
+                            }
+                            if (row < label_extrema_boundingbox_neg[idx].top) {
+                                label_extrema_boundingbox_neg[idx].top = row;
+                            }
+                            if (row > label_extrema_boundingbox_neg[idx].bottom) {
+                                label_extrema_boundingbox_neg[idx].bottom = row;
+                            }
+                        }
+                    }
                 }
             }
         });
 
         // Sum computations of each thread and set label_extrema_barycentre arrays
-        if (computeBarycentre) {
+        if (compute_barycentre) {
             auto all_barycentre_pos = barycentre_pos.combine([&](const arma::Mat<double>& x, const arma::Mat<double>& y) {
                 auto r = x + y;
                 return std::move(r);
@@ -473,17 +536,108 @@ island_params::island_params(
     const int l_extremum_coord_y,
     const int l_extremum_coord_x,
     const real_t barycentre_y,
-    const real_t barycentre_x)
+    const real_t barycentre_x,
+    const BoundingBox& box)
     : label_idx(label) // Label index
     , extremum_val(l_extremum)
     , extremum_y_idx(l_extremum_coord_y)
     , extremum_x_idx(l_extremum_coord_x)
     , ybar(barycentre_y)
     , xbar(barycentre_x)
+    , bounding_box(box)
+    , l_box_width(0)
+    , l_box_height(0)
+    , g_amplitude(0.0)
+    , g_x0(0.0)
+    , g_y0(0.0)
+    , g_x_stddev(0.0)
+    , g_y_stddev(0.0)
+    , g_theta(0.0)
+    , used_ceres(false)
 {
-
     // Determine if the label index is positive or negative
     sign = (label_idx < 0) ? -1 : 1;
+}
+
+void island_params::fit_gaussian(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map)
+{
+    // Compute size of bounding box
+    l_box_width = bounding_box.right - bounding_box.left + 1;
+    l_box_height = bounding_box.bottom - bounding_box.top + 1;
+
+// Get the number of residuals
+#ifndef FFTSHIFT
+    int h_shift = (int)(data.n_cols / 2);
+    int v_shift = (int)(data.n_rows / 2);
+#endif
+    int num_residuals = 0;
+    for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
+        for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
+#ifdef FFTSHIFT
+            const int& ii = i;
+            const int& jj = j;
+#else
+            const int ii = i < h_shift ? i + h_shift : i - h_shift;
+            const int jj = j < v_shift ? j + v_shift : j - v_shift;
+#endif
+            if (label_map.at(jj, ii) == label_idx) {
+                num_residuals++;
+            }
+        }
+    }
+
+    // Return if it is one-pixel source
+    if (num_residuals == 1) {
+        g_amplitude = extremum_val;
+        g_x0 = 0.0;
+        g_y0 = 0.0;
+        g_x_stddev = 0.0;
+        g_y_stddev = 0.0;
+        g_theta = 0.0;
+        return;
+    }
+
+    /*
+     *  Perform gaussian fitting
+     */
+
+    // Estimate initial x/y stddev from bounding box dimensions
+    double initial_x_stddev = (double)(l_box_width) / 4.0;
+    double initial_y_stddev = (double)(l_box_height) / 4.0;
+    assert(initial_x_stddev > 0.0);
+    assert(initial_y_stddev > 0.0);
+
+    // The variable to solve for with its initial value.
+    // It will be mutated in place by the solver.
+    // Variable fields: amplitude, x0, y0, x_stddev, y_stddev and theta
+    double gaussian_params[] = { extremum_val, xbar, ybar, initial_x_stddev, initial_y_stddev, 0.0 };
+
+    // Build the problem.
+    ceres::Problem problem;
+
+    // Set up the only cost function (also known as residual).
+    // This uses auto-differentiation to obtain the derivative (jacobian).
+    problem.AddResidualBlock(
+        new ceres::AutoDiffCostFunction<GaussianResiduals, ceres::DYNAMIC, 6>(
+            new GaussianResiduals(data, label_map, bounding_box, label_idx), num_residuals),
+        NULL, gaussian_params);
+
+    // Run the solver!
+    ceres::Solver::Options options;
+    options.logging_type = ceres::SILENT;
+    options.minimizer_progress_to_stdout = false;
+    options.minimizer_type = ceres::LINE_SEARCH;
+    options.line_search_direction_type = ceres::BFGS;
+    ceres::Solve(options, &problem, &summary);
+
+    // Save the results
+    g_amplitude = gaussian_params[0];
+    g_x0 = gaussian_params[1];
+    g_y0 = gaussian_params[2];
+    g_x_stddev = gaussian_params[3];
+    g_y_stddev = gaussian_params[4];
+    g_theta = gaussian_params[5];
+    used_ceres = true;
 }
 
 // Compares two island objects
@@ -492,19 +646,19 @@ bool island_params::operator==(const island_params& other) const
     if (sign != other.sign) {
         return false;
     }
-    if (xbar > other.xbar || xbar < other.xbar) {
+    if (std::abs(xbar - other.xbar) > tolerance) {
         return false;
     }
-    if (ybar > other.ybar || ybar < other.ybar) {
+    if (std::abs(ybar - other.ybar) > tolerance) {
         return false;
     }
-    if (extremum_x_idx > other.extremum_x_idx || extremum_x_idx < other.extremum_x_idx) {
+    if (extremum_x_idx != other.extremum_x_idx) {
         return false;
     }
-    if (extremum_y_idx > other.extremum_y_idx || extremum_y_idx < other.extremum_y_idx) {
+    if (extremum_y_idx != other.extremum_y_idx) {
         return false;
     }
-    if (extremum_val > other.extremum_val || extremum_val < other.extremum_val) {
+    if (std::abs(extremum_val - other.extremum_val) > tolerance) {
         return false;
     }
     return true;
