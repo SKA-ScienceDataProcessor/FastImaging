@@ -1,12 +1,3 @@
-/** @file conv_func_gaussian.cpp
- *  @brief Test Gaussian
- *
- *  TestCase to test the gaussian convolution function
- *  test with array input
- *
- *  @bug No known bugs.
- */
-
 #include <cblas.h>
 #include <common/matrix_math.h>
 #include <fixtures.h>
@@ -15,69 +6,69 @@
 
 using namespace stp;
 
-long size = 2048;
+const double math_tolerance = 1.0e-5;
 
-#ifdef USE_FLOAT
-const double dtolerance = 1.0e-3;
-#else
-const double dtolerance = 1.0e-5;
-#endif
+// Fixture class that builds matrix data for each unit test
+class MatrixMathTest : public ::testing::Test {
+public:
+    void SetUp()
+    {
+        size = 512;
+        data = uncorrelated_gaussian_noise_background(size, size);
+    }
+    arma::Mat<real_t> data;
+    long size;
+};
 
 // Test the Matrix accumulate function
-TEST(MatrixAccumulateFunction, AccuValue)
+TEST_F(MatrixMathTest, MatrixAccumulateFunction)
 {
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
     double arma_accu = arma::accu(arma::conv_to<arma::Mat<double>>::from(data));
     double m_accu = stp::mat_accumulate(data);
 
-    EXPECT_NEAR(arma_accu, m_accu, dtolerance);
+    EXPECT_NEAR(arma_accu, m_accu, math_tolerance);
 }
 
 // Test the Matrix accumulate parallel function
-TEST(MatrixAccumulateParallelFunction, ParAccuValue)
+TEST_F(MatrixMathTest, MatrixAccumulateParallelFunction)
 {
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
     double arma_accu = arma::accu(arma::conv_to<arma::Mat<double>>::from(data));
     double m_accu = stp::mat_accumulate_parallel(data);
 
-    EXPECT_NEAR(arma_accu, m_accu, dtolerance);
+    EXPECT_NEAR(arma_accu, m_accu, math_tolerance);
 }
 
 // Test the Matrix mean function
-TEST(MatrixMeanFunction, MeanValue)
+TEST_F(MatrixMathTest, MatrixMeanFunction)
 {
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
     double arma_mean = arma::mean(arma::vectorise(data));
     double m_mean = stp::mat_mean(data);
 
-    EXPECT_NEAR(arma_mean, m_mean, dtolerance);
+    EXPECT_NEAR(arma_mean, m_mean, math_tolerance);
 }
 
 // Test the Matrix mean parallel function
-TEST(MatrixMeanParallelFunction, ParMeanValue)
+TEST_F(MatrixMathTest, MatrixMeanParallelFunction)
 {
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
     double arma_mean = arma::mean(arma::vectorise(data));
     double m_mean = stp::mat_mean_parallel(data);
 
-    EXPECT_NEAR(arma_mean, m_mean, dtolerance);
+    EXPECT_NEAR(arma_mean, m_mean, math_tolerance);
 }
 
 // Test the Matrix stddev parallel function
-TEST(MatrixStddevParallelFunction, ParStddevValue)
+TEST_F(MatrixMathTest, MatrixStddevParallelFunction)
 {
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
     double arma_std = arma::stddev(arma::vectorise(arma::conv_to<arma::Mat<double>>::from(data)));
     double m_std = stp::mat_stddev_parallel(data);
 
-    EXPECT_NEAR(arma_std, m_std, dtolerance);
+    EXPECT_NEAR(arma_std, m_std, math_tolerance);
 }
 
 // Test matrix inplace division function
-TEST(MatrixInplaceDivFunction, MatrixInplaceDiv)
+TEST_F(MatrixMathTest, MatrixInplaceDivFunction)
 {
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size);
-    double a = 0.03549;
+    double a = 0.3549;
 
     arma::Mat<real_t> div_arma = data;
     arma::Mat<real_t> div_tbb = data;
@@ -102,34 +93,31 @@ TEST(MatrixInplaceDivFunction, MatrixInplaceDiv)
     cblas_dscal(n_elem, (1.0 / a), div_cblas.memptr(), 1);
 #endif
 
-    EXPECT_TRUE(arma::approx_equal(div_arma, div_tbb, "absdiff", dtolerance));
-    EXPECT_TRUE(arma::approx_equal(div_arma, div_cblas, "absdiff", dtolerance)); //We need to reduce tolerance value
+    EXPECT_TRUE(arma::approx_equal(div_arma, div_tbb, "absdiff", math_tolerance));
+    EXPECT_TRUE(arma::approx_equal(div_arma, div_cblas, "absdiff", math_tolerance)); //We need to reduce tolerance value
 }
 
 // Test matrix shift function
-TEST(MatrixShiftFunction, MatrixShift)
+TEST_F(MatrixMathTest, MatrixShiftFunction)
 {
-    arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size);
     arma::Mat<real_t> arma_out, matrix_out;
 
-    arma_out = stp::matrix_shift(m, size / 2, 0);
-    matrix_out = arma::shift(m, size / 2, 0);
+    arma_out = stp::matrix_shift(data, size / 2, 0);
+    matrix_out = arma::shift(data, size / 2, 0);
     EXPECT_TRUE(arma::approx_equal(arma_out, matrix_out, "absdiff", 0));
 
-    arma_out = stp::matrix_shift(m, size / 2, 1);
-    matrix_out = arma::shift(m, size / 2, 1);
+    arma_out = stp::matrix_shift(data, size / 2, 1);
+    matrix_out = arma::shift(data, size / 2, 1);
     EXPECT_TRUE(arma::approx_equal(arma_out, matrix_out, "absdiff", 0));
 }
 
 // Test the Matrix mean and stddev functions
-TEST(MatrixMeanStdDevFunction, MeanStdDev)
+TEST_F(MatrixMathTest, MatrixMeanStdDevFunction)
 {
-    double sigma = 0.5;
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma);
     double arma_mean = arma::mean(arma::vectorise(data));
     double arma_sigma = arma::stddev(arma::vectorise(data));
     auto d_stats = stp::mat_mean_and_stddev(data);
 
-    EXPECT_NEAR(arma_mean, d_stats.mean, dtolerance);
-    EXPECT_NEAR(arma_sigma, d_stats.sigma, dtolerance);
+    EXPECT_NEAR(arma_mean, d_stats.mean, math_tolerance);
+    EXPECT_NEAR(arma_sigma, d_stats.sigma, math_tolerance);
 }

@@ -1,10 +1,8 @@
-/** @file imager_func_Gaussian.cpp
+/** @file imager_test_Gaussian.cpp
  *  @brief Test imager with Gaussian
  *
  *  TestCase to test the imager-imager
  *  implementation with gaussian convolution
- *
- *  @bug No known bugs.
  */
 
 #include "load_json_imager.h"
@@ -49,20 +47,20 @@ public:
 TEST(ImagerGaussian, SmallImage)
 {
     imager_test_gaussian gaussian_small_image("gaussian", "small_image");
-    EXPECT_TRUE(arma::approx_equal(gaussian_small_image.result.first, arma::real(gaussian_small_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(gaussian_small_image.result.second, arma::real(gaussian_small_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussian_small_image.result.first, arma::real(gaussian_small_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussian_small_image.result.second, arma::real(gaussian_small_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerGaussian, MediumImage)
 {
     imager_test_gaussian gaussian_medium_image("gaussian", "medium_image");
-    EXPECT_TRUE(arma::approx_equal(gaussian_medium_image.result.first, arma::real(gaussian_medium_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(gaussian_medium_image.result.second, arma::real(gaussian_medium_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussian_medium_image.result.first, arma::real(gaussian_medium_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussian_medium_image.result.second, arma::real(gaussian_medium_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerGaussian, LargeImage)
 {
     imager_test_gaussian gaussian_large_image("gaussian", "large_image");
-    EXPECT_TRUE(arma::approx_equal(gaussian_large_image.result.first, arma::real(gaussian_large_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(gaussian_large_image.result.second, arma::real(gaussian_large_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussian_large_image.result.first, arma::real(gaussian_large_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussian_large_image.result.second, arma::real(gaussian_large_image.expected_result.second), "absdiff", fptolerance));
 }

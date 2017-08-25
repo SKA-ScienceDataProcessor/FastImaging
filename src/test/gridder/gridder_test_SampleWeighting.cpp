@@ -56,14 +56,14 @@ TEST_F(GridderSampleWeighting, zero_weighting)
     zeros_array.zeros();
 
     EXPECT_TRUE(arma::accu(vis) != 0.);
-    EXPECT_TRUE(arma::approx_equal(result.first, zeros_array, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result.first, zeros_array, "absdiff", fptolerance));
 
     kernel_exact = false;
     oversampling = 5;
     // kernel-cache
     result = run_gridder();
 
-    EXPECT_TRUE(arma::approx_equal(result.first, zeros_array, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result.first, zeros_array, "absdiff", fptolerance));
 }
 
 // Confirm natural weighting works as expected in most basic non-zero case
@@ -90,6 +90,6 @@ TEST_F(GridderSampleWeighting, natural_weighting)
         { 0., 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    EXPECT_TRUE(arma::approx_equal(expected_sample_locations, result.second / arma::accu(result.second), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(expected_sample_locations * natural_weighted_sum, result.first / arma::accu(result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_sample_locations, result.second / arma::accu(result.second), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_sample_locations * natural_weighted_sum, result.first / arma::accu(result.second), "absdiff", fptolerance));
 }

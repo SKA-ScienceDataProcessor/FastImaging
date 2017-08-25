@@ -1,0 +1,5 @@
+<map id="stp::estimate_rms" name="stp::estimate_rms">
+<area shape="rect" id="node2" href="$namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="180,31,363,57"/>
+<area shape="rect" id="node3" href="$namespacestp.html#aaec4a7dcd30598f388f96794a9c44c68" title="Compute matrix mean and standard deviation at once. " alt="" coords="411,5,593,32"/>
+<area shape="rect" id="node4" href="$namespacestp.html#a289ceab89f470979ff8f3a16af91b382" title="Compute exact median using nth_element function. " alt="" coords="423,56,581,83"/>
+</map>

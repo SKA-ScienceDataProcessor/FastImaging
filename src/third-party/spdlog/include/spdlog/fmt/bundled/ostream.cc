@@ -7,8 +7,7 @@
  For the license information refer to format.h.
  */
 
-// Commented out by spdlog to use header only
-// #include "fmt/ostream.h"
+#include "ostream.h"
 
 namespace fmt {
 

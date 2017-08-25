@@ -1,10 +1,8 @@
-/** @file conv_func_gaussiansinc.cpp
+/** @file conv_test_gaussiansinc.cpp
  *  @brief Test GaussianSinc
  *
  *  TestCase to test the gaussiansinc convolution function
  *  test with array input.
- *
- *  @bug No known bugs.
  */
 
 #include <gtest/gtest.h>
@@ -39,5 +37,5 @@ TEST(ConvGaussianSincFunc, test_conv_funcs_test_gaussian_sinc)
         0.0
     };
 
-    EXPECT_TRUE(arma::approx_equal(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc)(input), output, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc)(input), output, "absdiff", fptolerance));
 }

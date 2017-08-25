@@ -1,6 +1,6 @@
 /**
 * @file visibility.h
-* Contains the prototypes of visibility functions
+* @brief Function prototypes of visibility.
 */
 
 #ifndef VISIBILITY_H

@@ -57,17 +57,17 @@ public:
 TEST_F(GridderSinglePixelOverlapPillbox, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(arma::real(result.first)) }, arma::cx_mat{ accu(arma::real(vis)) }, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ accu(arma::real(result.first)) }, arma::cx_mat{ accu(arma::real(vis)) }, "absdiff", fptolerance));
 }
 
 TEST_F(GridderSinglePixelOverlapPillbox, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal((expected_result * accu(arma::real(vis))), arma::real(result.first), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal((expected_result * accu(arma::real(vis))), arma::real(result.first), "absdiff", fptolerance));
 }
 
 TEST_F(GridderSinglePixelOverlapPillbox, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal((expected_result * uv.n_cols), arma::real(result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal((expected_result * uv.n_cols), arma::real(result.second), "absdiff", fptolerance));
 }

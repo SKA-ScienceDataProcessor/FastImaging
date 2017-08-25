@@ -1,7 +1,6 @@
-/** @file stp.h
- *  @brief Include of main functions of STP library
- *
- *  @bug No known bugs.
+/**
+ * @file stp.h
+ * @brief Includes main headers of STP library.
  */
 
 #ifndef STP_H

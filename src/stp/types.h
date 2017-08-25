@@ -1,7 +1,6 @@
-/** @file types.h
- *  @brief Include of types
- *
- *  @bug No known bugs.
+/**
+ * @file types.h
+ * @brief Type definitions, global variables and enumerations.
  */
 
 #ifndef TYPES_H
@@ -19,32 +18,54 @@ using cx_real_t = std::complex<double>;
 #endif
 
 #ifdef USE_FLOAT
-const real_t tolerance = 1.0e-5;
+const real_t fptolerance = 1.0e-5;
 #else
-const real_t tolerance = 1.0e-10;
+const real_t fptolerance = 1.0e-10;
 #endif
 
 namespace stp {
 
 /**
- * @brief The KernelFunction enum
+ * @brief Enum of available kernel functions
  */
 enum struct KernelFunction {
-    TopHat = 0,
+    TopHat,
     Triangle,
     Sinc,
     Gaussian,
     GaussianSinc
 };
 
-// Available FFT algorithms
-typedef enum {
+/**
+ * @brief Enum of available FFT algorithms
+ */
+enum struct FFTRoutine {
     FFTW_ESTIMATE_FFT,
     FFTW_MEASURE_FFT,
     FFTW_PATIENT_FFT,
     FFTW_WISDOM_FFT,
-    FFTW_WISDOM_INPLACE_FFT, // This routine is not supported (source find will fail)
-} FFTRoutine;
+    FFTW_WISDOM_INPLACE_FFT, // This option is not supported (source find fails)
+};
+
+/**
+ * @brief Enum of available differentiation methods used by ceres library for gaussian fitting.
+ */
+enum struct CeresDiffMethod {
+    AutoDiff,
+    AutoDiff_SingleResBlk,
+    AnalyticDiff,
+    AnalyticDiff_SingleResBlk,
+};
+
+/**
+ * @brief Enum of available solver types used by ceres library for gaussian fitting.
+ */
+enum struct CeresSolverType {
+    LinearSearch_BFGS,
+    LinearSearch_LBFGS,
+    TrustRegion_DenseQR,
+};
+
 } // stp namespace
 
 #endif /* TYPES_H */

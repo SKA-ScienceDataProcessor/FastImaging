@@ -1,8 +1,7 @@
-/** @file gridder_test_benchmark.cpp
- *  @brief Test Gridder module performance
- *
- *  @bug No known bugs.
+/** @file pipeline_benchmark.cpp
+ *  @brief Test pipeline performance
  */
+
 #include <armadillo>
 #include <benchmark/benchmark.h>
 #include <load_data.h>
@@ -21,16 +20,16 @@ std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 std::string wisdom_path(_WISDOM_FILEPATH);
 
-stp::source_find_image run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_vis, arma::mat& vis_weights, int image_size, ConfigurationFile& cfg)
+stp::SourceFindImage run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_vis, arma::mat& vis_weights, int image_size, ConfigurationFile& cfg)
 {
     std::string wisdom_filename = wisdom_path + "WisdomFile_rob" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, vis_weights, uvw_lambda, image_size,
-        cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, false, stp::FFTW_WISDOM_FFT, wisdom_filename);
+        cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, false, stp::FFTRoutine::FFTW_WISDOM_FFT, wisdom_filename);
     result.second.reset();
 
-    return stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
+    return stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
         true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap);
 }
 

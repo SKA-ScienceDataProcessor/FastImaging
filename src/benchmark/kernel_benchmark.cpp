@@ -1,7 +1,5 @@
-/** @file kernel_test_benchmark.cpp
+/** @file kernel_benchmark.cpp
  *  @brief Test kernel module performance
- *
- *  @bug No known bugs.
  */
 
 #include <benchmark/benchmark.h>

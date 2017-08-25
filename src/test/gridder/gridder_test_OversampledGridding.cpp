@@ -32,5 +32,5 @@ TEST(GridderOversampledGridding, equal)
     Triangle triangle(2.0);
     GridderOutput result = convolve_to_grid<true>(triangle, support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, false, true, false, false);
 
-    EXPECT_TRUE(arma::accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.sampling_grid))) - arma::accu(arma::real(vis)) < tolerance);
+    EXPECT_TRUE(arma::accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.sampling_grid))) - arma::accu(arma::real(vis)) < fptolerance);
 }

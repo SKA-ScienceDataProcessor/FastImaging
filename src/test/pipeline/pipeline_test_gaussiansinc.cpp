@@ -8,10 +8,12 @@ using namespace stp;
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string data_path(_PIPELINE_DATAPATH);
 std::string input_npz("simdata_nstep10.npz");
+
+// As the results are compared with python output (which uses double type) the float case presents larger error
 #ifdef USE_FLOAT
-const double tol(1.0e-4);
+const double pipeline_tolerance(1.0e-4);
 #else
-const double tol(1.0e-12);
+const double pipeline_tolerance(1.0e-12);
 #endif
 
 class PipelineGaussianSincTest : public ::testing::Test {
@@ -36,7 +38,7 @@ public:
         generate_labelmap = cfg.generate_labelmap;
     }
 
-    stp::source_find_image run_pipeline();
+    stp::SourceFindImage run_pipeline();
 
     // Configuration parameters
     int image_size;
@@ -55,7 +57,7 @@ public:
     bool generate_labelmap;
 };
 
-stp::source_find_image PipelineGaussianSincTest::run_pipeline()
+stp::SourceFindImage PipelineGaussianSincTest::run_pipeline()
 {
     // Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
@@ -74,7 +76,7 @@ stp::source_find_image PipelineGaussianSincTest::run_pipeline()
         input_snr_weights, input_uvw, image_size, cell_size, kernel_support, kernel_exact, oversampling,
         false, fft_routine);
 
-    return stp::source_find_image(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, true,
+    return stp::SourceFindImage(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, true,
         sigma_clip_iters, binapprox_median, compute_barycentre, generate_labelmap);
 }
 
@@ -85,7 +87,7 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_exact)
     SetUp(config_path + configfile);
 
     // Run pipeline based on the loaded configurations
-    stp::source_find_image sfimage = run_pipeline();
+    stp::SourceFindImage sfimage = run_pipeline();
 
     int total_islands = sfimage.islands.size();
     EXPECT_EQ(total_islands, 1);
@@ -100,11 +102,11 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_exact)
 
     EXPECT_EQ(label_idx, 1);
     EXPECT_EQ(sign, 1);
-    EXPECT_NEAR(extremum_val, 0.11045229607808273, tol);
+    EXPECT_NEAR(extremum_val, 0.11045229607808273, pipeline_tolerance);
     EXPECT_EQ(extremum_x_idx, 824);
     EXPECT_EQ(extremum_y_idx, 872);
-    EXPECT_NEAR(xbar, 823.43531085768677, tol);
-    EXPECT_NEAR(ybar, 871.6159738346181, tol);
+    EXPECT_NEAR(xbar, 823.43531085768677, pipeline_tolerance);
+    EXPECT_NEAR(ybar, 871.6159738346181, pipeline_tolerance);
 }
 
 TEST_F(PipelineGaussianSincTest, test_gaussiansinc_oversampling)
@@ -114,7 +116,7 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_oversampling)
     SetUp(config_path + configfile);
 
     // Run pipeline based on the loaded configurations
-    stp::source_find_image sfimage = run_pipeline();
+    stp::SourceFindImage sfimage = run_pipeline();
 
     int total_islands = sfimage.islands.size();
     EXPECT_EQ(total_islands, 1);
@@ -129,9 +131,9 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_oversampling)
 
     EXPECT_EQ(label_idx, 1);
     EXPECT_EQ(sign, 1);
-    EXPECT_NEAR(extremum_val, 0.11011325990132108, tol);
+    EXPECT_NEAR(extremum_val, 0.11011325990132108, pipeline_tolerance);
     EXPECT_EQ(extremum_x_idx, 824);
     EXPECT_EQ(extremum_y_idx, 872);
-    EXPECT_NEAR(xbar, 823.47443901655856, tol);
-    EXPECT_NEAR(ybar, 871.59409370275898, tol);
+    EXPECT_NEAR(xbar, 823.47443901655856, pipeline_tolerance);
+    EXPECT_NEAR(ybar, 871.59409370275898, pipeline_tolerance);
 }

@@ -67,7 +67,7 @@ set(BUILD_TESTING OFF CACHE BOOL "Enable tests.")
 set(CXX11 ON CACHE BOOL "Enable use of C++11 headers if available (requires client code use C++11).")
 set(MINIGLOG ON CACHE BOOL "Use a stripped down version of glog.")
 set(EXPORT_BUILD_DIR ON CACHE BOOL "Export build directory using CMake (enables external use without install).")
-# These variables tell that EIGEN is available, its version and include directories
+# These variables tell that EIGEN is available (in-source third-party), its version and include directories
 set(EIGEN_FOUND ON CACHE INTERNAL "")
 set(EIGEN_VERSION "3.3.4" CACHE INTERNAL "")
 set(EIGENSPARSE OFF CACHE INTERNAL "")
@@ -75,6 +75,10 @@ set(EIGEN_INCLUDE_DIRS ${EIGEN_INSTALL_DIR}/include/eigen3 CACHE INTERNAL "")
 # LAPACK must be off.
 # In systems where Lapack is present, ceres tries to link with the system installed BLAS library, and consequently breaks some Armadillo functions.
 set(LAPACK OFF CACHE INTERNAL "")
+# Suppress logs written by ceres minilog if not in debug mode
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DMAX_LOG_LEVEL=-1)
+endif()
 add_subdirectory(ceres)
 add_dependencies(ceres eigen)
 # The ceres CMake script does not export the interface include directory, so it must be explicitly specified here.

@@ -18,9 +18,9 @@ public:
         double in_x_mean = 0.0,
         double in_y_mean = 0.0,
         double in_amplitude = 1.0,
-        double in_x_stddev = -1.5,
-        double in_y_stddev = -1.2,
-        double in_theta = 1.0)
+        double in_x_stddev = 1.0,
+        double in_y_stddev = 1.0,
+        double in_theta = 0.0)
         : x_mean(in_x_mean)
         , y_mean(in_y_mean)
         , amplitude(in_amplitude)

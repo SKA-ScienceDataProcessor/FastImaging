@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <spdlog/details/log_msg.h>
+#include "spdlog/details/log_msg.h"
 
 namespace spdlog
 {
@@ -15,7 +15,10 @@ namespace sinks
 class sink
 {
 public:
-    sink(): _level( level::trace ) {}
+    sink()
+    {
+        _level = level::trace;
+    }
 
     virtual ~sink() {}
     virtual void log(const details::log_msg& msg) = 0;

@@ -1,10 +1,8 @@
-/** @file imager_func.h
+/** @file load_json_imager.h
  *  @brief Header file for the imager tests
  *
  *  Reads the imager configuration json and
  *  loads the values onto variables
- *
- *  @bug No known bugs.
  */
 
 #include <stp.h>

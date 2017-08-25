@@ -1,6 +1,7 @@
 /**
 * @file reduce.cpp
-* Main file of reduce
+* @brief Main file of reduce
+*
 * Contains the main function. Creates and configures the TCLAP interface.
 * Calls pipeline funtion and saves the results.
 */
@@ -111,6 +112,8 @@ int main(int argc, char** argv)
         _logger->info(" - gaussian_fitting={}", cfg.gaussian_fitting);
         _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
         _logger->info(" - generate_beam={}", cfg.generate_beam);
+        _logger->info(" - ceres_diffmethod={}", cfg.s_ceres_diffmethod);
+        _logger->info(" - ceres_solvertype={}", cfg.s_ceres_solvertype);
         _logger->info("Running pipeline");
     }
 
@@ -170,8 +173,9 @@ int main(int argc, char** argv)
 #endif
 
     // Run source find
-    stp::source_find_image sfimage = stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
-        cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap);
+    stp::SourceFindImage sfimage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms, true,
+        cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap,
+        cfg.ceres_diffmethod, cfg.ceres_solvertype);
 
 #ifdef FUNCTION_TIMINGS
     times_red.push_back(std::chrono::high_resolution_clock::now());
@@ -204,13 +208,10 @@ int main(int argc, char** argv)
                 island_num, i.label_idx, i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar);
             if (cfg.gaussian_fitting) {
                 _logger->info("   Bounding box: top={}, bottom={}, left={}, right={}, width={}, height={}",
-                    i.bounding_box.top, i.bounding_box.bottom, i.bounding_box.left, i.bounding_box.right, i.l_box_width, i.l_box_height);
-                _logger->info("   Gaussian fitting: amplitude={}, x0={}, y0={}, x_stddev={}, y_stddev={}, theta={}",
-                    i.g_amplitude, i.g_x0, i.g_y0, i.g_x_stddev, i.g_y_stddev, i.g_theta);
-                if (i.used_ceres) {
-                    _logger->info("   {}", i.summary.BriefReport());
-                }
-                _logger->info("   {}", i.summary.message);
+                    i.bounding_box.top, i.bounding_box.bottom, i.bounding_box.left, i.bounding_box.right, i.bounding_box.get_width(), i.bounding_box.get_height());
+                _logger->info("   Gaussian fitting: amplitude={}, x_centre={}, y_centre={}, semimajor={}, semiminor={}, theta={}",
+                    i.fit.amplitude, i.fit.x_centre, i.fit.y_centre, i.fit.semimajor, i.fit.semiminor, i.fit.theta);
+                _logger->info("   {}", i.ceres_report);
                 _logger->info("");
             }
             island_num++;

@@ -1,6 +1,7 @@
 /**
 * @file run_imagevis.cpp
-* Main file for run image visibilities function
+* @brief Main file for run image visibilities function
+*
 * Contains the main function. Creates and configures the TCLAP interface.
 * Calls image visibilities funtion and savess the results.
 */

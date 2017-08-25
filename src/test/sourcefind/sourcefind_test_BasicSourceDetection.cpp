@@ -1,8 +1,6 @@
 /** @file sourcefind_testBasicSourceDetection.cpp
  *  @brief Test SourceFindImage module implementation
  *         for a basic source detection
- *
- *  @bug No known bugs.
  */
 
 #include <fixtures.h>
@@ -26,9 +24,12 @@ private:
     double faint_x_centre;
     double faint_y_centre;
     double faint_amplitude;
+    double source_x_stddev;
+    double source_y_stddev;
+    double source_theta;
     bool find_negative_sources;
 
-    island_params found_src;
+    IslandParams found_src;
     Gaussian2D bright_src;
     Gaussian2D faint_src;
     arma::Mat<real_t> img;
@@ -53,9 +54,16 @@ public:
         faint_y_centre = 64;
         faint_amplitude = 3.5;
 
-        bright_src = gaussian_point_source(bright_x_centre, bright_y_centre, bright_amplitude);
-        faint_src = gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude);
+        source_x_stddev = 1.5;
+        source_y_stddev = 1.2;
+        source_theta = 1.0;
+
+        bright_src = gaussian_point_source(bright_x_centre, bright_y_centre, bright_amplitude, source_x_stddev, source_y_stddev, source_theta);
+        faint_src = gaussian_point_source(faint_x_centre, faint_y_centre, faint_amplitude, source_x_stddev, source_y_stddev, source_theta);
         img = arma::zeros<arma::Mat<real_t>>(ydim, xdim);
+
+        // Run source find
+        run();
     }
 
     void run()
@@ -65,7 +73,7 @@ public:
         // Input data needs to be shifted because source_find assumes it is shifted (required when FFTSHIFT option is disabled)
         fftshift(img);
 #endif
-        source_find_image sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        SourceFindImage sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
 #ifndef FFTSHIFT
         fftshift(img);
 #endif
@@ -83,7 +91,7 @@ public:
 #ifndef FFTSHIFT
         fftshift(img);
 #endif
-        sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        sf = SourceFindImage(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
 #ifndef FFTSHIFT
         fftshift(img);
 #endif
@@ -93,7 +101,7 @@ public:
 #ifndef FFTSHIFT
         fftshift(img);
 #endif
-        sf = source_find_image(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        sf = SourceFindImage(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
 #ifndef FFTSHIFT
         fftshift(img);
 #endif
@@ -112,42 +120,35 @@ public:
 
 TEST_F(SourceFindBasicSourceDetection, Total_islands0)
 {
-    run();
     EXPECT_EQ(total_islands0, 1);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Absolute_x_idx)
 {
-    run();
     EXPECT_LT(absolute_x_idx, 0.5);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Absolute_y_idx)
 {
-    run();
     EXPECT_LT(absolute_y_idx, 0.5);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Absolute_xbar)
 {
-    run();
     EXPECT_LT(absolute_xbar, 0.1);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Absolute_ybar)
 {
-    run();
     EXPECT_LT(absolute_ybar, 0.1);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Total_islands1)
 {
-    run();
     EXPECT_EQ(total_islands1, 1);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Total_islands2)
 {
-    run();
     EXPECT_EQ(total_islands2, 2);
 }

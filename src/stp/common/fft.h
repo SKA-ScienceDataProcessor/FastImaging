@@ -1,3 +1,8 @@
+/**
+* @file fft.h
+* @brief Function prototypes of FFT.
+*/
+
 #ifndef FFT_H
 #define FFT_H
 
@@ -17,7 +22,7 @@ namespace stp {
  * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
  * @param[in] wisdom_filename (string) : FFTW wisdom filename (optional)
  */
-void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRoutine r_fft = FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
+void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
 
 /**
  * @brief Performs the forward fast fourier transform on a real matrix using the FFTW library (real to complex FFT)
@@ -29,7 +34,7 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
  * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
  * @param[in] wisdom_filename (string) : FFTW wisdom filename (optional)
  */
-void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRoutine r_fft = FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
+void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
 
 /**
  * @brief Generates a hermitian matrix from the non-redundant values

@@ -6,7 +6,7 @@
 #include <rapidjson/filewritestream.h>
 #include <rapidjson/writer.h>
 
-void save_json_sourcefind_output(std::string& filename, stp::source_find_image& sf)
+void save_json_sourcefind_output(std::string& filename, stp::SourceFindImage& sf)
 {
     rapidjson::Document doc;
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();

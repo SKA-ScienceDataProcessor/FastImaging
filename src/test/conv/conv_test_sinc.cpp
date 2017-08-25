@@ -1,10 +1,8 @@
-/** @file conv_func_sinc.cpp
+/** @file conv_test_sinc.cpp
  *  @brief Test Sinc
  *
  *  TestCase to test the sinc convolution function
  *  test with array input.
- *
- *  @bug No known bugs.
  */
 
 #include <gtest/gtest.h>
@@ -26,5 +24,5 @@ TEST(ConvSincFunc, conv_funcs_sinc)
         0.0
     };
 
-    EXPECT_TRUE(arma::approx_equal(Sinc(1.0, 3.0)(input), output, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(Sinc(1.0, 3.0)(input), output, "absdiff", fptolerance));
 }

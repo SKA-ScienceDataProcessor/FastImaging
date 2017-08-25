@@ -1,8 +1,5 @@
-/** @file sourcefind_testBasicSourceDetection.cpp
- *  @brief Test SourceFindImage module implementation
- *         for the Rms estimation
- *
- *  @bug No known bugs.
+/** @file sourcefind_test_RmsEstimation.cpp
+ *  @brief Test Rms estimation of SourceFindImage module
  */
 
 #include <fixtures.h>

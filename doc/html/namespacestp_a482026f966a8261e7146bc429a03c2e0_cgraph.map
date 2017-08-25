@@ -1,0 +1,4 @@
+<map id="stp::mat_stddev_parallel" name="stp::mat_stddev_parallel">
+<area shape="rect" id="node2" href="$namespacestp.html#a6fb8607c7d28f9d5378ec98cfe8c2e85" title="Compute matrix mean (parallel). " alt="" coords="217,13,375,39"/>
+<area shape="rect" id="node3" href="$namespacestp.html#a04a59a5383b4ff8ffa4e7d988d3cd588" title="Accumulate matrix elements (parallel implementation). " alt="" coords="423,5,567,47"/>
+</map>

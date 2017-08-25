@@ -57,17 +57,17 @@ public:
 TEST_F(GridderMultipleComplexVis, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::Mat<cx_real_t>{ accu(result.first) }, arma::Mat<cx_real_t>{ cx_real_t(accu(vis)) }, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::Mat<cx_real_t>{ accu(result.first) }, arma::Mat<cx_real_t>{ cx_real_t(accu(vis)) }, "absdiff", fptolerance));
 }
 
 TEST_F(GridderMultipleComplexVis, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, result.first, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, result.first, "absdiff", fptolerance));
 }
 
 TEST_F(GridderMultipleComplexVis, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, result.second, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, result.second, "absdiff", fptolerance));
 }

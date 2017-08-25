@@ -1,0 +1,7 @@
+<map id="stp::TopHat::operator()" name="stp::TopHat::operator()">
+<area shape="rect" id="node2" href="$classstp_1_1_top_hat.html#a535d01d323f653076addd3108c5cbc10" title="TopHat constructor. " alt="" coords="220,5,363,32"/>
+<area shape="rect" id="node3" href="$classstp_1_1_triangle.html#a9c8ff5f41fadcbe1a5ad662a6a8f8b2b" title="Triangle constructor. " alt="" coords="217,56,365,83"/>
+<area shape="rect" id="node4" href="$classstp_1_1_sinc.html#aa8aba753ed6e46254e69624cf9c69c0e" title="Sinc constructor with truncation threshold. " alt="" coords="237,107,345,133"/>
+<area shape="rect" id="node5" href="$classstp_1_1_gaussian.html#a99dcb1058a2edb37003779fcee77f316" title="Constructor with truncation. " alt="" coords="208,157,375,184"/>
+<area shape="rect" id="node6" href="$classstp_1_1_gaussian_sinc.html#ab0a34fd86b6ed6e1366c61a6630697d6" title="Constructor with truncation threshold. " alt="" coords="223,209,360,250"/>
+</map>

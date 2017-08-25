@@ -1,3 +1,8 @@
+/**
+* @file ccl.cpp
+* @brief Implementation of the connected component labeling functions.
+*/
+
 /*M///////////////////////////////////////////////////////////////////////////////////////
 //
 //                        Intel License Agreement

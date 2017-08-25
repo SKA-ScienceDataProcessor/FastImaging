@@ -1,10 +1,8 @@
-/** @file kernel_func_OversampledPillboxsmall.cpp
+/** @file kernel_test_OversampledPillboxsmall.cpp
  *  @brief Test OversampledPillboxSmall
  *
  *  TestCase to test the kernel function in an
  *  oversampled tophat-small example.
- *
- *  @bug No known bugs.
  */
 
 #include <gtest/gtest.h>
@@ -38,7 +36,7 @@ TEST(KernelGenerationOversamplePillboxSmall, NoOffset)
     };
 
     arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
 // Test 2D kernel convolution method in an oversampled pillbox small, with .4 pix offset right.
@@ -61,5 +59,5 @@ TEST(KernelGenerationOversamplePillboxSmall, OffsetRight)
     };
 
     arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }

@@ -1,0 +1,11 @@
+<map id="/home/lucas/skadev/FastImaging/src/stp/common/matstp.h" name="/home/lucas/skadev/FastImaging/src/stp/common/matstp.h">
+<area shape="rect" id="node2" href="$ccl_8h.html" title="Function prototypes of the connected component labeling. " alt="" coords="95,109,237,165"/>
+<area shape="rect" id="node4" href="$sourcefind_8h.html" title="Classes and funtion prototypes of source find. " alt="" coords="195,213,356,269"/>
+<area shape="rect" id="node5" href="$sourcefind_8cpp.html" title="Implementation of classes and funtions of source find. " alt="" coords="5,317,180,373"/>
+<area shape="rect" id="node7" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="377,109,520,165"/>
+<area shape="rect" id="node3" href="$ccl_8cpp.html" title="Implementation of the connected component labeling functions. " alt="" coords="28,213,171,269"/>
+<area shape="rect" id="node6" href="$stp_8h.html" title="Includes main headers of STP library. " alt="" coords="307,325,481,366"/>
+<area shape="rect" id="node8" href="$gridder_8cpp.html" title="Implementation of the gridder functions. " alt="" coords="432,213,575,269"/>
+<area shape="rect" id="node9" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="599,213,741,269"/>
+<area shape="rect" id="node10" href="$imager_8cpp.html" title="Implementation of the imager functions. " alt="" coords="599,317,741,373"/>
+</map>

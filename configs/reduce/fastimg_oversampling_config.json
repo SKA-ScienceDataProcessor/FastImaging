@@ -15,5 +15,7 @@
 	"compute_barycentre": true,
 	"gaussian_fitting": true,
 	"generate_labelmap": false,
-	"generate_beam": false
+	"generate_beam": false,
+	"ceres_diffmethod": "AutoDiff_SingleResBlk",
+	"ceres_solvertype": "LinearSearch_BFGS"
 }

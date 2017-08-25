@@ -1,0 +1,10 @@
+<map id="/home/lucas/skadev/FastImaging/src/stp/common/matrix_math.h" name="/home/lucas/skadev/FastImaging/src/stp/common/matrix_math.h">
+<area shape="rect" id="node2" href="$fft_8h.html" title="Function prototypes of FFT. " alt="" coords="5,109,148,165"/>
+<area shape="rect" id="node7" href="$matrix__math_8cpp.html" title="Implementation of matrix math functions. " alt="" coords="172,109,349,165"/>
+<area shape="rect" id="node8" href="$sourcefind_8h.html" title="Classes and funtion prototypes of source find. " alt="" coords="373,109,535,165"/>
+<area shape="rect" id="node9" href="$sourcefind_8cpp.html" title="Implementation of classes and funtions of source find. " alt="" coords="484,213,659,269"/>
+<area shape="rect" id="node3" href="$fft_8cpp.html" title="Implementation of FFT functions. " alt="" coords="5,213,148,269"/>
+<area shape="rect" id="node4" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="177,213,320,269"/>
+<area shape="rect" id="node5" href="$imager_8cpp.html" title="Implementation of the imager functions. " alt="" coords="177,317,320,373"/>
+<area shape="rect" id="node6" href="$stp_8h.html" title="Includes main headers of STP library. " alt="" coords="355,325,529,366"/>
+</map>

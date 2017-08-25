@@ -3,17 +3,27 @@
 
 arma::Mat<real_t> Gaussian2D::operator()(arma::uword n_rows, arma::uword n_cols) const
 {
-    double a = (cos(theta) * cos(theta) / (2 * x_stddev * x_stddev)) + (sin(theta) * sin(theta) / (2 * y_stddev * y_stddev));
-    double b = (sin(2 * theta) / (2 * x_stddev * x_stddev)) - (sin(2 * theta) / (2 * y_stddev * y_stddev));
-    double c = (sin(theta) * sin(theta) / (2 * x_stddev * x_stddev)) + (cos(theta) * cos(theta) / (2 * y_stddev * y_stddev));
+    // Auxiliary calculations for 2D gaussian function
+    const double cost = cos(theta);
+    const double cost2 = cost * cost;
+    const double sint = sin(theta);
+    const double sint2 = sint * sint;
+    const double sin2t = sin(2.0 * theta);
+    const double xstd2 = x_stddev * x_stddev;
+    const double ystd2 = y_stddev * y_stddev;
+    const double a = 0.5 * ((cost2 / xstd2) + (sint2 / ystd2));
+    const double b = 0.5 * ((sin2t / xstd2) - (sin2t / ystd2));
+    const double c = 0.5 * ((sint2 / xstd2) + (cost2 / ystd2));
 
     arma::Mat<real_t> model(n_rows, n_cols);
 
     for (arma::uword i = 0; i < n_cols; ++i) {
         for (arma::uword j = 0; j < n_rows; ++j) {
-            model.at(j, i) = amplitude * std::exp(-a * (i - x_mean) * (i - x_mean)
-                                             - 2 * b * (i - x_mean) * (j - y_mean)
-                                             - c * (j - y_mean) * (j - y_mean));
+            const double xdiff = i - x_mean;
+            const double ydiff = j - y_mean;
+            model.at(j, i) = amplitude * exp(-(a * xdiff * xdiff
+                                             + b * xdiff * ydiff
+                                             + c * ydiff * ydiff));
         }
     }
 

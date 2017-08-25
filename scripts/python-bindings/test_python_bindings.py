@@ -20,7 +20,8 @@ trunc = support
 kernel_exact = False
 oversampling = 9
 generate_beam = False
-r_fft = stp_python.FFTRoutine.FFTW_WISDOM_FFT
+# Use stp_python.FFTRoutine.FFTW_WISDOM_FFT in the following variable for better FFT performance (wisdom files required)
+r_fft = stp_python.FFTRoutine.FFTW_ESTIMATE_FFT
 # The FFTW wisdom files must be located in the current directory
 fft_wisdom_filename = 'WisdomFile_rob8192x8192.fftw'
 
@@ -37,9 +38,13 @@ binapprox_median = True
 compute_barycentre = True
 gaussian_fitting = True
 generate_labelmap = False
+ceres_diffmethod = stp_python.CeresDiffMethod.AutoDiff_SingleResBlk # Other options: stp_python.CeresDiffMethod.AutoDiff, stp_python.CeresDiffMethod.AnalyticDiff_SingleResBlk, stp_python.CeresDiffMethod.AnalyticDiff
+ceres_solvertype = stp_python.CeresSolverType.LinearSearch_BFGS # Other options: stp_python.CeresSolverType.LinearSearch_LBFGS, stp_python.CeresSolverType.TrustRegion_DenseQR
 
 # Call source_find
-islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative, sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap)
+islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative, sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype)
 
 # Print result
-print(islands)
+for i in islands:
+   print(i)
+   print()

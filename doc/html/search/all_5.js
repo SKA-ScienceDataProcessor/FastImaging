@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['f',['f',['../unionstp_1_1_float_twiddler.html#aac94f58c0fd61637eb835a52fb7b5582',1,'stp::FloatTwiddler']]],
+  ['fft_2ecpp',['fft.cpp',['../fft_8cpp.html',1,'']]],
+  ['fft_2eh',['fft.h',['../fft_8h.html',1,'']]],
+  ['fft_5ffftw_5fc2r',['fft_fftw_c2r',['../namespacestp.html#a4af482cb10c30fd252b434dd0aef3074',1,'stp']]],
+  ['fft_5ffftw_5fr2c',['fft_fftw_r2c',['../namespacestp.html#a6e2f269ecab0adf2e78e20b32f6a5a53',1,'stp']]],
+  ['fftroutine',['FFTRoutine',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98',1,'stp']]],
+  ['fftshift',['fftshift',['../namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d',1,'stp']]],
+  ['fftw_5festimate_5ffft',['FFTW_ESTIMATE_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98a1551a8f00e3ff5f46b18636fb963ad8c',1,'stp']]],
+  ['fftw_5fmeasure_5ffft',['FFTW_MEASURE_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98a5b1699ed6ddd9a9360937797edfe3873',1,'stp']]],
+  ['fftw_5fpatient_5ffft',['FFTW_PATIENT_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98af7b85ceb556fa3fccee760843b070ceb',1,'stp']]],
+  ['fftw_5fwisdom_5ffft',['FFTW_WISDOM_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98ab6cc625b02ae42496e8baea63abf1243',1,'stp']]],
+  ['fftw_5fwisdom_5finplace_5ffft',['FFTW_WISDOM_INPLACE_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98ac68eed57a11ce9105b7e0355d5b2e84d',1,'stp']]],
+  ['fit',['fit',['../structstp_1_1_island_params.html#a186ff1073490b97895fc3a4b0685eb08',1,'stp::IslandParams']]],
+  ['fit_5fgaussian_5f2d',['fit_gaussian_2d',['../structstp_1_1_island_params.html#a7996d64c7362179c35c7bed8005596c6',1,'stp::IslandParams']]],
+  ['fitting_2ecpp',['fitting.cpp',['../fitting_8cpp.html',1,'']]],
+  ['fitting_2eh',['fitting.h',['../fitting_8h.html',1,'']]],
+  ['floattwiddler',['FloatTwiddler',['../unionstp_1_1_float_twiddler.html',1,'stp::FloatTwiddler'],['../unionstp_1_1_float_twiddler.html#aa9326bedbbd5e9f32a064dac1a40257c',1,'stp::FloatTwiddler::FloatTwiddler()']]],
+  ['fptolerance',['fptolerance',['../types_8h.html#a5a2c5b9a57a61d2ef3792d9458c6d129',1,'types.h']]]
+];

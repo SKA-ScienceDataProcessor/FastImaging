@@ -29,7 +29,7 @@ option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
 option(USE_FLOAT "Builds STP using 'float' type to represent real numbers" ON)
 option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
 option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
-option(USE_FFTSHIFT "Performs fft shift operation on the image and beam output matrices" ON)
+option(USE_FFTSHIFT "Performs shift of the image and beam matrices after fft" OFF)
 
 # Check libstdc++ parallel mode
 # This needs to be done here, otherwise reduce, tests and benchmark fail linking
@@ -56,10 +56,6 @@ else()
     message(STATUS "libstdc++ parallel mode disabled")
 endif()
 
-# Sub-project: third-party dependencies (Google Test, Google Benchmark)
-set(THIRD_PARTY_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
-add_subdirectory(${THIRD_PARTY_SOURCE_DIRECTORY})
-
 # If ON, use float rather than double to represent real numbers (less memory usage)
 if(USE_FLOAT)
     add_definitions(-DUSE_FLOAT)
@@ -79,6 +75,10 @@ endif()
 if(USE_FFTSHIFT)
     add_definitions(-DFFTSHIFT)
 endif()
+
+# Sub-project: third-party dependencies (Google Test, Google Benchmark)
+set(THIRD_PARTY_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+add_subdirectory(${THIRD_PARTY_SOURCE_DIRECTORY})
 
 # Sub-project: STP Library
 set(STP_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp)
@@ -130,3 +130,17 @@ else()
     message(WARNING "cppcheck was not found. Target \"cppcheck\" will not be available.")
 endif()
 
+# If doxygen is available, add a target for it.
+# Note: this target must be run on demand and won't be part of "all"
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    set(DOXYFILE ${CMAKE_CURRENT_SOURCE_DIR}/../doc/Doxyfile)
+    add_custom_target(
+        doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../doc
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+else()
+    message(WARNING "doxygen was not found. Target \"doc\" to build documentation will not be available.")
+endif()

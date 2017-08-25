@@ -1,10 +1,8 @@
-/** @file imager_func_GaussianSinc.cpp
+/** @file imager_test_GaussianSinc.cpp
  *  @brief Test imager with GaussianSinc
  *
  *  TestCase to test the imager-imager
  *  implementation with gaussiansinc convolution
- *
- *  @bug No known bugs.
  */
 
 #include "load_json_imager.h"
@@ -51,20 +49,20 @@ public:
 TEST(ImagerGaussianSinc, SmallImage)
 {
     imager_test_gaussiansinc gaussiansinc_small_image("gaussiansinc", "small_image");
-    EXPECT_NEAR(arma::accu(gaussiansinc_small_image.result.first), arma::accu(arma::real(gaussiansinc_small_image.expected_result.first)), tolerance);
-    EXPECT_TRUE(arma::approx_equal(gaussiansinc_small_image.result.second, arma::real(gaussiansinc_small_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_NEAR(arma::accu(gaussiansinc_small_image.result.first), arma::accu(arma::real(gaussiansinc_small_image.expected_result.first)), fptolerance);
+    EXPECT_TRUE(arma::approx_equal(gaussiansinc_small_image.result.second, arma::real(gaussiansinc_small_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerGaussianSinc, MediumImage)
 {
     imager_test_gaussiansinc gaussiansinc_medium_image("gaussiansinc", "medium_image");
-    EXPECT_TRUE(arma::approx_equal(gaussiansinc_medium_image.result.first, arma::real(gaussiansinc_medium_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(gaussiansinc_medium_image.result.second, arma::real(gaussiansinc_medium_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussiansinc_medium_image.result.first, arma::real(gaussiansinc_medium_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussiansinc_medium_image.result.second, arma::real(gaussiansinc_medium_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerGaussianSinc, LargeImage)
 {
     imager_test_gaussiansinc gaussiansinc_large_image("gaussiansinc", "large_image");
-    EXPECT_TRUE(arma::approx_equal(gaussiansinc_large_image.result.first, arma::real(gaussiansinc_large_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(gaussiansinc_large_image.result.second, arma::real(gaussiansinc_large_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussiansinc_large_image.result.first, arma::real(gaussiansinc_large_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(gaussiansinc_large_image.result.second, arma::real(gaussiansinc_large_image.expected_result.second), "absdiff", fptolerance));
 }

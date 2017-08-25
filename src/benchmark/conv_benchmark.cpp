@@ -1,7 +1,5 @@
-/** @file conv_test_benchmark.cpp
+/** @file conv_benchmark.cpp
  *  @brief Test Convolution module performance
- *
- *  @bug No known bugs.
  */
 
 #include <benchmark/benchmark.h>

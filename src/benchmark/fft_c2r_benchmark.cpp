@@ -1,7 +1,5 @@
-/** @file imager_test_benchmark.cpp
- *  @brief Test Imager module performance
- *
- *  @bug No known bugs.
+/** @file fft_benchmark.cpp
+ *  @brief Test fft performance
  */
 
 #include <../stp/common/fft.h>
@@ -28,7 +26,7 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
     int kernel_support = 3;
 
     std::string wisdom_filename;
-    if (r_fft == stp::FFTW_WISDOM_INPLACE_FFT) {
+    if (r_fft == stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
         wisdom_filename = wisdom_path + "WisdomFile_rib" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
     } else {
         wisdom_filename = wisdom_path + "WisdomFile_rob" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
@@ -65,13 +63,13 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
     // Compute FFT of first matrix (beam)
     arma::Mat<real_t> fft_result_image;
     // Reuse gridded_data buffer if FFT is INPLACE
-    if (r_fft == stp::FFTW_WISDOM_INPLACE_FFT) {
+    if (r_fft == stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
         fft_result_image = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.vis_grid.memptr()), (gridded_data.vis_grid.n_rows) * 2, gridded_data.vis_grid.n_cols, false, false));
     }
     unsigned int fftw_flag = FFTW_ESTIMATE;
 
     switch (r_fft) {
-    case stp::FFTW_ESTIMATE_FFT:
+    case stp::FFTRoutine::FFTW_ESTIMATE_FFT:
         // FFTW implementation using FFTW_ESTIMATE
         while (state.KeepRunning()) {
             benchmark::DoNotOptimize(fft_result_image);
@@ -79,7 +77,7 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
             benchmark::ClobberMemory();
         }
         break;
-    case stp::FFTW_WISDOM_FFT:
+    case stp::FFTRoutine::FFTW_WISDOM_FFT:
         // FFTW implementation using FFTW_WISDOM
         while (state.KeepRunning()) {
             benchmark::DoNotOptimize(fft_result_image);
@@ -87,7 +85,7 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
             benchmark::ClobberMemory();
         }
         break;
-    case stp::FFTW_WISDOM_INPLACE_FFT:
+    case stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT:
         // FFTW implementation using FFTW_WISDOM_INPLACE
         while (state.KeepRunning()) {
             benchmark::DoNotOptimize(fft_result_image);
@@ -95,10 +93,10 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
             benchmark::ClobberMemory();
         }
         break;
-    case stp::FFTW_MEASURE_FFT:
+    case stp::FFTRoutine::FFTW_MEASURE_FFT:
         fftw_flag = FFTW_MEASURE;
         break;
-    case stp::FFTW_PATIENT_FFT:
+    case stp::FFTRoutine::FFTW_PATIENT_FFT:
         fftw_flag = FFTW_PATIENT;
         break;
     default:
@@ -106,7 +104,7 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
     }
 
     // FFTW implementation using FFTW_MEASURE or FFTW_PATIENT
-    if (r_fft == stp::FFTW_MEASURE_FFT || r_fft == stp::FFTW_PATIENT_FFT) {
+    if (r_fft == stp::FFTRoutine::FFTW_MEASURE_FFT || r_fft == stp::FFTRoutine::FFTW_PATIENT_FFT) {
         arma::Mat<cx_real_t> input(arma::size(static_cast<arma::Mat<cx_real_t>&>(gridded_data.vis_grid)));
         arma::Mat<real_t> output((input.n_rows % 2 == 0) ? (input.n_rows * 2) : (input.n_rows - 1) * 2, input.n_cols);
 
@@ -155,36 +153,36 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(fft_c2r_test_benchmark)
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 10 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 11 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 12 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 13 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 14 })
-    ->Args({ stp::FFTW_ESTIMATE_FFT, 15 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 10 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 11 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 12 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 13 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 14 })
-    ->Args({ stp::FFTW_MEASURE_FFT, 15 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 10 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 11 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 12 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 13 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 14 })
-    ->Args({ stp::FFTW_PATIENT_FFT, 15 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 10 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 11 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 12 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 13 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 14 })
-    ->Args({ stp::FFTW_WISDOM_FFT, 15 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 10 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 11 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 12 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 13 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 14 })
-    ->Args({ stp::FFTW_WISDOM_INPLACE_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 10 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 11 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 12 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 13 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 14 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 10 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 11 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 12 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 13 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 14 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 10 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 11 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 12 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 13 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 14 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 10 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 11 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 12 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 13 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 14 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 10 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 11 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 12 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 13 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 14 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 15 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

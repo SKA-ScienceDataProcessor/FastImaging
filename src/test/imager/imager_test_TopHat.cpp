@@ -1,10 +1,8 @@
-/** @file imager_func_TopHat.cpp
+/** @file imager_test_TopHat.cpp
  *  @brief Test imager with Tophat
  *
  *  TestCase to test the imager-imager
  *  implementation with tophat convolution
- *
- *  @bug No known bugs.
  */
 
 #include "load_json_imager.h"
@@ -48,20 +46,20 @@ public:
 TEST(ImagerTopHat, SmallImage)
 {
     imager_test_tophat tophat_small_image("tophat", "small_image");
-    EXPECT_TRUE(arma::approx_equal(tophat_small_image.result.first, arma::real(tophat_small_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(tophat_small_image.result.second, arma::real(tophat_small_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(tophat_small_image.result.first, arma::real(tophat_small_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(tophat_small_image.result.second, arma::real(tophat_small_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerTopHat, MediumImage)
 {
     imager_test_tophat tophat_medium_image("tophat", "medium_image");
-    EXPECT_TRUE(arma::approx_equal(tophat_medium_image.result.first, arma::real(tophat_medium_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(tophat_medium_image.result.second, arma::real(tophat_medium_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(tophat_medium_image.result.first, arma::real(tophat_medium_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(tophat_medium_image.result.second, arma::real(tophat_medium_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerTopHat, LargeImage)
 {
     imager_test_tophat tophat_large_image("tophat", "large_image");
-    EXPECT_TRUE(arma::approx_equal(tophat_large_image.result.first, arma::real(tophat_large_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(tophat_large_image.result.second, arma::real(tophat_large_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(tophat_large_image.result.first, arma::real(tophat_large_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(tophat_large_image.result.second, arma::real(tophat_large_image.expected_result.second), "absdiff", fptolerance));
 }

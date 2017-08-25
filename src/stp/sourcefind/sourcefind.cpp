@@ -1,11 +1,12 @@
 /**
 * @file sourcefind.cpp
-* Contains the prototypes and implementation of sourcefind functions
+* @brief Implementation of classes and funtions of source find.
 */
 
 #include "sourcefind.h"
 #include "../common/matrix_math.h"
 #include "../common/matstp.h"
+#include "fitting.h"
 #include <cassert>
 #include <tbb/tbb.h>
 #include <thread>
@@ -144,7 +145,7 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
     return sigma;
 }
 
-source_find_image::source_find_image(
+SourceFindImage::SourceFindImage(
     const arma::Mat<real_t>& input_data,
     double input_detection_n_sigma,
     double input_analysis_n_sigma,
@@ -154,7 +155,9 @@ source_find_image::source_find_image(
     bool binapprox_median,
     bool compute_barycentre,
     bool gaussian_fitting,
-    bool generate_labelmap)
+    bool generate_labelmap,
+    CeresDiffMethod ceres_diffmethod,
+    CeresSolverType ceres_solvertype)
     : detection_n_sigma(input_detection_n_sigma)
     , analysis_n_sigma(input_analysis_n_sigma)
 {
@@ -218,7 +221,7 @@ source_find_image::source_find_image(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            islands.push_back(std::move(island_params(label_extrema_id_pos.at(i), label_extrema_val_pos.at(i), y_idx, x_idx,
+            islands.push_back(std::move(IslandParams(label_extrema_id_pos.at(i), label_extrema_val_pos.at(i), y_idx, x_idx,
                 label_extrema_barycentre_pos.col(i)(0), label_extrema_barycentre_pos.col(i)(1), label_extrema_boundingbox_pos[i])));
         }
     }
@@ -235,7 +238,7 @@ source_find_image::source_find_image(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            islands.push_back(std::move(island_params(label_extrema_id_neg.at(i), label_extrema_val_neg.at(i), y_idx, x_idx,
+            islands.push_back(std::move(IslandParams(label_extrema_id_neg.at(i), label_extrema_val_neg.at(i), y_idx, x_idx,
                 label_extrema_barycentre_neg.col(i)(0), label_extrema_barycentre_neg.col(i)(1), label_extrema_boundingbox_neg[i])));
         }
     }
@@ -246,7 +249,7 @@ source_find_image::source_find_image(
             const size_t& begin = r.begin();
             const size_t& end = r.end();
             for (size_t i = begin; i < end; i++) {
-                islands[i].fit_gaussian(input_data, label_map);
+                islands[i].fit_gaussian_2d(input_data, label_map, ceres_diffmethod, ceres_solvertype);
             }
         });
     }
@@ -258,7 +261,7 @@ source_find_image::source_find_image(
 }
 
 template <bool generateLabelMap>
-uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool compute_barycentre, bool gaussian_fitting)
+uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool compute_barycentre, bool gaussian_fitting)
 {
     // Compute analysis and detection thresholds
     const real_t analysis_thresh_pos = bg_level + analysis_n_sigma * rms_est;
@@ -530,7 +533,7 @@ uint source_find_image::_label_detection_islands(const arma::Mat<real_t>& data, 
     return numValidLabels;
 }
 
-island_params::island_params(
+IslandParams::IslandParams(
     const int label,
     const real_t l_extremum,
     const int l_extremum_coord_y,
@@ -545,34 +548,27 @@ island_params::island_params(
     , ybar(barycentre_y)
     , xbar(barycentre_x)
     , bounding_box(box)
-    , l_box_width(0)
-    , l_box_height(0)
-    , g_amplitude(0.0)
-    , g_x0(0.0)
-    , g_y0(0.0)
-    , g_x_stddev(0.0)
-    , g_y_stddev(0.0)
-    , g_theta(0.0)
-    , used_ceres(false)
 {
     // Determine if the label index is positive or negative
     sign = (label_idx < 0) ? -1 : 1;
 }
 
-void island_params::fit_gaussian(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map)
+void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, CeresDiffMethod ceres_diffmethod, CeresSolverType ceres_solvertype)
 {
-    // Compute size of bounding box
-    l_box_width = bounding_box.right - bounding_box.left + 1;
-    l_box_height = bounding_box.bottom - bounding_box.top + 1;
-
-// Get the number of residuals
 #ifndef FFTSHIFT
     int h_shift = (int)(data.n_cols / 2);
     int v_shift = (int)(data.n_rows / 2);
 #endif
+    // Get the number of residuals
     int num_residuals = 0;
+    // Estimate initial x/y stddev using method of moments
+    double initial_x_stddev = 0.0;
+    double initial_y_stddev = 0.0;
+    double val_sum = 0.0;
     for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
         for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
+            const double x = (double)(i);
+            const double y = (double)(j);
 #ifdef FFTSHIFT
             const int& ii = i;
             const int& jj = j;
@@ -581,75 +577,171 @@ void island_params::fit_gaussian(const arma::Mat<real_t>& data, const arma::Mat<
             const int jj = j < v_shift ? j + v_shift : j - v_shift;
 #endif
             if (label_map.at(jj, ii) == label_idx) {
+                const double& val = (double)data.at(jj, ii);
                 num_residuals++;
+                initial_x_stddev += (x - xbar) * (x - xbar) * val;
+                initial_y_stddev += (y - ybar) * (y - ybar) * val;
+                val_sum += val;
             }
         }
     }
+    assert(initial_x_stddev > 0.0);
+    assert(initial_y_stddev > 0.0);
+    initial_x_stddev = sqrt(initial_x_stddev / val_sum);
+    initial_y_stddev = sqrt(initial_y_stddev / val_sum);
 
     // Return if it is one-pixel source
     if (num_residuals == 1) {
-        g_amplitude = extremum_val;
-        g_x0 = 0.0;
-        g_y0 = 0.0;
-        g_x_stddev = 0.0;
-        g_y_stddev = 0.0;
-        g_theta = 0.0;
+        fit = Gaussian2dFit(extremum_val, 0.0, 0.0, 0.0, 0.0, 0.0);
+        ceres_report.assign("ceres::Solve was not called.");
         return;
     }
-
-    /*
-     *  Perform gaussian fitting
-     */
-
-    // Estimate initial x/y stddev from bounding box dimensions
-    double initial_x_stddev = (double)(l_box_width) / 4.0;
-    double initial_y_stddev = (double)(l_box_height) / 4.0;
-    assert(initial_x_stddev > 0.0);
-    assert(initial_y_stddev > 0.0);
 
     // The variable to solve for with its initial value.
     // It will be mutated in place by the solver.
     // Variable fields: amplitude, x0, y0, x_stddev, y_stddev and theta
-    double gaussian_params[] = { extremum_val, xbar, ybar, initial_x_stddev, initial_y_stddev, 0.0 };
+    double initial_theta = 0.0;
+    double gaussian_params[] = { extremum_val, xbar, ybar, initial_x_stddev, initial_y_stddev, initial_theta };
 
     // Build the problem.
     ceres::Problem problem;
 
-    // Set up the only cost function (also known as residual).
-    // This uses auto-differentiation to obtain the derivative (jacobian).
-    problem.AddResidualBlock(
-        new ceres::AutoDiffCostFunction<GaussianResiduals, ceres::DYNAMIC, 6>(
-            new GaussianResiduals(data, label_map, bounding_box, label_idx), num_residuals),
-        NULL, gaussian_params);
+    // Set up the cost function (also known as residual).
+    switch (ceres_diffmethod) {
 
-    // Run the solver!
+    case CeresDiffMethod::AutoDiff: {
+        // Compute each residual associated to label_idx
+        for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
+            for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
+                const double x = double(i);
+                const double y = double(j);
+#ifdef FFTSHIFT
+                const int& ii = i;
+                const int& jj = j;
+#else
+                const int ii = i < h_shift ? i + h_shift : i - h_shift;
+                const int jj = j < v_shift ? j + v_shift : j - v_shift;
+#endif
+                if (label_map.at(jj, ii) != label_idx) {
+                    continue;
+                }
+                // This uses analytic derivatives
+                ceres::CostFunction* cost_function = new ceres::AutoDiffCostFunction<GaussianResidual, 1, 6>(
+                    new GaussianResidual(data.at(jj, ii), x, y));
+                problem.AddResidualBlock(cost_function, NULL, gaussian_params);
+            }
+        }
+    } break;
+
+    case CeresDiffMethod::AutoDiff_SingleResBlk: {
+        // This uses auto-differentiation to obtain the derivative (jacobian).
+        ceres::CostFunction* cost_function = new ceres::AutoDiffCostFunction<GaussianAllResiduals, ceres::DYNAMIC, 6>(
+            new GaussianAllResiduals(data, label_map, bounding_box, label_idx), num_residuals);
+        problem.AddResidualBlock(cost_function, NULL, gaussian_params);
+    } break;
+
+    case CeresDiffMethod::AnalyticDiff: {
+        // Compute each residual associated to label_idx
+        for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
+            for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
+                const double x = double(i);
+                const double y = double(j);
+#ifdef FFTSHIFT
+                const int& ii = i;
+                const int& jj = j;
+#else
+                const int ii = i < h_shift ? i + h_shift : i - h_shift;
+                const int jj = j < v_shift ? j + v_shift : j - v_shift;
+#endif
+                if (label_map.at(jj, ii) != label_idx) {
+                    continue;
+                }
+                // This uses analytic derivatives
+                ceres::CostFunction* cost_function = new GaussianAnalytic(data.at(jj, ii), x, y);
+                problem.AddResidualBlock(cost_function, NULL, gaussian_params);
+            }
+        }
+    } break;
+
+    case CeresDiffMethod::AnalyticDiff_SingleResBlk: {
+        // This uses analytic derivatives
+        ceres::CostFunction* cost_function = new GaussianAnalyticAllResiduals(data, label_map, bounding_box, label_idx, num_residuals, 6);
+        problem.AddResidualBlock(cost_function, NULL, gaussian_params);
+    } break;
+
+    default:
+        assert(0);
+        break;
+    }
+
+    // Solver options
     ceres::Solver::Options options;
+    // Disable logging
     options.logging_type = ceres::SILENT;
-    options.minimizer_progress_to_stdout = false;
-    options.minimizer_type = ceres::LINE_SEARCH;
-    options.line_search_direction_type = ceres::BFGS;
+
+    // Select solver type
+    switch (ceres_solvertype) {
+
+    case CeresSolverType::LinearSearch_BFGS: {
+        options.minimizer_type = ceres::LINE_SEARCH;
+        options.line_search_direction_type = ceres::BFGS;
+    } break;
+
+    case CeresSolverType::LinearSearch_LBFGS: {
+        options.minimizer_type = ceres::LINE_SEARCH;
+        options.line_search_direction_type = ceres::LBFGS;
+    } break;
+
+    case CeresSolverType::TrustRegion_DenseQR: {
+        options.minimizer_type = ceres::TRUST_REGION;
+        options.linear_solver_type = ceres::DENSE_QR;
+    } break;
+
+    default:
+        assert(0);
+        break;
+    }
+
+    // Run the solver
+    ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
+    // Ensure that semimajor axis is larger than semiminor axis
+    if (gaussian_params[3] < gaussian_params[4]) {
+        double x_stddev = gaussian_params[3];
+        gaussian_params[3] = gaussian_params[4];
+        gaussian_params[4] = x_stddev;
+        // Add pi/2 to theta due to swapped axis
+        gaussian_params[5] += (arma::datum::pi / 2.0);
+    }
+    // Make theta vary between -pi/2 and pi/2
+    gaussian_params[5] = fmod(gaussian_params[5], arma::datum::pi);
+    if (gaussian_params[5] > (arma::datum::pi / 2.0)) {
+        gaussian_params[5] -= arma::datum::pi;
+    } else {
+        if (gaussian_params[5] < -(arma::datum::pi / 2.0)) {
+            gaussian_params[5] += arma::datum::pi;
+        }
+    }
+    assert(gaussian_params[5] <= (arma::datum::pi / 2.0));
+    assert(gaussian_params[5] >= -(arma::datum::pi / 2.0));
+
     // Save the results
-    g_amplitude = gaussian_params[0];
-    g_x0 = gaussian_params[1];
-    g_y0 = gaussian_params[2];
-    g_x_stddev = gaussian_params[3];
-    g_y_stddev = gaussian_params[4];
-    g_theta = gaussian_params[5];
-    used_ceres = true;
+    fit = Gaussian2dFit(gaussian_params[0], gaussian_params[1], gaussian_params[2], gaussian_params[3], gaussian_params[4], gaussian_params[5]);
+    ceres_report.assign(summary.BriefReport());
+    ceres_report.append(", Reason: " + summary.message);
 }
 
 // Compares two island objects
-bool island_params::operator==(const island_params& other) const
+bool IslandParams::operator==(const IslandParams& other) const
 {
     if (sign != other.sign) {
         return false;
     }
-    if (std::abs(xbar - other.xbar) > tolerance) {
+    if (abs(xbar - other.xbar) > fptolerance) {
         return false;
     }
-    if (std::abs(ybar - other.ybar) > tolerance) {
+    if (abs(ybar - other.ybar) > fptolerance) {
         return false;
     }
     if (extremum_x_idx != other.extremum_x_idx) {
@@ -658,7 +750,7 @@ bool island_params::operator==(const island_params& other) const
     if (extremum_y_idx != other.extremum_y_idx) {
         return false;
     }
-    if (std::abs(extremum_val - other.extremum_val) > tolerance) {
+    if (abs(extremum_val - other.extremum_val) > fptolerance) {
         return false;
     }
     return true;

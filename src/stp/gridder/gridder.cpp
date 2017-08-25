@@ -1,3 +1,8 @@
+/**
+ * @file gridder.cpp
+ * @brief Implementation of the gridder functions.
+ */
+
 #include "gridder.h"
 
 namespace stp {

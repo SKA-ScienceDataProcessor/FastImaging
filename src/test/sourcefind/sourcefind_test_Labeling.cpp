@@ -1,8 +1,5 @@
-/** @file sourcefind_testBasicSourceDetection.cpp
- *  @brief Test SourceFindImage module implementation
- *         for a basic source detection
- *
- *  @bug No known bugs.
+/** @file sourcefind_test_Labeling.cpp
+ *  @brief Test SourceFindImage labeling function
  */
 
 #include <fixtures.h>
@@ -19,7 +16,7 @@ private:
     double analysis_n_sigma;
     bool find_negative_sources;
 
-    island_params found_src;
+    IslandParams found_src;
     arma::Mat<real_t> img;
 
 public:
@@ -29,6 +26,7 @@ public:
         analysis_n_sigma = 3;
         rms_est = 1.0;
         find_negative_sources = false;
+        run();
     }
 
     void run()
@@ -77,7 +75,7 @@ public:
         // Input data needs to be shifted because source_find assumes it is shifted (required when FFTSHIFT option is disabled)
         fftshift(img);
 #endif
-        source_find_image sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
+        SourceFindImage sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources);
 
         total_islands = sf.islands.size();
         result_map = static_cast<arma::Mat<int>>(sf.label_map);
@@ -94,12 +92,10 @@ public:
 
 TEST_F(SourceFindLabeling, Total_islands)
 {
-    run();
     EXPECT_EQ(total_islands, expected_total_islands);
 }
 
-TEST_F(SourceFindLabeling, LabelMap)
+TEST_F(SourceFindLabeling, LabelMap_Output)
 {
-    run();
     EXPECT_EQ(arma::accu(result_map == expected_map), expected_map.n_elem);
 }

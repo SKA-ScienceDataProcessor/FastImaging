@@ -1,0 +1,18 @@
+<map id="/home/lucas/skadev/FastImaging/src/stp/types.h" name="/home/lucas/skadev/FastImaging/src/stp/types.h">
+<area shape="rect" id="node2" href="$ccl_8h.html" title="Function prototypes of the connected component labeling. " alt="" coords="253,213,395,269"/>
+<area shape="rect" id="node4" href="$sourcefind_8h.html" title="Classes and funtion prototypes of source find. " alt="" coords="446,317,607,373"/>
+<area shape="rect" id="node6" href="$stp_8h.html" title="Includes main headers of STP library. " alt="" coords="775,429,950,470"/>
+<area shape="rect" id="node7" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="362,109,505,165"/>
+<area shape="rect" id="node8" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="631,213,774,269"/>
+<area shape="rect" id="node10" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="918,317,1061,373"/>
+<area shape="rect" id="node12" href="$fft_8h.html" title="Function prototypes of FFT. " alt="" coords="1051,213,1194,269"/>
+<area shape="rect" id="node14" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="735,109,897,165"/>
+<area shape="rect" id="node16" href="$fitting_8h.html" title="Classes and function prototypes of gaussian fitting. " alt="" coords="86,213,229,269"/>
+<area shape="rect" id="node3" href="$ccl_8cpp.html" title="Implementation of the connected component labeling functions. " alt="" coords="227,317,370,373"/>
+<area shape="rect" id="node5" href="$sourcefind_8cpp.html" title="Implementation of classes and funtions of source find. " alt="" coords="381,421,555,477"/>
+<area shape="rect" id="node9" href="$gridder_8cpp.html" title="Implementation of the gridder functions. " alt="" coords="631,317,774,373"/>
+<area shape="rect" id="node11" href="$imager_8cpp.html" title="Implementation of the imager functions. " alt="" coords="974,421,1117,477"/>
+<area shape="rect" id="node13" href="$fft_8cpp.html" title="Implementation of FFT functions. " alt="" coords="1085,317,1227,373"/>
+<area shape="rect" id="node15" href="$matrix__math_8cpp.html" title="Implementation of matrix math functions. " alt="" coords="850,213,1027,269"/>
+<area shape="rect" id="node17" href="$fitting_8cpp.html" title="Implementation of classes and functions of gaussian fitting. " alt="" coords="5,317,152,373"/>
+</map>

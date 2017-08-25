@@ -1,8 +1,7 @@
-/** @file gridder_test_benchmark.cpp
+/** @file gridder_benchmark.cpp
  *  @brief Test Gridder module performance
- *
- *  @bug No known bugs.
  */
+
 #include <armadillo>
 #include <benchmark/benchmark.h>
 #include <load_data.h>

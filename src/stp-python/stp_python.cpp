@@ -1,3 +1,8 @@
+/**
+* @file stp_python.cpp
+* @brief Implementation of stp python wrapper functions
+*/
+
 #include "stp_python.h"
 #include <pybind11/stl.h>
 #include <utility>
@@ -128,7 +133,7 @@ pybind11::tuple image_visibilities_wrapper(
     return result;
 }
 
-std::vector<std::tuple<int, double, int, int, double, double, double, double, double, double, double, double, std::string>> source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, double, double, stp::Gaussian2dFit, std::string>> source_find_wrapper(
     np_real_array image_data,
     double detection_n_sigma,
     double analysis_n_sigma,
@@ -138,7 +143,9 @@ std::vector<std::tuple<int, double, int, int, double, double, double, double, do
     bool binapprox_median,
     bool compute_barycentre,
     bool gaussian_fitting,
-    bool generate_labelmap)
+    bool generate_labelmap,
+    stp::CeresDiffMethod ceres_diffmethod,
+    stp::CeresSolverType ceres_solvertype)
 {
     assert(image_data.request().ndim == 2);
 
@@ -150,15 +157,16 @@ std::vector<std::tuple<int, double, int, int, double, double, double, double, do
         true); // strict
 
     // Call source find function
-    stp::source_find_image sfimage = stp::source_find_image(std::move(image_data_arma), detection_n_sigma, analysis_n_sigma, rms_est,
-        find_negative_sources, sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap);
+    stp::SourceFindImage sfimage = stp::SourceFindImage(std::move(image_data_arma), detection_n_sigma, analysis_n_sigma, rms_est,
+        find_negative_sources, sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap,
+        ceres_diffmethod, ceres_solvertype);
 
     // Convert 'vector of stp::island' to 'vector of tuples'
-    std::vector<std::tuple<int, double, int, int, double, double, double, double, double, double, double, double, std::string>> v_islands;
+    std::vector<std::tuple<int, double, int, int, double, double, stp::Gaussian2dFit, std::string>> v_islands;
     v_islands.reserve(sfimage.islands.size());
     for (auto&& i : sfimage.islands) {
         v_islands.push_back(std::move(std::make_tuple(i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar,
-            i.g_amplitude, i.g_x0, i.g_y0, i.g_x_stddev, i.g_y_stddev, i.g_theta, i.summary.BriefReport())));
+            i.fit, i.ceres_report)));
     }
     return v_islands;
 }
@@ -167,6 +175,7 @@ PYBIND11_PLUGIN(stp_python)
 {
     pybind11::module m("stp_python", "The Slow Transients Pipeline");
 
+    // Enum bindings
     pybind11::enum_<stp::KernelFunction>(m, "KernelFunction")
         .value("TopHat", stp::KernelFunction::TopHat)
         .value("Triangle", stp::KernelFunction::Triangle)
@@ -181,6 +190,31 @@ PYBIND11_PLUGIN(stp_python)
         .value("FFTW_WISDOM_FFT", stp::FFTRoutine::FFTW_WISDOM_FFT)
         .value("FFTW_WISDOM_INPLACE_FFT", stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT);
 
+    pybind11::enum_<stp::CeresDiffMethod>(m, "CeresDiffMethod")
+        .value("AutoDiff", stp::CeresDiffMethod::AutoDiff)
+        .value("AutoDiff_SingleResBlk", stp::CeresDiffMethod::AutoDiff_SingleResBlk)
+        .value("AnalyticDiff", stp::CeresDiffMethod::AnalyticDiff)
+        .value("AnalyticDiff_SingleResBlk", stp::CeresDiffMethod::AnalyticDiff_SingleResBlk);
+
+    pybind11::enum_<stp::CeresSolverType>(m, "CeresSolverType")
+        .value("LinearSearch_BFGS", stp::CeresSolverType::LinearSearch_BFGS)
+        .value("TrustRegion_DenseQR", stp::CeresSolverType::TrustRegion_DenseQR);
+
+    // Gaussian2dFit struct binding
+    pybind11::class_<stp::Gaussian2dFit>(m, "Gaussian2dFit")
+        .def_readwrite("amplitude", &stp::Gaussian2dFit::amplitude)
+        .def_readwrite("x_centre", &stp::Gaussian2dFit::x_centre)
+        .def_readwrite("y_centre", &stp::Gaussian2dFit::y_centre)
+        .def_readwrite("semimajor", &stp::Gaussian2dFit::semimajor)
+        .def_readwrite("semiminor", &stp::Gaussian2dFit::semiminor)
+        .def_readwrite("theta", &stp::Gaussian2dFit::theta)
+        .def("__repr__", [](const stp::Gaussian2dFit& g) {
+            return "Gaussian2dFit=[" + std::to_string(g.amplitude) + ", " + std::to_string(g.x_centre)
+                + ", " + std::to_string(g.y_centre) + ", " + std::to_string(g.semimajor) + ", " + std::to_string(g.semiminor)
+                + ", " + std::to_string(g.theta) + "]";
+        });
+
+    // Function bindings
     m.def("image_visibilities_wrapper", &image_visibilities_wrapper, "Compute image visibilities (gridding + ifft).",
         pybind11::arg("vis"), pybind11::arg("snr_weights"), pybind11::arg("uvw_lambda"), pybind11::arg("image_size"), pybind11::arg("cell_size"),
         pybind11::arg("kernel_func") = stp::KernelFunction::GaussianSinc, pybind11::arg("kernel_trunc_radius") = 3.0,
@@ -191,7 +225,8 @@ PYBIND11_PLUGIN(stp_python)
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
         pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("binapprox_median") = false,
-        pybind11::arg("compute_barycentre") = true, pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true);
+        pybind11::arg("compute_barycentre") = true, pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true,
+        pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk, pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
 
     return m.ptr();
 }

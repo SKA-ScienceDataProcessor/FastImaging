@@ -1,12 +1,3 @@
-/** @file conv_func_gaussian.cpp
- *  @brief Test Gaussian
- *
- *  TestCase to test the gaussian convolution function
- *  test with array input
- *
- *  @bug No known bugs.
- */
-
 #include <cblas.h>
 #include <common/matrix_math.h>
 #include <fixtures.h>
@@ -15,13 +6,20 @@
 
 using namespace stp;
 
-long size = 1024;
+long size = 512;
 
-#ifdef USE_FLOAT
-const double dtolerance = 1.0e-15;
-#else
-const double dtolerance = 1.0e-15;
-#endif
+const double median_tolerance = 1.0e-12;
+
+// Test the Matrix exact median function
+TEST(MatrixMedianExactFunction, TestMedian)
+{
+    double sigma = 1.0;
+    double mean = 0.0;
+    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, mean, 0);
+    double arma_median = arma::median(arma::vectorise(data));
+    double stp_median_exact = mat_median_exact(data);
+    EXPECT_NEAR(arma_median, stp_median_exact, median_tolerance);
+}
 
 // Test the Matrix approximate median function
 TEST(MatrixApproxMedianFunction, TestMedian)
@@ -62,17 +60,6 @@ TEST(MatrixApproxMedianFunction, TestMedianSpecificPattern2)
     EXPECT_NEAR(arma_median, d_stats.median, tolerance);
 }
 
-// Test the Matrix exact median function
-TEST(MatrixMedianExactFunction, TestMedian)
-{
-    double sigma = 1.0;
-    double mean = 0.0;
-    arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, mean, 0);
-    double arma_median = arma::median(arma::vectorise(data));
-    double stp_median_exact = mat_median_exact(data);
-    EXPECT_NEAR(arma_median, stp_median_exact, dtolerance);
-}
-
 // Test the Matrix binmedian function
 TEST(MatrixBinMedianFunction, TestMedian)
 {
@@ -81,7 +68,7 @@ TEST(MatrixBinMedianFunction, TestMedian)
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, mean, 0);
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianWithVariableSeed)
@@ -92,7 +79,7 @@ TEST(MatrixBinMedianFunction, TestMedianWithVariableSeed)
         arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, mean, i);
         double arma_median = arma::median(arma::vectorise(data));
         auto d_stats = mat_binmedian(data);
-        EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+        EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
     }
 }
 
@@ -103,7 +90,7 @@ TEST(MatrixBinMedianFunction, TestMedianWithVariableMean)
         arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, i, 0);
         double arma_median = arma::median(arma::vectorise(data));
         auto d_stats = mat_binmedian(data);
-        EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+        EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
     }
 }
 
@@ -114,7 +101,7 @@ TEST(MatrixBinMedianFunction, TestMedianWithVariableSigma)
         arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, i, mean, 0);
         double arma_median = arma::median(arma::vectorise(data));
         auto d_stats = mat_binmedian(data);
-        EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+        EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
     }
 }
 
@@ -125,7 +112,7 @@ TEST(MatrixBinMedianFunction, TestMedianWithLargeSigma)
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, mean, 0);
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianWithSmallSigma)
@@ -135,7 +122,7 @@ TEST(MatrixBinMedianFunction, TestMedianWithSmallSigma)
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, sigma, mean, 0);
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianSpecificPattern1)
@@ -147,7 +134,7 @@ TEST(MatrixBinMedianFunction, TestMedianSpecificPattern1)
     };
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianSpecificPattern2)
@@ -159,7 +146,7 @@ TEST(MatrixBinMedianFunction, TestMedianSpecificPattern2)
     };
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianSpecificPattern3)
@@ -171,7 +158,7 @@ TEST(MatrixBinMedianFunction, TestMedianSpecificPattern3)
     };
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianSpecificPattern4)
@@ -182,7 +169,7 @@ TEST(MatrixBinMedianFunction, TestMedianSpecificPattern4)
 
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianSpecificPattern5)
@@ -195,7 +182,7 @@ TEST(MatrixBinMedianFunction, TestMedianSpecificPattern5)
 
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }
 
 TEST(MatrixBinMedianFunction, TestMedianSpecificPattern6)
@@ -208,5 +195,5 @@ TEST(MatrixBinMedianFunction, TestMedianSpecificPattern6)
 
     double arma_median = arma::median(arma::vectorise(data));
     auto d_stats = mat_binmedian(data);
-    EXPECT_NEAR(arma_median, d_stats.median, dtolerance);
+    EXPECT_NEAR(arma_median, d_stats.median, median_tolerance);
 }

@@ -1,3 +1,8 @@
+/**
+* @file fft.cpp
+* @brief Implementation of FFT functions.
+*/
+
 #include "fft.h"
 #include <cassert>
 #include <fftw3.h>
@@ -24,21 +29,21 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
 #endif
 
     switch (r_fft) {
-    case FFTW_ESTIMATE_FFT:
+    case FFTRoutine::FFTW_ESTIMATE_FFT:
         fftw_flag = FFTW_ESTIMATE;
         break;
-    case FFTW_MEASURE_FFT:
+    case FFTRoutine::FFTW_MEASURE_FFT:
         // Do not use this mode as the plan generation is very slow
         fftw_flag = FFTW_MEASURE;
         assert(0);
         break;
-    case FFTW_PATIENT_FFT:
+    case FFTRoutine::FFTW_PATIENT_FFT:
         // Do not use this mode as the plan generation is extremely slow
         fftw_flag = FFTW_PATIENT;
         assert(0);
         break;
-    case FFTW_WISDOM_FFT:
-    case FFTW_WISDOM_INPLACE_FFT:
+    case FFTRoutine::FFTW_WISDOM_FFT:
+    case FFTRoutine::FFTW_WISDOM_INPLACE_FFT:
         fftw_flag = FFTW_WISDOM_ONLY;
 #ifdef USE_FLOAT
         if (!fftwf_import_wisdom_from_filename(wisdom_filename.c_str())) {
@@ -104,21 +109,21 @@ void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRou
 #endif
 
     switch (r_fft) {
-    case FFTW_ESTIMATE_FFT:
+    case FFTRoutine::FFTW_ESTIMATE_FFT:
         fftw_flag = FFTW_ESTIMATE;
         break;
-    case FFTW_MEASURE_FFT:
+    case FFTRoutine::FFTW_MEASURE_FFT:
         // Do not use this mode as the plan generation is very slow
         fftw_flag = FFTW_MEASURE;
         assert(0);
         break;
-    case FFTW_PATIENT_FFT:
+    case FFTRoutine::FFTW_PATIENT_FFT:
         // Do not use this mode as the plan generation is extremely slow
         fftw_flag = FFTW_PATIENT;
         assert(0);
         break;
-    case FFTW_WISDOM_FFT:
-    case FFTW_WISDOM_INPLACE_FFT:
+    case FFTRoutine::FFTW_WISDOM_FFT:
+    case FFTRoutine::FFTW_WISDOM_INPLACE_FFT:
         fftw_flag = FFTW_WISDOM_ONLY;
 #ifdef USE_FLOAT
         if (!fftwf_import_wisdom_from_filename(wisdom_filename.c_str())) {
@@ -177,7 +182,7 @@ void generate_hermitian_matrix_from_nonredundant(arma::Mat<cx_real_t>& matrix)
     }
 
     // Cols: 1 to n_cols
-    tbb::parallel_for(tbb::blocked_range<size_t>(1, matrix.n_cols), [&matrix](const tbb::blocked_range<size_t>& r) {
+    tbb::parallel_for(tbb::blocked_range<size_t>(1, matrix.n_cols), [&](const tbb::blocked_range<size_t>& r) {
         for (size_t j = r.begin(); j < r.end(); ++j) {
             for (size_t i = matrix.n_rows / 2 + 1; i < matrix.n_rows; ++i) {
                 matrix.at(i, j) = std::conj(matrix.at(matrix.n_rows - i, matrix.n_cols - j));

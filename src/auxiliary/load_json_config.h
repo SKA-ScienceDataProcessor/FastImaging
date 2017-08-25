@@ -63,6 +63,15 @@ public:
                 generate_labelmap = config_document["generate_labelmap"].GetBool();
             if (config_document.HasMember("generate_beam"))
                 generate_beam = config_document["generate_beam"].GetBool();
+
+            if (config_document.HasMember("ceres_diffmethod")) {
+                s_ceres_diffmethod = config_document["ceres_diffmethod"].GetString();
+                ceres_diffmethod = parse_ceres_diffmethod(s_ceres_diffmethod);
+            }
+            if (config_document.HasMember("ceres_solvertype")) {
+                s_ceres_solvertype = config_document["ceres_solvertype"].GetString();
+                ceres_solvertype = parse_ceres_solvertype(s_ceres_solvertype);
+            }
         }
     }
 
@@ -87,7 +96,7 @@ public:
     std::string s_kernel_function = "GaussianSinc";
     std::string s_fft_routine = "FFTW_ESTIMATE_FFT";
     stp::KernelFunction kernel_function = stp::KernelFunction::GaussianSinc;
-    stp::FFTRoutine fft_routine = stp::FFTW_ESTIMATE_FFT;
+    stp::FFTRoutine fft_routine = stp::FFTRoutine::FFTW_ESTIMATE_FFT;
     std::string fft_wisdom_filename;
     double estimate_rms = 0.0;
     int sigma_clip_iters = 5;
@@ -96,6 +105,10 @@ public:
     bool gaussian_fitting = false;
     bool generate_labelmap = false;
     bool generate_beam = false;
+    std::string s_ceres_diffmethod = "AutoDiff_SingleResBlk";
+    std::string s_ceres_solvertype = "LinearSearch_BFGS";
+    stp::CeresDiffMethod ceres_diffmethod = stp::CeresDiffMethod::AutoDiff_SingleResBlk;
+    stp::CeresSolverType ceres_solvertype = stp::CeresSolverType::LinearSearch_BFGS;
 
 private:
     /**
@@ -115,6 +128,24 @@ private:
      * @return (FFTRoutine) Enumeration value for the input fft routine
      */
     stp::FFTRoutine parse_fft_routine(const std::string& fft);
+
+    /**
+     * @brief Parse differentiation method used by ceres
+     *
+     * @param[in] diffmet (string): Input ceres differentiation method
+     *
+     * @return (CeresDiffMethod) Enumeration value for the ceres differentiation method
+     */
+    stp::CeresDiffMethod parse_ceres_diffmethod(const std::string& diffmet);
+
+    /**
+     * @brief Parse solver type used by ceres
+     *
+     * @param[in] solvertype (string): Input ceres solver type
+     *
+     * @return (CeresSolverType) Enumeration value for the ceres solver type
+     */
+    stp::CeresSolverType parse_ceres_solvertype(const std::string& solvertype);
 
     rapidjson::Document config_document;
 };

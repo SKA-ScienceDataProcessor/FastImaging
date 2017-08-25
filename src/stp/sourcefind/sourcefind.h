@@ -1,6 +1,6 @@
 /**
 * @file sourcefind.h
-* Contains the prototypes and implementation of sourcefind functions
+* @brief Classes and funtion prototypes of source find.
 */
 
 #ifndef SOURCE_FIND_H
@@ -10,8 +10,8 @@
 #include "../common/matrix_math.h"
 #include "../common/matstp.h"
 #include "../types.h"
+#include "fitting.h"
 #include <cassert>
-#include <ceres/ceres.h>
 #include <cfloat>
 #include <functional>
 #include <map>
@@ -41,126 +41,6 @@ public:
 };
 
 /**
- * @brief Represents bounding box positions: top, bottom, left and right margins
- */
-struct BoundingBox {
-    int top;
-    int bottom;
-    int left;
-    int right;
-
-    BoundingBox()
-        : top(0)
-        , bottom(0)
-        , left(0)
-        , right(0)
-    {
-    }
-
-    BoundingBox(int in_top, int in_bottom, int in_left, int in_right)
-        : top(in_top)
-        , bottom(in_bottom)
-        , left(in_left)
-        , right(in_right)
-    {
-    }
-};
-
-/**
- * @brief Functor for the ceres solver.
- *
- * Functor that computes the residuals of gaussian model fitting. Used by ceres solver library.
- */
-class GaussianResiduals {
-public:
-    /**
-     * @brief Constructor
-     *
-     * @param[in] data (arma::Mat<real_t>): Image matrix.
-     * @param[in] label_map (arma::Mat<int>): Label map matrix.
-     * @param[in] bbox (BoundingBox): Bounding box defined around the source.
-     * @param[in] label_idx (int): Label index.
-     */
-    GaussianResiduals(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, const BoundingBox& box, const int label_idx)
-        : _data(data)
-        , _label_map(label_map)
-        , _label_idx(label_idx)
-        , _box(box)
-    {
-    }
-
-    /**
-     * @brief Operator that computes residuals of gaussian model fitting.
-     *
-     * @param[in] params (T*): Guassian function parameters to be optimised.
-     * @param[in] residual (T*): Residual values.
-     */
-    template <typename T>
-    bool operator()(const T* const params, T* residual) const
-    {
-        const T& amplitude = params[0];
-        const T& x0 = params[1];
-        const T& y0 = params[2];
-        const T& x_stddev = params[3];
-        const T& y_stddev = params[4];
-        const T& theta = params[5];
-
-        // Upper and/or lower bounds constraints on the parameters
-        // x0,y0 must be located within the bounding box
-        if ((x0 < (double)_box.left) || (x0 > (double)_box.right))
-            return false;
-        if ((y0 < (double)_box.top) || (y0 > (double)_box.bottom))
-            return false;
-        // x,y stddev must be positive
-        if (x_stddev <= 0.0)
-            return false;
-        if (y_stddev <= 0.0)
-            return false;
-        // Theta varies between 0 and 2*pi
-        if (theta < 0.0)
-            return false;
-        if (theta > (2 * arma::datum::pi))
-            return false;
-
-        // Auxiliary calculations for gaussian function
-        T a = (cos(theta) * cos(theta) / (2.0 * x_stddev * x_stddev)) + (sin(theta) * sin(theta) / (2.0 * y_stddev * y_stddev));
-        T b = (sin(2.0 * theta) / (2.0 * x_stddev * x_stddev)) - (sin(2.0 * theta) / (2.0 * y_stddev * y_stddev));
-        T c = (sin(theta) * sin(theta) / (2.0 * x_stddev * x_stddev)) + (cos(theta) * cos(theta) / (2.0 * y_stddev * y_stddev));
-#ifndef FFTSHIFT
-        int h_shift = (int)(_data.n_cols / 2);
-        int v_shift = (int)(_data.n_rows / 2);
-#endif
-
-        // Compute residuals on positions where label map is equal to label_idx
-        for (int i = _box.left; i <= _box.right; ++i) {
-            for (int j = _box.top; j <= _box.bottom; ++j) {
-                const double col = (double)(i);
-                const double row = (double)(j);
-#ifdef FFTSHIFT
-                const int& ii = i;
-                const int& jj = j;
-#else
-                const int ii = i < h_shift ? i + h_shift : i - h_shift;
-                const int jj = j < v_shift ? j + v_shift : j - v_shift;
-#endif
-                if (_label_map.at(jj, ii) != _label_idx) {
-                    continue;
-                }
-                residual[0] = (double)_data.at(jj, ii) - (amplitude * exp(-a * (col - x0) * (col - x0) - 2.0 * b * (col - x0) * (row - y0) - c * (row - y0) * (row - y0)));
-                residual++;
-            }
-        }
-        return true;
-    }
-
-private:
-    const arma::Mat<real_t>& _data;
-    const arma::Mat<int>& _label_map;
-    const int _label_idx;
-    const BoundingBox _box;
-};
-
-/**
  * @brief Perform sigma-clip and estimate RMS of input matrix
  *
  * Compute Root mean square of input data after sigma-clipping (combines RMS estimation and sigma clip functions for improved computational performance).
@@ -176,12 +56,12 @@ private:
 double estimate_rms(const arma::Mat<real_t>& data, double num_sigma = 3, uint iters = 5, DataStats stats = DataStats(arma::datum::nan, arma::datum::nan, arma::datum::nan));
 
 /**
- * @brief island_params struct
+ * @brief IslandParams struct
  *
  * Data structure for representing source 'islands'
  *
  */
-struct island_params {
+struct IslandParams {
     int label_idx;
     double extremum_val;
     int extremum_y_idx;
@@ -190,24 +70,16 @@ struct island_params {
     double xbar;
     int sign;
     BoundingBox bounding_box;
-    int l_box_width;
-    int l_box_height;
-    double g_amplitude;
-    double g_x0;
-    double g_y0;
-    double g_x_stddev;
-    double g_y_stddev;
-    double g_theta;
-    bool used_ceres;
-    ceres::Solver::Summary summary;
+    Gaussian2dFit fit;
+    std::string ceres_report;
 
     /**
-     * @brief island_params default constructor
+     * @brief IslandParams default constructor
      */
-    island_params() = default;
+    IslandParams() = default;
 
     /**
-     * @brief island_params constructor
+     * @brief IslandParams constructor
      *
      * Initialized with label index, and peak-pixel value, peak-pixel position and barycentre.
      *
@@ -219,44 +91,47 @@ struct island_params {
      * @param[in] barycentre_x (real_t): the x-value of barycentric centre
      * @param[in] bbox (BoundingBox): the bounding box defined around the source
      */
-    island_params(const int label, const real_t l_extremum, const int l_extremum_coord_y,
+    IslandParams(const int label, const real_t l_extremum, const int l_extremum_coord_y,
         const int l_extremum_coord_x, const real_t barycentre_y, const real_t barycentre_x,
         const BoundingBox& box = BoundingBox());
 
     /**
-     * @brief Performs gaussian fitting
+     * @brief Fit 2D gaussian to the island.
      *
-     * Performs gaussian fitting using the bounding box information, image data matrix and label map matrix.
+     * Fit 2D gaussian to the island using non-linear least-squares optimisation methods implemented by ceres library.
+     * Requires image and label map information.
      *
-     * @param[in] data (arma::Mat<real_t>): Image matrix
+     * @param[in] data (arma::Mat<real_t>): Image data matrix
      * @param[in] label_map (arma::Mat<int>): Label map matrix
+     * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
+     * @param[in] ceres_solvertype (CeresSolverType): Solver type used by ceres library for gaussian fitting.
      */
-    void fit_gaussian(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map);
+    void fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, CeresDiffMethod ceres_diffmethod, CeresSolverType ceres_solvertype);
 
     /**
-     * @brief Compare two island_params objects
+     * @brief Compare two IslandParams objects
      *
-     * Compare if two island_params objects are exactly the same.
+     * Compare if two IslandParams objects are exactly the same.
      *
-     * @param[in] other (island_params): other island object to be compared.
+     * @param[in] other (IslandParams): other island object to be compared.
      *
      * @return true/false
      */
-    bool operator==(const island_params& other) const;
+    bool operator==(const IslandParams& other) const;
 };
 
 /**
- * @brief SourceFindImage class
+ * @brief The SourceFindImage class for source detection.
  *
- * Data structure for collecting intermediate results from source-extraction.
+ * The structure collects intermediate results from source-detection.
  * This can be useful for verifying / debugging the sourcefinder results,
  * and intermediate results can also be reused to save recalculation.
  *
  */
-class source_find_image {
+class SourceFindImage {
 
 public:
-    stp::MatStp<int> label_map;
+    MatStp<int> label_map;
     arma::Col<real_t> label_extrema_val_pos;
     arma::Col<real_t> label_extrema_val_neg;
     arma::uvec label_extrema_linear_idx_pos;
@@ -271,9 +146,10 @@ public:
     double analysis_n_sigma;
     double rms_est;
     double bg_level;
-    std::vector<island_params> islands;
+    std::vector<IslandParams> islands;
 
-    source_find_image() = delete;
+    // There's no default constructor
+    SourceFindImage() = delete;
 
     /**
      * @brief SourceFindImage constructor
@@ -290,8 +166,10 @@ public:
      * @param[in] compute_barycentre (bool): Compute barycentric centre of each island.
      * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island.
      * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold.
+     * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
+     * @param[in] ceres_solvertype (CeresSolverType): Solver type used by ceres library for gaussian fitting.
      */
-    source_find_image(
+    SourceFindImage(
         const arma::Mat<real_t>& input_data,
         double input_detection_n_sigma,
         double input_analysis_n_sigma,
@@ -301,7 +179,9 @@ public:
         bool binapprox_median = false,
         bool compute_barycentre = true,
         bool gaussian_fitting = false,
-        bool generate_labelmap = true);
+        bool generate_labelmap = true,
+        CeresDiffMethod ceres_diffmethod = CeresDiffMethod::AutoDiff_SingleResBlk,
+        CeresSolverType ceres_solvertype = CeresSolverType::LinearSearch_BFGS);
 
 private:
     /**

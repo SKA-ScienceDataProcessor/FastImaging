@@ -1,8 +1,7 @@
 # Slow Transients Pipeline Prototype
 ## Project organisation
 - doc: documentation files
-  - html: auto-generated documentation (e.g. doxygen, LaTeX)
-- reference: reference code published on Confluence
+  - html: auto-generated doxygen documentation
 - src: source code files (.cpp and .h)
   - stp: the STP library code
   - stp-python: python bindings for STP library
@@ -30,7 +29,7 @@
 - [OpenBLAS](http://www.openblas.net) [0.2.19]
 - [RapidJSON](https://github.com/miloyip/rapidjson) [1.1.0]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
-- [spdlog](https://github.com/gabime/spdlog) [0.11.0]
+- [spdlog](https://github.com/gabime/spdlog) [0.14.0]
 - [eigen](http://eigen.tuxfamily.org/) [3.3.4]
 - [ceres](http://ceres-solver.org/) [1.13.0rc1]
 
@@ -56,18 +55,19 @@ OPTION        | Description
  USE_FLOAT             | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
  WITH_FUNCTION_TIMINGS | Measures function execution times from the reduce executable (default=ON)
  USE_SERIAL_GRIDDER    | Uses serial implementation of gridder (default=OFF)
+ USE_FFTSHIFT          | Performs shift of the image and beam matrices after fft (default=OFF)
 
 The USE_FLOAT option is important, as it may affect the STP algorithm accuracy.
 When compiled with USE_FLOAT=ON, most algorithm data structures of real or complex numbers will use single-precision floating-point type instead of double-precision floating-point type. 
-In most systems, the FLOAT type uses 4 bytes, while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time.
+In most systems the FLOAT type uses 4 bytes while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time.
 
-After building STP, the FFTW plans shall be generated using the fftw-wisdom tool.
-By using pre-generated FFTW plans, the FFT step executes faster and the total running time of STP is smaller.
+After building STP the FFTW plans shall be generated using the fftw-wisdom tool.
+By using pre-generated FFTW plans the FFT step executes faster and the total running time of STP is smaller.
 A script to generate FFTW plans using complex-to-real (c2r) FFT is provided in "project-root/scripts/fftw-wisdom" directory. 
 The following matrix sizes are considered for FFTW plan generation:
 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
 
-When running the program, only the above matrix sizes can be used as input image size, since the plans were generated only for these sizes. 
+When running the program only the above matrix sizes can be used as input image size, since the plans were generated only for these sizes. 
 The full or relative pathname and filename of the FFTW plans for the complex-to-real (c2r) FFT step shall be given in the JSON configuration file.
 
 #### Using a build script (Includes tests execution)
@@ -158,6 +158,12 @@ $ kcachegrind callgrind.out.*
 ```
 
 ## Release Notes
+### 25 August 2017
+- Added option to use analytic derivatives for gaussian fitting using ceres-solver
+- Improved implementation of gaussian fitting
+- Added unit test for gaussian fitting
+- Added doxygen documentation 
+
 ### 4 August 2017
 - Implemented gaussian fitting using ceres-solver
 - Fixed bugs

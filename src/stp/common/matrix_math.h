@@ -1,3 +1,8 @@
+/**
+* @file matrix_math.h
+* @brief Classes and function prototypes of matrix math.
+*/
+
 #ifndef MATRIX_MATH_H
 #define MATRIX_MATH_H
 
@@ -11,8 +16,16 @@
 
 namespace stp {
 
+/**
+ * @brief Struct that stores computed statistics: mean, sigma, median.
+ */
 struct DataStats {
 
+    /**
+     * @brief DataStats default constructor.
+     *
+     * All statistic values set to zero.
+     */
     DataStats()
         : mean(0.0)
         , sigma(0.0)
@@ -20,6 +33,9 @@ struct DataStats {
     {
     }
 
+    /**
+     * @brief DataStats constructor that sets given mean value. Sigma and median set to zero.
+     */
     DataStats(real_t u)
         : mean(u)
         , sigma(0.0)
@@ -27,6 +43,9 @@ struct DataStats {
     {
     }
 
+    /**
+     * @brief DataStats constructor that sets given mean and sigma values. Median set to zero.
+     */
     DataStats(real_t u, real_t s)
         : mean(u)
         , sigma(s)
@@ -34,6 +53,9 @@ struct DataStats {
     {
     }
 
+    /**
+     * @brief DataStats constructor that sets given mean, sigma and median values.
+     */
     DataStats(real_t u, real_t s, real_t m)
         : mean(u)
         , sigma(s)
@@ -41,51 +63,46 @@ struct DataStats {
     {
     }
 
+    /**
+     * Mean value
+     */
     real_t mean;
+
+    /**
+     * Sigma value
+     */
     real_t sigma;
+
+    /**
+     * Median value
+     */
     real_t median;
 };
 
+/**
+ * @brief Struct that stores a pair of doubles.
+ */
 struct DoublePair {
     double d1;
     double d2;
 
+    /**
+     * @brief DoublePair default constructor.
+     *
+     * Values set to zero.
+     */
     DoublePair()
         : d1(0.0)
         , d2(0.0)
     {
     }
 
+    /**
+     * @brief DoublePair constructor that sets two double numbers.
+     */
     DoublePair(double a1, double a2)
         : d1(a1)
         , d2(a2)
-    {
-    }
-};
-
-struct SumStdDev {
-    double acc1;
-    double acc2;
-    arma::uword n_elem;
-
-    SumStdDev()
-        : acc1(0.0)
-        , acc2(0.0)
-        , n_elem(0)
-    {
-    }
-
-    SumStdDev(double a1, double a2)
-        : acc1(a1)
-        , acc2(a2)
-        , n_elem(0)
-    {
-    }
-
-    SumStdDev(double a1, double a2, arma::uword num)
-        : acc1(a1)
-        , acc2(a2)
-        , n_elem(num)
     {
     }
 };
@@ -225,7 +242,7 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
 
     if (dim == 0) {
         if (neg == 0) {
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, n_cols), [&](const tbb::blocked_range<size_t>& r) {
                 for (size_t col = r.begin(); col != r.end(); ++col) {
                     T* out_ptr = out.colptr(col);
                     const T* in_ptr = in.colptr(col);
@@ -235,7 +252,7 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
                 }
             });
         } else if (neg == 1) {
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, n_cols), [&](const tbb::blocked_range<size_t>& r) {
                 for (size_t col = r.begin(); col != r.end(); ++col) {
                     T* out_ptr = out.colptr(col);
                     const T* in_ptr = in.colptr(col);
@@ -255,12 +272,12 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
                 std::memcpy(out_ptr + len, in_ptr, (n_cols - len) * sizeof(T));
 
             } else {
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, (n_cols - len)), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                tbb::parallel_for(tbb::blocked_range<size_t>(0, (n_cols - len)), [&](const tbb::blocked_range<size_t>& r) {
                     for (size_t out_col = r.begin() + len, col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(T));
                     }
                 });
-                tbb::parallel_for(tbb::blocked_range<size_t>((n_cols - len), n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                tbb::parallel_for(tbb::blocked_range<size_t>((n_cols - len), n_cols), [&](const tbb::blocked_range<size_t>& r) {
                     for (size_t out_col = r.begin() - (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(T));
                     }
@@ -275,12 +292,12 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
                 std::memcpy(out_ptr + (n_cols - len), in_ptr, len * sizeof(T));
 
             } else {
-                tbb::parallel_for(tbb::blocked_range<size_t>(len, n_cols), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                tbb::parallel_for(tbb::blocked_range<size_t>(len, n_cols), [&](const tbb::blocked_range<size_t>& r) {
                     for (size_t out_col = r.begin() - len, col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(T));
                     }
                 });
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, len), [&out, &in, &len, &n_rows, &n_cols](const tbb::blocked_range<size_t>& r) {
+                tbb::parallel_for(tbb::blocked_range<size_t>(0, len), [&](const tbb::blocked_range<size_t>& r) {
                     for (size_t out_col = r.begin() + (n_cols - len), col = r.begin(); col != r.end(); ++col, ++out_col) {
                         std::memcpy(out.colptr(out_col), in.colptr(col), n_rows * sizeof(T));
                     }

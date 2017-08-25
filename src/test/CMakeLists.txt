@@ -166,6 +166,9 @@ add_unit_test(test_sourcefind_rms_estimation sourcefind/sourcefind_test_RmsEstim
 # Labeling
 add_unit_test(test_sourcefind_labeling sourcefind/sourcefind_test_Labeling.cpp)
 
+# Fitting
+add_unit_test(test_sourcefind_fitting sourcefind/sourcefind_test_Fitting.cpp)
+
 # Test Cases: Pipeline Functions ---------------------------------------------------------------------------------------
 add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp)
 
@@ -228,6 +231,7 @@ add_test(NAME SourceFindBasicSourceDetection COMMAND test_sourcefind_basic_sourc
 add_test(NAME SourceFindNegativeSourceDetection COMMAND test_sourcefind_negative_source_detection)
 add_test(NAME SourceFindRmsEstimation COMMAND test_sourcefind_rms_estimation)
 add_test(NAME SourceFindLabeling COMMAND test_sourcefind_labeling)
+add_test(NAME SourceFindFitting COMMAND test_sourcefind_fitting)
 
 # Pipeline Functions
 add_test(NAME PipelineGaussianSincFunc COMMAND test_pipeline_gaussiansinc)

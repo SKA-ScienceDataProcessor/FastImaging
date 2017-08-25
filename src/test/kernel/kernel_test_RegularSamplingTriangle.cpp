@@ -1,10 +1,8 @@
-/** @file kernel_func_RegularSamplingTriangle.cpp
+/** @file kernel_test_RegularSamplingTriangle.cpp
  *  @brief Test RegularSamplingTriangle
  *
  *  TestCase to test the kernel function in a
  *  regular sampling triangle example.
- *
- *  @bug No known bugs.
  */
 
 #include <gtest/gtest.h>
@@ -36,7 +34,7 @@ TEST(KernelGenerationRegularSamplingTriangle, NoOffset)
     };
 
     arma::mat result_array = make_kernel_array(Triangle(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
 // Test 2D kernel convolution method in a regular sampling triangle, with .5 pix offset right.
@@ -53,5 +51,5 @@ TEST(KernelGenerationRegularSamplingTriangle, OffsetRight)
     };
 
     arma::mat result_array = make_kernel_array(Triangle(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }

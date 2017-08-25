@@ -1,7 +1,5 @@
-/** @file gridder_test_benchmark.cpp
- *  @brief Test Gridder module performance
- *
- *  @bug No known bugs.
+/** @file populate_kernel_cache_benchmark.cpp
+ *  @brief Test populate kernel cache module performance
  */
 #include <benchmark/benchmark.h>
 #include <stp.h>

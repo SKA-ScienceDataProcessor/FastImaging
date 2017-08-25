@@ -49,7 +49,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculation)
         aux[col] = r[1];
         col++;
     });
-    EXPECT_TRUE(arma::approx_equal(aux, arma::conv_to<arma::mat>::from(outputs), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(aux, arma::conv_to<arma::mat>::from(outputs), "absdiff", fptolerance));
 }
 
 TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
@@ -73,7 +73,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
         col++;
     });
 
-    EXPECT_TRUE(arma::approx_equal(aux, arma::conv_to<arma::mat>::from(outputs), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(aux, arma::conv_to<arma::mat>::from(outputs), "absdiff", fptolerance));
 }
 
 TEST(GridderFractionalCoordToOversampledIndexMath, CoOrdinatePairs)

@@ -42,11 +42,11 @@ public:
 TEST_F(GridderTriangle, equal)
 {
     run();
-    EXPECT_TRUE(std::abs(accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid))) - accu(arma::real(vis))) < tolerance);
+    EXPECT_TRUE(std::abs(accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid))) - accu(arma::real(vis))) < fptolerance);
 }
 
 TEST_F(GridderTriangle, uv_location)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)(arma::span(image_size / 2 - support, image_size / 2 + support), arma::span(image_size / 2 + 1 - support, image_size / 2 + 1 + support))), arma::conv_to<arma::Mat<real_t>>::from(kernel / accu(kernel)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)(arma::span(image_size / 2 - support, image_size / 2 + support), arma::span(image_size / 2 + 1 - support, image_size / 2 + 1 + support))), arma::conv_to<arma::Mat<real_t>>::from(kernel / accu(kernel)), "absdiff", fptolerance));
 }

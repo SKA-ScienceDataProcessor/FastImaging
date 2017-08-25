@@ -1,0 +1,4 @@
+<map id="stp::mat_binmedian" name="stp::mat_binmedian">
+<area shape="rect" id="node2" href="$namespacestp.html#aaec4a7dcd30598f388f96794a9c44c68" title="Compute matrix mean and standard deviation at once. " alt="" coords="189,5,372,32"/>
+<area shape="rect" id="node3" href="$namespacestp.html#a289ceab89f470979ff8f3a16af91b382" title="Compute exact median using nth_element function. " alt="" coords="201,56,360,83"/>
+</map>

@@ -1,10 +1,5 @@
 /** @file gridder.h
- *  @brief Functions of gridder
- *
- *  This contains the prototypes and implementation
- *  for the gridder functions
- *
- *  @bug No known bugs.
+ *  @brief Classes and function prototypes of the gridder.
  */
 
 #ifndef GRIDDER_FUNC_H
@@ -35,7 +30,13 @@ public:
     {
     }
 
+    /**
+     * The visibility grid matrix
+     */
     MatStp<cx_real_t> vis_grid;
+    /**
+     * The sampling grid matrix
+     */
     MatStp<cx_real_t> sampling_grid;
     double sample_grid_total;
 };

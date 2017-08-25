@@ -55,17 +55,17 @@ public:
 TEST_F(GridderMultiPixelPillbox, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::Mat<cx_real_t>{ accu(result.first) }, arma::Mat<cx_real_t>{ cx_real_t(accu(vis)) }, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::Mat<cx_real_t>{ accu(result.first) }, arma::Mat<cx_real_t>{ cx_real_t(accu(vis)) }, "absdiff", fptolerance));
 }
 
 TEST_F(GridderMultiPixelPillbox, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t>>::from(result.first), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t>>::from(result.first), "absdiff", fptolerance));
 }
 
 TEST_F(GridderMultiPixelPillbox, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t>>::from(result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, arma::conv_to<arma::Mat<real_t>>::from(result.second), "absdiff", fptolerance));
 }

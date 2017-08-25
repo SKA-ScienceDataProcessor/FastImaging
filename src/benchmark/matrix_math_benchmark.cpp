@@ -1,7 +1,5 @@
-/** @file gridder_test_benchmark.cpp
- *  @brief Test Gridder module performance
- *
- *  @bug No known bugs.
+/** @file matrix_math_benchmark.cpp
+ *  @brief Test matrix math functions performance
  */
 #include <benchmark/benchmark.h>
 #include <cblas.h>

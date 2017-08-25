@@ -1,7 +1,5 @@
-/** @file sourcefind_test_benchmark.cpp
+/** @file sourcefind_benchmark.cpp
  *  @brief Test SourceFindImage module performance
- *
- *  @bug No known bugs.
  */
 
 #include <benchmark/benchmark.h>
@@ -38,7 +36,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::source_find_image(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
+        benchmark::DoNotOptimize(stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
             cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap));
         benchmark::ClobberMemory();
     }

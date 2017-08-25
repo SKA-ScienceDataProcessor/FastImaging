@@ -1,10 +1,8 @@
-/** @file imager_func_Triangle.cpp
+/** @file imager_test_Triangle.cpp
  *  @brief Test imager with Triangle
  *
  *  TestCase to test the imager-imager
  *  implementation with triangle convolution
- *
- *  @bug No known bugs.
  */
 
 #include "load_json_imager.h"
@@ -48,20 +46,20 @@ public:
 TEST(ImagerTriangle, SmallImage)
 {
     imager_test_triangle triangle_small_image("triangle", "small_image");
-    EXPECT_TRUE(arma::approx_equal(triangle_small_image.result.first, arma::real(triangle_small_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(triangle_small_image.result.second, arma::real(triangle_small_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(triangle_small_image.result.first, arma::real(triangle_small_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(triangle_small_image.result.second, arma::real(triangle_small_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerTriangle, MediumImage)
 {
     imager_test_triangle triangle_medium_image("triangle", "medium_image");
-    EXPECT_TRUE(arma::approx_equal(triangle_medium_image.result.first, arma::real(triangle_medium_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(triangle_medium_image.result.second, arma::real(triangle_medium_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(triangle_medium_image.result.first, arma::real(triangle_medium_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(triangle_medium_image.result.second, arma::real(triangle_medium_image.expected_result.second), "absdiff", fptolerance));
 }
 
 TEST(ImagerTriangle, LargeImage)
 {
     imager_test_triangle triangle_large_image("triangle", "large_image");
-    EXPECT_TRUE(arma::approx_equal(triangle_large_image.result.first, arma::real(triangle_large_image.expected_result.first), "absdiff", tolerance));
-    EXPECT_TRUE(arma::approx_equal(triangle_large_image.result.second, arma::real(triangle_large_image.expected_result.second), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(triangle_large_image.result.first, arma::real(triangle_large_image.expected_result.first), "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(triangle_large_image.result.second, arma::real(triangle_large_image.expected_result.second), "absdiff", fptolerance));
 }

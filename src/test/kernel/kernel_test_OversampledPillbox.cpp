@@ -1,10 +1,8 @@
-/** @file kernel_func_OversampledPillbox.cpp
+/** @file kernel_test_OversampledPillbox.cpp
  *  @brief Test OversampledPillbox
  *
  *  TestCase to test the kernel function in an
  *  oversampled tophat example.
- *
- *  @bug No known bugs.
  */
 
 #include <gtest/gtest.h>
@@ -34,7 +32,7 @@ TEST(KernelGenerationOversampledPillbox, NoOffset)
     };
 
     arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
 // Test 2D kernel convolution method in an oversampled pillbox, with a tiny offset.
@@ -53,7 +51,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffset)
     };
 
     arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
 // Test 2D kernel convolution method in an oversampled pillbox; we displace towards -ve x a bit: with -0.05 offset right.
@@ -72,7 +70,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffsetRight)
     };
 
     arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
 // Test 2D kernel convolution method in an oversampled pillbox, with 0.4 offset right.
@@ -91,5 +89,5 @@ TEST(KernelGenerationOversampledPillbox, OffsetRight)
     };
 
     arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
-    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }

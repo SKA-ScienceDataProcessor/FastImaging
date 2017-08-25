@@ -1,10 +1,6 @@
-/** @file conv_func.h
- *  @brief Classes and functions of convolution methods
- *
- *  This contains the prototypes and the classes for the convolution
- *  functions
- *
- *  @bug No known bugs.
+/**
+ * @file conv_func.h
+ * @brief Classes and function prototypes of convolution methods.
  */
 
 #ifndef CONV_FUNC_H
@@ -24,7 +20,7 @@ class TopHat {
 public:
     /**
      * @brief TopHat constructor
-     * @param half_base_width (double)
+     * @param[in] half_base_width (double)
      */
     TopHat(double half_base_width)
         : _half_base_width(half_base_width)
@@ -32,8 +28,8 @@ public:
     }
 
     /**
-     * @brief operator ()
-     * @param radius_in_pix (arma::vec)
+     * @brief Operator ()
+     * @param[in] radius_in_pix (arma::vec)
      * @return TopHat mat
      */
     arma::vec operator()(const arma::vec& radius_in_pix) const;

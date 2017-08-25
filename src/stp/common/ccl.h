@@ -1,3 +1,8 @@
+/**
+* @file ccl.h
+* @brief Function prototypes of the connected component labeling.
+*/
+
 #ifndef CCL_H
 #define CCL_H
 
@@ -45,8 +50,14 @@ inline static uint set_union(uint* P, uint i, uint j)
     return root;
 }
 
+/**
+ * @brief LabelDataThread struct is used to store start column and detected label information of a thread
+ */
 struct LabelDataThread {
 
+    /**
+     * @brief LabelDataThread default constructor
+     */
     LabelDataThread()
         : col_start(0)
         , lunique_start(0)
@@ -55,6 +66,9 @@ struct LabelDataThread {
     {
     }
 
+    /**
+     * @brief LabelDataThread constructor
+     */
     LabelDataThread(uint in_col_start, uint in_lunique_start, uint in_lunique_p, uint in_lunique_n)
         : col_start(in_col_start)
         , lunique_start(in_lunique_start)
@@ -137,6 +151,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
     // Grain size
     size_t grainsize = cols / num_slices;
 
+    // Use this vector to store start column and number of labels assigned by each thread
     tbb::concurrent_vector<LabelDataThread> label_data_per_thread(num_slices);
 
     // Scanning phase

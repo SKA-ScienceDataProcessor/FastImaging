@@ -1,3 +1,8 @@
+/**
+ * @file conv_func.cpp
+ * @brief Implementation of classes and functions of convolution methods.
+ */
+
 #include "conv_func.h"
 
 namespace stp {

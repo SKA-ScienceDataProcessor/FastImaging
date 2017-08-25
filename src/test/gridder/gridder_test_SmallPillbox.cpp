@@ -55,11 +55,11 @@ public:
 TEST_F(GridderSmallPillbox, equal)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ arma::accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid))) }, arma::cx_mat{ arma::accu(arma::real(expected_result)) }, "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(arma::cx_mat{ arma::accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid))) }, arma::cx_mat{ arma::accu(arma::real(expected_result)) }, "absdiff", fptolerance));
 }
 
 TEST_F(GridderSmallPillbox, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_result, arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_result, arma::real(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)), "absdiff", fptolerance));
 }

@@ -56,17 +56,17 @@ public:
 TEST_F(GridderNearbyComplexVis, equal)
 {
     run();
-    EXPECT_TRUE(std::abs(accu(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)) - cx_real_t(accu(vis))) < tolerance);
+    EXPECT_TRUE(std::abs(accu(static_cast<arma::Mat<cx_real_t>>(result.vis_grid)) - cx_real_t(accu(vis))) < fptolerance);
 }
 
 TEST_F(GridderNearbyComplexVis, vis_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(result.vis_grid), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(result.vis_grid), "absdiff", fptolerance));
 }
 
 TEST_F(GridderNearbyComplexVis, sampling_grid)
 {
     run();
-    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(result.sampling_grid), "absdiff", tolerance));
+    EXPECT_TRUE(arma::approx_equal(expected_vis_grid, static_cast<arma::Mat<cx_real_t>>(result.sampling_grid), "absdiff", fptolerance));
 }

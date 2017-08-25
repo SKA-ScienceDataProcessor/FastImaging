@@ -1,6 +1,6 @@
 /**
 * @file visibility.cpp
-* Contains the prototypes and implementation of visibility functions
+* @brief Implementation of visibility functions.
 */
 
 #include "visibility.h"

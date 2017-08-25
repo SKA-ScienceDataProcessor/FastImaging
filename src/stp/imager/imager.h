@@ -1,3 +1,8 @@
+/**
+ * @file imager.h
+ * @brief Function prototypes of the imager.
+ */
+
 #ifndef IMAGER_H
 #define IMAGER_H
 
@@ -5,7 +10,6 @@
 #include "../common/fft.h"
 #include "../gridder/gridder.h"
 #include "../types.h"
-#include <cblas.h>
 
 #define arc_sec_to_rad(value) ((value / 3600.0) * (M_PI / 180.0))
 #define NUM_TIME_INST 10
@@ -64,8 +68,8 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     bool kernel_exact = true,
     int oversampling = 1,
     bool generate_beam = false,
-    FFTRoutine r_fft = FFTW_ESTIMATE_FFT,
-    const std::string fft_wisdom_filename = std::string())
+    FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT,
+    const std::string& fft_wisdom_filename = std::string())
 {
     assert(kernel_exact || (oversampling >= 1)); // If kernel exact is false, then oversampling must be >= 1
     assert(image_size > 0);
@@ -106,7 +110,7 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     arma::Mat<real_t> fft_result_beam;
 
     // Reuse gridded_data buffer if FFT is INPLACE
-    if (r_fft == stp::FFTW_WISDOM_INPLACE_FFT) {
+    if (r_fft == stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
         fft_result_image = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.vis_grid.memptr()), (gridded_data.vis_grid.n_rows) * 2, gridded_data.vis_grid.n_cols, false, false));
         fft_result_beam = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.sampling_grid.memptr()), (gridded_data.sampling_grid.n_rows) * 2, gridded_data.sampling_grid.n_cols, false, false));
     }
@@ -115,7 +119,7 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     // First: FFT of image matrix
     fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft, fft_wisdom_filename);
     // Delete gridded image matrix (only if FFT is not inplace)
-    if (r_fft != stp::FFTW_WISDOM_INPLACE_FFT) {
+    if (r_fft != stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
         gridded_data.vis_grid.delete_matrix_buffer();
     }
 #ifdef FFTSHIFT
@@ -126,7 +130,7 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     if (generate_beam) {
         fft_fftw_c2r(gridded_data.sampling_grid, fft_result_beam, r_fft, fft_wisdom_filename);
         // Delete gridded beam matrix (only if FFT is not inplace)
-        if (r_fft != stp::FFTW_WISDOM_INPLACE_FFT) {
+        if (r_fft != stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
             gridded_data.sampling_grid.delete_matrix_buffer();
         }
 #ifdef FFTSHIFT

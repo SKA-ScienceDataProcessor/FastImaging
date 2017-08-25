@@ -1,7 +1,5 @@
-/** @file gridder_test_benchmark.cpp
- *  @brief Test Gridder module performance
- *
- *  @bug No known bugs.
+/** @file memset_benchmark.cpp
+ *  @brief Test memset performance
  */
 #include <benchmark/benchmark.h>
 #include <stp.h>

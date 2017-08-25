@@ -1,3 +1,8 @@
+/**
+* @file matstp.h
+* @brief MatStp matrix class.
+*/
+
 #ifndef MATSTP_H
 #define MATSTP_H
 
@@ -9,44 +14,57 @@
 
 namespace stp {
 
+/**
+ * @brief The ZeroMemAlloc buffer class
+ *
+ * Creates zeroed buffer using calloc function.
+ */
 template <typename T>
 class ZeroMemAlloc {
 public:
-    // Default constructor
+    /**
+     * @brief ZeroMemAlloc default constructor
+     */
     ZeroMemAlloc()
         : mem_ptr()
         , num_elems(0)
     {
     }
 
-    // Constructor
+    /**
+     * @brief ZeroMemAlloc constructor using given length
+     */
     ZeroMemAlloc(size_t length)
-    {
-        mem_ptr = std::unique_ptr<T, std::function<void(T*)>>((T*)std::calloc(length, sizeof(T)), [](T* ptr) {
+        : mem_ptr(std::unique_ptr<T, std::function<void(T*)>>((T*)std::calloc(length, sizeof(T)), [](T* ptr) {
             if (ptr != nullptr) {
                 std::free(ptr);
                 ptr = nullptr;
             }
-        });
-        num_elems = length;
+        }))
+        , num_elems(length)
+    {
     }
 
     // Delete copy and assignment constructors
     ZeroMemAlloc(ZeroMemAlloc const&) = delete;
     ZeroMemAlloc& operator=(ZeroMemAlloc const&) = delete;
 
-    // Define move constructor
+    /**
+     * @brief ZeroMemAlloc move constructor
+     */
     ZeroMemAlloc(ZeroMemAlloc&& other)
         : mem_ptr(std::move(other.mem_ptr))
+        , num_elems(other.num_elems)
     {
-        other.mem_ptr = nullptr;
     }
 
-    // Define move assignment operator
+    /**
+     * @brief ZeroMemAlloc move assignment operator
+     */
     ZeroMemAlloc& operator=(ZeroMemAlloc&& other)
     {
         // Self-assignment detection
-        if (&other == this)
+        if (this == &other)
             return *this;
 
         mem_ptr = std::move(other.mem_ptr);
@@ -55,57 +73,82 @@ public:
         return *this;
     }
 
+    /**
+     * Smart pointer for the memory buffer
+     */
     std::unique_ptr<T, std::function<void(T*)>> mem_ptr;
+    /**
+     * Buffer size
+     */
     size_t num_elems;
 };
 
+/**
+ * @brief The MatStp matrix class
+ *
+ * Creates zeroed matrix that uses ZeroMemAlloc (based on calloc function) and inherints armadillo Mat methods.
+ */
 template <typename T>
 class MatStp : private ZeroMemAlloc<T>, public arma::Mat<T> {
 public:
-    // Default constructor
+    /**
+     * @brief MatStp default constructor
+     */
     MatStp() = default;
 
-    // Constructor
+    /**
+     * @brief MatStp constructor that receives matrix dimensions
+     */
     MatStp(arma::uword n_rows, arma::uword n_cols)
         : ZeroMemAlloc<T>(n_rows * n_cols + CACHE_LINE_SIZE)
         , arma::Mat<T>(aligned_mem_ptr(), n_rows, n_cols, false, false)
     {
     }
 
-    // Move constructor
+    /**
+     * @brief MatStp move constructor
+     */
     MatStp(MatStp&& other)
-        : ZeroMemAlloc<T>(std::move(other))
-        , arma::Mat<T>(std::move(other))
+        : ZeroMemAlloc<T>(std::move(static_cast<ZeroMemAlloc<T>&>(other))) // Static_cast is optional, since implicit upcast also works
+        , arma::Mat<T>(std::move(static_cast<arma::Mat<T>&>(other)))
     {
     }
 
-    // Move assignment operator
+    /**
+     * @brief MatStp move assignment operator
+     */
     MatStp<T>& operator=(MatStp&& other)
     {
         // Self-assignment detection
         if (&other == this)
             return *this;
 
-        ZeroMemAlloc<T>::operator=(std::move(other));
-        arma::Mat<T>::operator=(std::move(other));
+        ZeroMemAlloc<T>::operator=(std::move(static_cast<ZeroMemAlloc<T>&>(other))); // Static_cast is optional, since implicit upcast also works
+        arma::Mat<T>::operator=(std::move(static_cast<arma::Mat<T>&>(other)));
         return *this;
     }
 
-    // Sum assignment operator
+    /**
+     * @brief MatStp sum assignment operator
+     */
     MatStp<T>& operator+=(MatStp& other)
     {
         arma::Mat<T>::operator+=(other);
         return *this;
     }
 
-    // Deletes matrix buffer
+    /**
+     * @brief Delete matrix buffer
+     */
     void delete_matrix_buffer()
     {
         ZeroMemAlloc<T>::mem_ptr.reset();
     }
 
 private:
-    // Get aligned memory position
+    /**
+     * @brief Get aligned memory position
+     */
     T* aligned_mem_ptr()
     {
         size_t length = ZeroMemAlloc<T>::num_elems;

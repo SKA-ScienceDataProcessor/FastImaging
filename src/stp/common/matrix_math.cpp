@@ -1,3 +1,8 @@
+/**
+* @file matrix_math.cpp
+* @brief Implementation of matrix math functions.
+*/
+
 #include "matrix_math.h"
 #include <cassert>
 #include <cblas.h>
@@ -557,17 +562,17 @@ double mat_stddev_parallel(arma::Mat<real_t>& data, double mean)
         if (!arma::is_finite(mean)) {
             mean = mat_mean_parallel(data);
         }
-        SumStdDev total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, num_elems), SumStdDev(0.0, 0.0), [&](const tbb::blocked_range<size_t>& r, SumStdDev sum) {
-            double& acc1 = sum.acc1;
-            double& acc2 = sum.acc2;
+        DoublePair total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, num_elems), DoublePair(0.0, 0.0), [&](const tbb::blocked_range<size_t>& r, DoublePair sum) {
+            double& acc1 = sum.d1;
+            double& acc2 = sum.d2;
             for (size_t i = r.begin(); i != r.end(); i++) {
                 const double tmp = data.at(i) - mean;
                 acc1 += tmp * tmp;
                 acc2 += tmp;
             }
-            return SumStdDev(acc1, acc2); },
-            [](const SumStdDev& x, const SumStdDev& y) { return SumStdDev(x.acc1 + y.acc1, x.acc2 + y.acc2); });
-        std = std::sqrt((total.acc1 - total.acc2 * total.acc2 / double(num_elems)) / double(num_elems));
+            return DoublePair(acc1, acc2); },
+            [](const DoublePair& x, const DoublePair& y) { return DoublePair(x.d1 + y.d1, x.d2 + y.d2); });
+        std = std::sqrt((total.d1 - total.d2 * total.d2 / double(num_elems)) / double(num_elems));
     }
 
     return std;
