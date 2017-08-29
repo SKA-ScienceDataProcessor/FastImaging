@@ -16,7 +16,7 @@
 - vagrant: virtual machine configuration
 
 ## Build & Run
-### Dependencies
+### Dependencies 
 
 #### In Source (third-party)
 - [Armadillo](http://arma.sourceforge.net/) [7.950.1]
@@ -33,19 +33,19 @@
 - [eigen](http://eigen.tuxfamily.org/) [3.3.4]
 - [ceres](http://ceres-solver.org/) [1.13.0rc1]
 
+
 ### Clone
 
 ```sh
 $ git clone https://github.com/SKA-ScienceDataProcessor/FastImaging.git
 $ cd <path/to/project>
 $ git submodule init
-$ git submodule update
+$ git submodule update    # Update test-data directory
 ```
 
 ### Build
 
-STP prototype is compiled using CMake tools. 
-The following cmake options are available:
+To build the STP prototype, the following CMake options are available:
 
 OPTION        | Description
 ------------- | -------------
@@ -55,20 +55,19 @@ OPTION        | Description
  USE_FLOAT             | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
  WITH_FUNCTION_TIMINGS | Measures function execution times from the reduce executable (default=ON)
  USE_SERIAL_GRIDDER    | Uses serial implementation of gridder (default=OFF)
- USE_FFTSHIFT          | Performs shift of the image and beam matrices after fft (default=OFF)
+ USE_FFTSHIFT          | Explicitly shifts the image and beam matrices in memory after FFT - results in slower imager (default=OFF)
 
-The USE_FLOAT option is important, as it may affect the STP algorithm accuracy.
 When compiled with USE_FLOAT=ON, most algorithm data structures of real or complex numbers will use single-precision floating-point type instead of double-precision floating-point type. 
 In most systems the FLOAT type uses 4 bytes while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time.
+However, it reduces the algorithm floating-point accuracy.
 
-After building STP the FFTW plans shall be generated using the fftw-wisdom tool.
-By using pre-generated FFTW plans the FFT step executes faster and the total running time of STP is smaller.
-A script to generate FFTW plans using complex-to-real (c2r) FFT is provided in "project-root/scripts/fftw-wisdom" directory. 
-The following matrix sizes are considered for FFTW plan generation:
-128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
+After building STP the FFTW plans shall be generated using the fftw-wisdom tool. By using these plans, the FFT step executes much faster.
+A CMake target is provided to generate the FFTW plans. This target executes a script located in "project-root/scripts/fftw-wisdom" directory.
+The location and filename of the generated FFTW plans shall be provided in the input JSON configuration file.
 
-When running the program only the above matrix sizes can be used as input image size, since the plans were generated only for these sizes. 
-The full or relative pathname and filename of the FFTW plans for the complex-to-real (c2r) FFT step shall be given in the JSON configuration file.
+By default, FFTW plans are generated for the following matrix sizes: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536.
+When executing the STP only the above image sizes can be used as input, since the FFTW plans were generated only for these sizes. 
+If different image sizes are required, the script for plan generation shall be manually executed indicating the required image sizes.
 
 #### Using a build script (Includes tests execution)
 ```sh
@@ -92,15 +91,20 @@ $ cd <path/to/build/directory>
 $ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF <path/to/project/src>
 $ make all -j4
 ```
-Also, generate FFTW plans using fftw-wisdom (see OPTIONS of generate_wisdom.sh scritpt using --help):
+Then, generate the FFTW plans using the available CMake target:
+```sh
+$ make fftwplans
+```
+Alternatively, the generate_wisdom.sh script can be manually executed (see available options using --help):
 ```sh
 $ cd <path/to/project>/scripts/fftw-wisdom
-$ ./generate_wisdom.sh <OPTIONS>  
+$ ./generate_wisdom.sh <OPTIONS>
 ```
 For instance, when compiled in Release mode with -DUSE_FLOAT=ON run:
 ```sh
 $ ./generate_wisdom.sh -r -f
 ```
+When executed manually, the plans are written into the wisdomfiles sub-directory created in the working directory.
 
 ## Tests Execution
 ### Using CMake (after successful build)
@@ -120,14 +124,16 @@ $ run-parts ./tests
 $ cd path/to/build/directory
 $ make benchmarking
 ```
+Note that some benchmarks use the pre-generated FFTW plans by fftw-wisdom tool. 
+Please, be sure to run 'make fftwplans' before the benchmarks.
 
 ## STP Execution using Reduce module
 The reduce executable is located in build-directory/reduce. It accepts the following arguments:
 
 Argument | Usage  | Description
 ---------| -------| -------------
-<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. projectroot/configs/reduce/fastimg_oversampling_config.json)
-<input-file-npz>   | required | Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. projectroot/test-data/pipeline-tests/simdata_nstep10.npz) 
+<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json)
+<input-file-npz>   | required | Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz) 
 <output-file-json> | required | Output JSON filename for detected islands.
 <output-file-npz>  | optional | Output NPZ filename for label map matrix (label_map).
 -d, --diff | optional | Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
@@ -135,10 +141,11 @@ Argument | Usage  | Description
 
 Example:
 ```sh
-$ ./reduce projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/pipeline-tests/simdata_nstep10.npz detected_islands.json -d -l
+$ ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l
 ```
-Note that the provided fastimg_oversampling_config.json file assumes that the FFTW wisdom files (with the pre-generated plans) are located in the current directory.
-Thus, the path of the wisdom files in the JSON configuration file shall be properly setup. Otherwise, the wisdom files shall be copied from the projectroot/scripts/fftw-wisdom/wisdomfiles (or wisdomfiles_f when USE_FLOAT=ON) to the reduce directory.
+Note that the provided fastimg_oversampling_config.json file assumes that the FFTW wisdom files (with the pre-generated plans) are located in <build-directory>/wisdomfiles.
+This is the default path of the FFTW plans when generated by the 'make fftwplans' command.
+If a different directory was used, the wisdom file path in the JSON configuration file shall be properly setup.
 
 ## Code profiling
  - Valgrind framework tools can be used to profile STP library: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
@@ -148,16 +155,23 @@ Thus, the path of the wisdom files in the JSON configuration file shall be prope
  - Callgrind and cachegrind output files can be analyzed using kcachegrind GUI application, while massif output file can be analyzed with massif-visualizer.
  - Callgrind usage example:
 ```sh
-$ mkdir -p path/to/build/directory
 $ cd path/to/build/directory
-$ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo path/to/project/src
-$ make
 $ cd reduce
-$ valgrind --tool=callgrind --separate-threads=yes ./reduce -d projectroot/configs/reduce/fastimg_oversampling_config.json projectroot/test-data/pipeline-tests/simdata_nstep10.npz detected_islands.json -d -l
+$ valgrind --tool=callgrind --separate-threads=yes ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l
 $ kcachegrind callgrind.out.*
+```
+For memory checking purposes, a CMake target for valgrind that executes the test_pipeline_gaussiansinc test is provided:
+```sh
+$ cd path/to/build/directory
+$ make valgrind
 ```
 
 ## Release Notes
+### 29 August 2017
+- Improved doxygen documentation
+- Added CMake target to generate FFTW plans
+- Fixed bugs
+
 ### 25 August 2017
 - Added option to use analytic derivatives for gaussian fitting using ceres-solver
 - Improved implementation of gaussian fitting

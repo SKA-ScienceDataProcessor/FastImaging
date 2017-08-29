@@ -19,6 +19,8 @@ namespace stp {
 
 /**
  * @brief The gridder output class
+ *
+ * Stores matrices of gridded sampling and gridded visibilities as well as the total sampling grid value
  */
 class GridderOutput {
 public:
@@ -52,7 +54,7 @@ public:
  *             This is used when generating an oversampled kernel that will be used for interpolation. Default is false.
  *  @param[in] normalize (bool). Whether to normalize generated kernel functions. Default is true.
  *
- *  @return cache (std::map): Mapping oversampling-pixel offsets to normalised kernels.
+ *  @return (arma::field<arma::mat>): Mapping oversampling-pixel offsets to normalised kernels.
  */
 template <typename T>
 arma::field<arma::mat> populate_kernel_cache(const T& kernel_creator, const int support, const int oversampling, const bool pad = false, const bool normalize = true)
@@ -104,7 +106,7 @@ arma::uvec bounds_check_kernel_centre_locations(arma::imat& kernel_centre_indice
                subpixel offsets from nearest pixel on the regular grid.
  *  @param[in] oversampling (int). How many oversampled pixels to one regular pixel.
  *
- *  @return oversampled_kernel_idx (arma::imat): Corresponding oversampled pixel indexes
+ *  @return (arma::imat): Corresponding oversampled pixel indexes
  */
 arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling);
 
@@ -113,7 +115,7 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *  Returns the **un-normalized** weighted visibilities; the
  *  weights-renormalization factor can be calculated by summing the sample grid.
  *
- *  If ``exact == True`` then exact gridding is used, i.e. the kernel is
+ *  If 'exact == True' then exact gridding is used, i.e. the kernel is
  *  recalculated for each visibility, with precise sub-pixel offset according to
  *  that visibility's UV co-ordinates. Otherwise, instead of recalculating the
  *  kernel for each sub-pixel location, we pre-generate an oversampled kernel
@@ -137,14 +139,18 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *              the pixel `[image_size//2,image_size//2]` corresponds to the origin
  *              in UV-space.
  *  @param[in] uv (arma::mat) : UV-coordinates of visibilities.
- *  @param[in] vis (arma::cx_mat): Complex visibilities. 1d array, shape: (n_vis).
- *  @param[in] vis_weights (arma::mat): Visibility weights. 1d array, shape: (n_vis).
- *  @param[in] kernel_exact (bool): Calculate exact kernel-values for every UV-sample.
- *  @param[in] oversampling (int): Controls kernel-generation if ``exact==False``.
-            Larger values give a finer-sampled set of pre-cached kernels.
- *  @param[in] pad (bool) :  Whether to pad the array by an extra pixel-width.
- *             This is used when generating an oversampled kernel that will be used for interpolation. Default is false.
- *  @param[in] normalize (bool). Whether to normalize generated kernel functions. Default is true.
+ *  @param[in] vis (arma::cx_mat) : Complex visibilities. 1d array, shape: (n_vis).
+ *  @param[in] vis_weights (arma::mat) : Visibility weights. 1d array, shape: (n_vis).
+ *  @param[in] kernel_exact (bool) : Calculate exact kernel-values for every UV-sample.
+ *  @param[in] oversampling (int) : Controls kernel-generation if ``exact==False``.
+                Larger values give a finer-sampled set of pre-cached kernels.
+ *  @param[in] pad (bool) :  Whether to pad the array by an extra pixel-width. This is used
+ *              when generating an oversampled kernel that will be used for interpolation. Default is false.
+ *  @param[in] normalize (bool) : Whether to normalize generated kernel functions. Default is true.
+ *  @param[in] shift_uv (bool) : Shift uv-coordinates before gridding (required when fftshift function is
+ *              skipped before fft). Default is true.
+ *  @param[in] halfplane_gridding (bool) : Grid only halfplane matrix. Used when halfplane c2r fft is used.
+ *              Default is true.
  *
  *  @return (GridderRes) 2 slices: vis_grid and sampling_grid, representing the gridded visibilities
  *                       and the sampling weights. One value with the total sampling grid sum.

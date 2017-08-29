@@ -36,7 +36,6 @@ void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vi
             uv_in_pixels.row(i) *= (-1);
             // Also compute the conjugate of the visibility
             vis.at(i) = std::conj(vis.at(i));
-            vis_weights.at(i) = std::conj(vis_weights.at(i));
         } else {
             // If the visibity point in the bottom halfplane is close to the 0-frequency (within kernel_support distance)
             // add the conjugate visibility point to the top half-plane (use an auxiliary array)

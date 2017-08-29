@@ -3,8 +3,6 @@
 #include <load_json_config.h>
 #include <stp.h>
 
-using namespace stp;
-
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string data_path(_PIPELINE_DATAPATH);
 std::string input_npz("simdata_nstep10.npz");
@@ -34,8 +32,14 @@ public:
         fft_routine = cfg.fft_routine;
         rms_estimation = cfg.estimate_rms;
         sigma_clip_iters = cfg.sigma_clip_iters;
+        binapprox_median = cfg.binapprox_median;
         compute_barycentre = cfg.compute_barycentre;
+        gaussian_fitting = cfg.gaussian_fitting;
         generate_labelmap = cfg.generate_labelmap;
+        generate_beam = cfg.generate_beam;
+        ceres_diffmethod = cfg.ceres_diffmethod;
+        ceres_solvertype = cfg.ceres_solvertype;
+        find_negative_sources = true;
     }
 
     stp::SourceFindImage run_pipeline();
@@ -48,13 +52,18 @@ public:
     int oversampling;
     double detection_n_sigma;
     double analysis_n_sigma;
-    KernelFunction kernel_function;
-    FFTRoutine fft_routine;
+    stp::KernelFunction kernel_function;
+    stp::FFTRoutine fft_routine;
     double rms_estimation;
     int sigma_clip_iters;
     bool binapprox_median;
     bool compute_barycentre;
+    bool gaussian_fitting;
     bool generate_labelmap;
+    bool generate_beam;
+    stp::CeresDiffMethod ceres_diffmethod;
+    stp::CeresSolverType ceres_solvertype;
+    bool find_negative_sources;
 };
 
 stp::SourceFindImage PipelineGaussianSincTest::run_pipeline()
@@ -74,10 +83,11 @@ stp::SourceFindImage PipelineGaussianSincTest::run_pipeline()
     stp::GaussianSinc kernel_func(kernel_support);
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis,
         input_snr_weights, input_uvw, image_size, cell_size, kernel_support, kernel_exact, oversampling,
-        false, fft_routine);
+        generate_beam, fft_routine);
 
-    return stp::SourceFindImage(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, true,
-        sigma_clip_iters, binapprox_median, compute_barycentre, generate_labelmap);
+    return stp::SourceFindImage(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, find_negative_sources,
+        sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap, ceres_diffmethod,
+        ceres_solvertype);
 }
 
 TEST_F(PipelineGaussianSincTest, test_gaussiansinc_exact)

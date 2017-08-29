@@ -21,11 +21,7 @@ get_filename_component(PIPELINE_CONFIGPATH "../../configs/reduce" ABSOLUTE)
 add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # Configures the location of the fftw wisdom files
-if(USE_FLOAT)
-   get_filename_component(WISDOM_FILEPATH "../../scripts/fftw-wisdom/wisdomfiles_f" ABSOLUTE)
-else()
-   get_filename_component(WISDOM_FILEPATH "../../scripts/fftw-wisdom/wisdomfiles" ABSOLUTE)
-endif()
+get_filename_component(WISDOM_FILEPATH "${CMAKE_BINARY_DIR}/wisdomfiles" ABSOLUTE)
 add_definitions ( -D_WISDOM_FILEPATH="${WISDOM_FILEPATH}/")
 
 # For convenience all link libraries required by

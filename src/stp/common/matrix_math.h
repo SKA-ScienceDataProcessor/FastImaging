@@ -108,7 +108,7 @@ struct DoublePair {
 };
 
 /**
- * @brief Compute exact median using nth_element function.
+ * @brief Compute exact median using the nth_element function.
  *
  * @param[in] data (arma::Mat): Input matrix.
  *
@@ -157,7 +157,7 @@ DataStats mat_median_binapprox(const arma::Mat<real_t>& data);
 DataStats mat_mean_and_stddev(const arma::Mat<real_t>& data);
 
 /**
- * @brief Accumulate matrix elements (single thread).
+ * @brief Accumulate matrix elements (single thread implementation).
  *
  * Provides single threaded implementation of matrix elements' accumulation.
  *
@@ -179,7 +179,7 @@ double mat_accumulate(arma::Mat<real_t>& data);
 double mat_accumulate_parallel(arma::Mat<real_t>& data);
 
 /**
- * @brief Compute matrix mean (single thread).
+ * @brief Compute matrix mean (single thread implementation).
  *
  * Provides single threaded implementation of matrix mean.
  *

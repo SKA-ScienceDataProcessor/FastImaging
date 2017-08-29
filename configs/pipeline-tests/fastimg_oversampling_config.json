@@ -12,5 +12,9 @@
 	"sigma_clip_iters": 5,
 	"binapprox_median": false,
 	"compute_barycentre": true,
-	"generate_labelmap": false
+	"gaussian_fitting": false,
+	"generate_labelmap": false,
+	"generate_beam": false,
+        "ceres_diffmethod": "AnalyticDiff_SingleResBlk",
+        "ceres_solvertype": "LinearSearch_LBFGS"
 }

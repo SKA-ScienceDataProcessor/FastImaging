@@ -79,9 +79,8 @@ make all -j $NUMCORES
 # Generate FFTW plans
 if [ $GENFFT == 1 ] ; then
 	echo
-	echo " >> Generate FFTW plans using fftw-wisdom method"
-	cd ../../scripts/fftw-wisdom
-	./generate_wisdom.sh $@
+	echo " >> Generate FFTW plans using fftw-wisdom tool"
+	make fftwplans
 fi
 
 echo

@@ -48,9 +48,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vi
  *                                  Box width in pixels = 2*support + 1. The central pixel is the one nearest to the UV co-ordinates.
  * @param[in] kernel_exact (bool): Calculate exact kernel-values for every UV-sample.
  * @param[in] oversampling (int): Controls kernel-generation if 'kernel_exact == False'. Larger values give a finer-sampled set of pre-cached kernels.
- * @param[in] normalize_image (bool): Whether or not the returned image should be normalized by the maximum beam value.
- *                                    You normally want this to be true, but it may be interesting to check the raw values for debugging purposes.
- * @param[in] normalize_beam (bool): Whether or not the returned beam should be normalized such that the beam peaks at a value of 1.0 Jansky.
+ * @param[in] generate_beam (bool): Enables generation of gridded sampling matrix. Default is false.
  * @param[in] r_fft (FFTRoutine): Selects FFT routine to be used.
  * @param[in] fft_wisdom_filename (string): FFTW wisdom filename for the image and beam (c2r fft).
  *

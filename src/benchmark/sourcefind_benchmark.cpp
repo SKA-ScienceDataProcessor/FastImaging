@@ -33,11 +33,13 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     ConfigurationFile cfg(config_path + config_file_oversampling);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
-    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_snr_weights,
+        input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
-            cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap));
+            cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting,
+            cfg.generate_labelmap, cfg.ceres_diffmethod, cfg.ceres_solvertype));
         benchmark::ClobberMemory();
     }
 }

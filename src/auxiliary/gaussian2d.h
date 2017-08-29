@@ -4,6 +4,11 @@
 #include <armadillo>
 #include <stp.h>
 
+/**
+ * @brief Gaussian 2D model class
+ *
+ * Generates 2D gaussian model for a given input domain matrix.
+ */
 class Gaussian2D {
 
 public:

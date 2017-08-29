@@ -17,5 +17,5 @@ var searchData=
   ['fitting_2ecpp',['fitting.cpp',['../fitting_8cpp.html',1,'']]],
   ['fitting_2eh',['fitting.h',['../fitting_8h.html',1,'']]],
   ['floattwiddler',['FloatTwiddler',['../unionstp_1_1_float_twiddler.html',1,'stp::FloatTwiddler'],['../unionstp_1_1_float_twiddler.html#aa9326bedbbd5e9f32a064dac1a40257c',1,'stp::FloatTwiddler::FloatTwiddler()']]],
-  ['fptolerance',['fptolerance',['../types_8h.html#a5a2c5b9a57a61d2ef3792d9458c6d129',1,'types.h']]]
+  ['fptolerance',['fptolerance',['../namespacestp.html#a640f9d473d4790d262ed74f21ecc3335',1,'stp']]]
 ];

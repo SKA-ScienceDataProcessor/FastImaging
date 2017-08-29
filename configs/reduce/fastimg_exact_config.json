@@ -8,7 +8,7 @@
 	"sourcefind_analysis": 50.0,
 	"kernel_function": "GaussianSinc",
 	"fft_routine": "FFTW_WISDOM_FFT",
-	"fft_wisdom_filename": "WisdomFile_rob16384x16384.fftw",
+	"fft_wisdom_filename": "../wisdomfiles/WisdomFile_rob16384x16384.fftw",
 	"rms_estimation": 0.0,
 	"sigma_clip_iters": 5,
 	"binapprox_median": true,
@@ -16,6 +16,6 @@
 	"gaussian_fitting": true,
 	"generate_labelmap": false,
 	"generate_beam": false,
-	"ceres_diffmethod": "AutoDiff_SingleResBlk",
-	"ceres_solvertype": "LinearSearch_BFGS"
+	"ceres_diffmethod": "AnalyticDiff_SingleResBlk",
+	"ceres_solvertype": "LinearSearch_LBFGS"
 }

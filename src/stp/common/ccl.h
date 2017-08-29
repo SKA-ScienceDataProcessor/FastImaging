@@ -285,6 +285,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
         tbb::static_partitioner());
 
     // COLUMN BORDER MERGING
+    // Merges the matrix left and right borders as well as all the partitioned regions required for parallel processing
     for (auto&& r : label_data_per_thread) {
         uint c_i = r.col_start;
 #ifdef FFTSHIFT

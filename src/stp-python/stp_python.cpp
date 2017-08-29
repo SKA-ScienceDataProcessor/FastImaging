@@ -198,6 +198,7 @@ PYBIND11_PLUGIN(stp_python)
 
     pybind11::enum_<stp::CeresSolverType>(m, "CeresSolverType")
         .value("LinearSearch_BFGS", stp::CeresSolverType::LinearSearch_BFGS)
+        .value("LinearSearch_LBFGS", stp::CeresSolverType::LinearSearch_LBFGS)
         .value("TrustRegion_DenseQR", stp::CeresSolverType::TrustRegion_DenseQR);
 
     // Gaussian2dFit struct binding

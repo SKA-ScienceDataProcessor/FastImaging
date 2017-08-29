@@ -37,7 +37,8 @@ static void imager_test_benchmark(benchmark::State& state)
     stp::GaussianSinc kernel_func(cfg.kernel_support);
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, false, stp::FFTRoutine::FFTW_WISDOM_FFT, wisdom_filename));
+        benchmark::DoNotOptimize(stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, image_size,
+            cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, false, stp::FFTRoutine::FFTW_WISDOM_FFT, wisdom_filename));
     }
 }
 

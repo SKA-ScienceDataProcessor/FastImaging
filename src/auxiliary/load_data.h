@@ -16,7 +16,7 @@
 *
 *   @return Armadillo complex matrix with npy values
 */
-arma::cx_mat load_npy_complex_array(std::string file_path, std::string var_name = std::string()) throw(std::invalid_argument);
+arma::cx_mat load_npy_complex_array(std::string file_path, std::string var_name = std::string());
 
 /**
 *   @brief Loads a double array from NPZ or NPY file
@@ -29,6 +29,6 @@ arma::cx_mat load_npy_complex_array(std::string file_path, std::string var_name 
 *
 *   @return Armadillo matrix with npy values
 */
-arma::mat load_npy_double_array(std::string file_path, std::string var_name = std::string()) throw(std::invalid_argument);
+arma::mat load_npy_double_array(std::string file_path, std::string var_name = std::string());
 
 #endif /* LOAD_DATA_H */

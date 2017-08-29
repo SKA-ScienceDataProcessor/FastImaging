@@ -29,7 +29,7 @@ option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
 option(USE_FLOAT "Builds STP using 'float' type to represent real numbers" ON)
 option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
 option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
-option(USE_FFTSHIFT "Performs shift of the image and beam matrices after fft" OFF)
+option(USE_FFTSHIFT "Explicitly shifts the image and beam matrices in memory after FFT (results in slower imager)" OFF)
 
 # Check libstdc++ parallel mode
 # This needs to be done here, otherwise reduce, tests and benchmark fail linking
@@ -71,7 +71,7 @@ if(USE_SERIAL_GRIDDER)
     add_definitions(-DSERIAL_GRIDDER)
 endif()
 
-# Perform fft shift operation on the image and beam matrices
+# Explicitly shifts the image and beam matrices in memory after FFT (results in slower imager)
 if(USE_FFTSHIFT)
     add_definitions(-DFFTSHIFT)
 endif()
@@ -144,3 +144,47 @@ if(DOXYGEN_FOUND)
 else()
     message(WARNING "doxygen was not found. Target \"doc\" to build documentation will not be available.")
 endif()
+
+# If valgrind is available, add a target for it
+# It will run on the test_pipeline_gaussiansinc executable
+find_program(VALGRIND valgrind DOC "The valgrind executable path")
+if(VALGRIND)
+    set(VALGRIND_OUTFILE valgrind_output)
+    # add valgrind as a custom target
+    add_custom_target(valgrind
+            COMMAND ${VALGRIND}
+                    --leak-check=full
+                    --show-reachable=no
+                    --show-possibly-lost=no
+                    --error-exitcode=0
+                    --track-origins=yes
+                    --log-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log
+                    # This is optional:
+                    #--xml=yes --xml-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.xml
+                    ${CMAKE_CURRENT_BINARY_DIR}/test/test_pipeline_gaussiansinc
+            WORKING_DIRECTORY
+                    ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Valgrind report will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log"
+    )
+endif(VALGRIND)
+
+# Add a target to generate FFTW plans
+set(FFTWPLAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/fftw-wisdom)
+set(FFTWPLAN_SCRIPT generate_wisdom.sh)
+# Script options
+set(FFTWPLAN_OPTIONS "-e third-party/fftw/bin")
+if(USE_FLOAT)
+    set(FFTWPLAN_OPTIONS ${FFTWPLAN_OPTIONS} "-f")
+endif()
+# Output directory
+set(FFTWPLAN_OUTPUTDIR "wisdomfiles")
+# Create custom target
+add_custom_target(fftwplans
+    DEPENDS fftw
+    COMMENT "Generated FFTW plans will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    # Copy script to build directory
+    COMMAND ${CMAKE_COMMAND} -E copy ${FFTWPLAN_PATH}/${FFTWPLAN_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}
+    # Run command
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_SCRIPT} ${FFTWPLAN_OPTIONS}
+)

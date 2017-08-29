@@ -26,11 +26,12 @@ stp::SourceFindImage run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, vis_weights, uvw_lambda, image_size,
-        cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, false, stp::FFTRoutine::FFTW_WISDOM_FFT, wisdom_filename);
+        cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, cfg.generate_beam, stp::FFTRoutine::FFTW_WISDOM_FFT, wisdom_filename);
     result.second.reset();
 
     return stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
-        true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap);
+        true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap,
+        cfg.ceres_diffmethod, cfg.ceres_solvertype);
 }
 
 static void pipeline_kernel_exact_benchmark(benchmark::State& state)

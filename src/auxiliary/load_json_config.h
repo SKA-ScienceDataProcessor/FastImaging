@@ -9,15 +9,23 @@
 #include <rapidjson/filereadstream.h>
 
 /**
- * @brief The Configuration file struct
+ * @brief The ConfigurationFile struct
  *
  * Load all parameters in json configuration file to an object
  */
 class ConfigurationFile {
 
 public:
+    // Delete ConfigurationFile default constuctor
     ConfigurationFile() = delete;
 
+    /**
+     * @brief ConfigurationFile constructor
+     *
+     * Load all parameters in json configuration file to an object
+     *
+     * @param[in] cfg (string) : Input config json filename
+     */
     ConfigurationFile(const std::string& cfg)
     {
         config_document = load_json_configuration(cfg);
@@ -147,6 +155,9 @@ private:
      */
     stp::CeresSolverType parse_ceres_solvertype(const std::string& solvertype);
 
+    /**
+     * Stores content from the input json file
+     */
     rapidjson::Document config_document;
 };
 

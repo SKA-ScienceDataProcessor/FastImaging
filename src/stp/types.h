@@ -17,13 +17,13 @@ using real_t = double;
 using cx_real_t = std::complex<double>;
 #endif
 
+namespace stp {
+
 #ifdef USE_FLOAT
 const real_t fptolerance = 1.0e-5;
 #else
 const real_t fptolerance = 1.0e-10;
 #endif
-
-namespace stp {
 
 /**
  * @brief Enum of available kernel functions

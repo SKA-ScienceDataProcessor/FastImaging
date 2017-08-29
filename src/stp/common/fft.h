@@ -15,7 +15,8 @@ namespace stp {
 /**
  * @brief Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (complex to real FFT)
  *
- * Receives the halfplane complex matrix (n_rows = n_cols/2 +1) and performs the backward fast fourier transform
+ * Receives the halfplane complex matrix (n_rows = n_cols/2 +1) and performs the backward fast fourier transform returning a real
+ * output matrix. Find more details about c2r (complex to real) FFT in the FFTW manual.
  *
  * @param[in] input (arma::Mat) : Complex input matrix to be transformed using fft
  * @param[in] output (arma::Mat) : Real output matrix with the fft result
@@ -27,7 +28,8 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
 /**
  * @brief Performs the forward fast fourier transform on a real matrix using the FFTW library (real to complex FFT)
  *
- * Receives the real matrix (n_rows = n_cols) and performs the forward fast fourier transform
+ * Receives the real matrix (n_rows = n_cols) and performs the forward fast fourier transform returning a complex
+ * output matrix. Find more details about r2c (real to complex) FFT in the FFTW manual.
  *
  * @param[in] input (arma::Mat) : Real input matrix to be transformed using fft
  * @param[in] output (arma::Mat) : Complex halfplane output matrix with the fft result

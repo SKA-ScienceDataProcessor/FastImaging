@@ -5,7 +5,7 @@
 #include <string>
 
 /**
- * @brief Saves source find island parameters in json file
+ * @brief Saves the sourcefind island parameters in the given json file
  *
  * @param[in] filename (string): Output filename where json data will be written.
  * @param[in] sf (stp::SourceFindImage): Source find image structure containing list of islands to be saved.

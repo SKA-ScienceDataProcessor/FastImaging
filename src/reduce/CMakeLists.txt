@@ -47,3 +47,15 @@ add_dependencies(${STP_TARGET_NAME} stp cnpy-static)
 target_include_directories(${SOURCEFIND_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
     ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${RAPIDJSON_INCLUDE_PATH} ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
 target_link_libraries(${SOURCEFIND_TARGET_NAME} stp cnpy-static)
+
+# Copy config files to the build directory
+add_custom_command(
+    TARGET reduce POST_BUILD
+    COMMENT "Create symlink of test data and copy JSON config files to ${CMAKE_CURRENT_BINARY_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/../configs/reduce/
+            ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+            ${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/simdata_nstep10.npz
+            simdata_nstep10.npz)
+

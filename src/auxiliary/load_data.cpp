@@ -1,6 +1,6 @@
 #include "load_data.h"
 
-arma::mat load_npy_double_array(std::string file_path, std::string var_name) throw(std::invalid_argument)
+arma::mat load_npy_double_array(std::string file_path, std::string var_name)
 {
     cnpy::NpyArray npy;
     if (var_name.empty()) {
@@ -51,7 +51,7 @@ arma::mat load_npy_double_array(std::string file_path, std::string var_name) thr
     throw std::invalid_argument("Invalid data type. Must be float!");
 }
 
-arma::cx_mat load_npy_complex_array(std::string file_path, std::string var_name) throw(std::invalid_argument)
+arma::cx_mat load_npy_complex_array(std::string file_path, std::string var_name)
 {
     cnpy::NpyArray npy;
     if (var_name.empty()) {

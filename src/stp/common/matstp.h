@@ -86,7 +86,7 @@ public:
 /**
  * @brief The MatStp matrix class
  *
- * Creates zeroed matrix that uses ZeroMemAlloc (based on calloc function) and inherints armadillo Mat methods.
+ * Creates zeroed matrix that uses ZeroMemAlloc (based on calloc function) and inherits armadillo Mat methods.
  */
 template <typename T>
 class MatStp : private ZeroMemAlloc<T>, public arma::Mat<T> {

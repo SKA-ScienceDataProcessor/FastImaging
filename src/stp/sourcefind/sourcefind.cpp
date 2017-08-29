@@ -270,6 +270,11 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     const real_t detection_thresh_neg = bg_level - detection_n_sigma * rms_est;
     std::tuple<MatStp<int>, MatStp<uint>, size_t, size_t> labeling_output;
 
+    // Computation of barycentre data is required for gaussian fitting
+    if (gaussian_fitting) {
+        compute_barycentre = true;
+    }
+
     // Perform connected components labeling algorithm
     if (find_negative_sources) {
         labeling_output = labeling<true>(data, analysis_thresh_pos, analysis_thresh_neg);

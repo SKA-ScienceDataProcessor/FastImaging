@@ -49,7 +49,7 @@ public:
  * @param[in] data (arma::Mat): Input data matrix. Data is not changed.
  * @param[in] sigma (double): The number of standard deviations to use for both the lower and upper clipping limit. Defaults to 3.
  * @param[in] iters (uint): The number of iterations for sigma clipping. Defaults to 5.
- * @param[in] stats (DataStats): Indicates the mean, sigma and median values to be used, if finite values are passed.
+ * @param[in] stats (DataStats): The mean, sigma and median values to be used. If non-finite values are passed, they must be computed.
  *
  * @return (double): Computed Root Mean Square value.
  */
@@ -115,7 +115,7 @@ struct IslandParams {
      *
      * @param[in] other (IslandParams): other island object to be compared.
      *
-     * @return true/false
+     * @return (bool )true/false
      */
     bool operator==(const IslandParams& other) const;
 };
@@ -157,9 +157,9 @@ public:
      * Constructs SourceFindImage structure and detects positive and negative (if input_find_negative_sources = true) sources
      *
      * @param[in] input_data (arma::Mat): Image data.
-     * @param[in] detection_n_sigma (double): Detection threshold as multiple of RMS
-     * @param[in] analysis_n_sigma (double): Analysis threshold as multiple of RMS
-     * @param[in] rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
+     * @param[in] input_detection_n_sigma (double): Detection threshold as multiple of RMS
+     * @param[in] input_analysis_n_sigma (double): Analysis threshold as multiple of RMS
+     * @param[in] input_rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
      * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
      * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function.
      * @param[in] binapprox_median (bool): Compute approximated median using the fast binapprox method
@@ -180,8 +180,8 @@ public:
         bool compute_barycentre = true,
         bool gaussian_fitting = false,
         bool generate_labelmap = true,
-        CeresDiffMethod ceres_diffmethod = CeresDiffMethod::AutoDiff_SingleResBlk,
-        CeresSolverType ceres_solvertype = CeresSolverType::LinearSearch_BFGS);
+        CeresDiffMethod ceres_diffmethod = CeresDiffMethod::AnalyticDiff_SingleResBlk,
+        CeresSolverType ceres_solvertype = CeresSolverType::LinearSearch_LBFGS);
 
 private:
     /**
