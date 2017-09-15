@@ -82,8 +82,8 @@ Collaboration diagram for stp::IslandParams:</div>
 <div class="dyncontent">
 <div class="center"><img src="structstp_1_1_island_params__coll__graph.png" border="0" usemap="#stp_1_1_island_params_coll__map" alt="Collaboration graph"/></div>
 <map name="stp_1_1_island_params_coll__map" id="stp_1_1_island_params_coll__map">
-<area shape="rect" id="node2" href="structstp_1_1_gaussian2d_fit.html" title="The Gaussian2dFit struct. " alt="" coords="5,5,137,32"/>
-<area shape="rect" id="node3" href="structstp_1_1_bounding_box.html" title="Represents bounding box positions: top, bottom, left and right margins. " alt="" coords="162,5,287,32"/>
+<area shape="rect" id="node2" href="structstp_1_1_bounding_box.html" title="Represents bounding box positions: top, bottom, left and right margins. " alt="" coords="5,5,131,32"/>
+<area shape="rect" id="node3" href="structstp_1_1_gaussian2d_params.html" title="The Gaussian2dParams struct. " alt="" coords="155,5,317,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -92,12 +92,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7ac4697dcec4eb41639f363130f0acf1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a7ac4697dcec4eb41639f363130f0acf1">IslandParams</a> ()=default</td></tr>
 <tr class="memdesc:a7ac4697dcec4eb41639f363130f0acf1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structstp_1_1_island_params.html" title="IslandParams struct. ">IslandParams</a> default constructor.  <a href="#a7ac4697dcec4eb41639f363130f0acf1">More...</a><br /></td></tr>
 <tr class="separator:a7ac4697dcec4eb41639f363130f0acf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a521eef8912e60bdba3e4f4370440a15e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a521eef8912e60bdba3e4f4370440a15e">IslandParams</a> (const int label, const <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> l_extremum, const int l_extremum_coord_y, const int l_extremum_coord_x, const <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> barycentre_y, const <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> barycentre_x, const <a class="el" href="structstp_1_1_bounding_box.html">BoundingBox</a> &amp;box=<a class="el" href="structstp_1_1_bounding_box.html">BoundingBox</a>())</td></tr>
-<tr class="memdesc:a521eef8912e60bdba3e4f4370440a15e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structstp_1_1_island_params.html" title="IslandParams struct. ">IslandParams</a> constructor.  <a href="#a521eef8912e60bdba3e4f4370440a15e">More...</a><br /></td></tr>
-<tr class="separator:a521eef8912e60bdba3e4f4370440a15e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7996d64c7362179c35c7bed8005596c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a7996d64c7362179c35c7bed8005596c6">fit_gaussian_2d</a> (const arma::Mat&lt; <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> &gt; &amp;data, const arma::Mat&lt; int &gt; &amp;label_map, <a class="el" href="namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9">CeresDiffMethod</a> ceres_diffmethod, <a class="el" href="namespacestp.html#ae604b01190a3a3414720a85c806fd7d6">CeresSolverType</a> ceres_solvertype)</td></tr>
-<tr class="memdesc:a7996d64c7362179c35c7bed8005596c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fit 2D gaussian to the island.  <a href="#a7996d64c7362179c35c7bed8005596c6">More...</a><br /></td></tr>
-<tr class="separator:a7996d64c7362179c35c7bed8005596c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad936dd4f00c4292a2ac5e08c1f75e780"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#ad936dd4f00c4292a2ac5e08c1f75e780">IslandParams</a> (const int label, const <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> l_extremum, const int l_extremum_coord_y, const int l_extremum_coord_x, const int l_num_samples, const <a class="el" href="structstp_1_1_bounding_box.html">BoundingBox</a> &amp;box=<a class="el" href="structstp_1_1_bounding_box.html">BoundingBox</a>())</td></tr>
+<tr class="memdesc:ad936dd4f00c4292a2ac5e08c1f75e780"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structstp_1_1_island_params.html" title="IslandParams struct. ">IslandParams</a> constructor.  <a href="#ad936dd4f00c4292a2ac5e08c1f75e780">More...</a><br /></td></tr>
+<tr class="separator:ad936dd4f00c4292a2ac5e08c1f75e780"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d4cecb4ef7d17b1aeb3e9e4d6fac379"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a0d4cecb4ef7d17b1aeb3e9e4d6fac379">estimate_moments_fit</a> (const double x_bar, const double y_bar, const double xx_bar, const double yy_bar, const double xy_bar, const double rms_est, const double analysis_n_sigma)</td></tr>
+<tr class="memdesc:a0d4cecb4ef7d17b1aeb3e9e4d6fac379"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estimate initial 2D gaussian fit to the island using the method of moments.  <a href="#a0d4cecb4ef7d17b1aeb3e9e4d6fac379">More...</a><br /></td></tr>
+<tr class="separator:a0d4cecb4ef7d17b1aeb3e9e4d6fac379"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a617f8e09216bdaaf6b2a17199457e214"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a617f8e09216bdaaf6b2a17199457e214">leastsq_fit_gaussian_2d</a> (const arma::Mat&lt; <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> &gt; &amp;data, const arma::Mat&lt; int &gt; &amp;label_map, <a class="el" href="namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9">CeresDiffMethod</a> ceres_diffmethod, <a class="el" href="namespacestp.html#ae604b01190a3a3414720a85c806fd7d6">CeresSolverType</a> ceres_solvertype)</td></tr>
+<tr class="memdesc:a617f8e09216bdaaf6b2a17199457e214"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fit 2D gaussian to the island.  <a href="#a617f8e09216bdaaf6b2a17199457e214">More...</a><br /></td></tr>
+<tr class="separator:a617f8e09216bdaaf6b2a17199457e214"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a631157bc8d335e3f3b5e022f86f9cc05"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a631157bc8d335e3f3b5e022f86f9cc05">operator==</a> (const <a class="el" href="structstp_1_1_island_params.html">IslandParams</a> &amp;other) const</td></tr>
 <tr class="memdesc:a631157bc8d335e3f3b5e022f86f9cc05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two <a class="el" href="structstp_1_1_island_params.html" title="IslandParams struct. ">IslandParams</a> objects.  <a href="#a631157bc8d335e3f3b5e022f86f9cc05">More...</a><br /></td></tr>
 <tr class="separator:a631157bc8d335e3f3b5e022f86f9cc05"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,16 +115,16 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a796eca1520cebb3629b89cfad91494de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6061954939b09305c01be29dff6a21df"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a6061954939b09305c01be29dff6a21df">extremum_x_idx</a></td></tr>
 <tr class="separator:a6061954939b09305c01be29dff6a21df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41767366442b987aafb1cd33b4dfe330"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a41767366442b987aafb1cd33b4dfe330">ybar</a></td></tr>
-<tr class="separator:a41767366442b987aafb1cd33b4dfe330"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9bc8572b2950d081c47daa3ef963910d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a9bc8572b2950d081c47daa3ef963910d">xbar</a></td></tr>
-<tr class="separator:a9bc8572b2950d081c47daa3ef963910d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc57d892636ca70f215ddee5d0436aa8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#adc57d892636ca70f215ddee5d0436aa8">sign</a></td></tr>
 <tr class="separator:adc57d892636ca70f215ddee5d0436aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad20fcf903dee8bc42429f6a02751a41f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#ad20fcf903dee8bc42429f6a02751a41f">num_samples</a></td></tr>
+<tr class="separator:ad20fcf903dee8bc42429f6a02751a41f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d638080a9de05dadff715186daf488e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structstp_1_1_bounding_box.html">BoundingBox</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a1d638080a9de05dadff715186daf488e">bounding_box</a></td></tr>
 <tr class="separator:a1d638080a9de05dadff715186daf488e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a186ff1073490b97895fc3a4b0685eb08"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structstp_1_1_gaussian2d_fit.html">Gaussian2dFit</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a186ff1073490b97895fc3a4b0685eb08">fit</a></td></tr>
-<tr class="separator:a186ff1073490b97895fc3a4b0685eb08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3da157a13f449fd7137e667b43c94f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structstp_1_1_gaussian2d_params.html">Gaussian2dParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#ae3da157a13f449fd7137e667b43c94f8">moments_fit</a></td></tr>
+<tr class="separator:ae3da157a13f449fd7137e667b43c94f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a412c5e30d41c65697cd1bec5b64965cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structstp_1_1_gaussian2d_params.html">Gaussian2dParams</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a412c5e30d41c65697cd1bec5b64965cf">leastsq_fit</a></td></tr>
+<tr class="separator:a412c5e30d41c65697cd1bec5b64965cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20761c06ee518918ff90583e981ad0a4"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_island_params.html#a20761c06ee518918ff90583e981ad0a4">ceres_report</a></td></tr>
 <tr class="separator:a20761c06ee518918ff90583e981ad0a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -156,8 +159,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a521eef8912e60bdba3e4f4370440a15e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a521eef8912e60bdba3e4f4370440a15e">&#9670;&nbsp;</a></span>IslandParams() <span class="overload">[2/2]</span></h2>
+<a id="ad936dd4f00c4292a2ac5e08c1f75e780"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad936dd4f00c4292a2ac5e08c1f75e780">&#9670;&nbsp;</a></span>IslandParams() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -189,14 +192,8 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a>&#160;</td>
-          <td class="paramname"><em>barycentre_y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a>&#160;</td>
-          <td class="paramname"><em>barycentre_x</em>, </td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>l_num_samples</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -220,8 +217,7 @@ Public Attributes</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">l_extremum</td><td>(real_t): the extremum value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">l_extremum_coord_y</td><td>(int): the y-coordinate index of the extremum value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">l_extremum_coord_x</td><td>(int): the x-coordinate index of the extremum value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">barycentre_y</td><td>(real_t): the y-value of barycentric centre </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">barycentre_x</td><td>(real_t): the x-value of barycentric centre </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">l_num_samples</td><td>(int): number of samples in the island </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bbox</td><td>(<a class="el" href="structstp_1_1_bounding_box.html" title="Represents bounding box positions: top, bottom, left and right margins. ">BoundingBox</a>): the bounding box defined around the source </td></tr>
   </table>
   </dd>
@@ -230,14 +226,87 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a7996d64c7362179c35c7bed8005596c6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7996d64c7362179c35c7bed8005596c6">&#9670;&nbsp;</a></span>fit_gaussian_2d()</h2>
+<a id="a0d4cecb4ef7d17b1aeb3e9e4d6fac379"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d4cecb4ef7d17b1aeb3e9e4d6fac379">&#9670;&nbsp;</a></span>estimate_moments_fit()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void stp::IslandParams::fit_gaussian_2d </td>
+          <td class="memname">void stp::IslandParams::estimate_moments_fit </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>x_bar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>y_bar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>xx_bar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>yy_bar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>xy_bar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>rms_est</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>analysis_n_sigma</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Estimate initial 2D gaussian fit to the island using the method of moments. </p>
+<p>The moments information used to estimate the 2D gaussian are passed as input parameters.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">x_bar</td><td>(double): First moment - x barycentre </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y_bar</td><td>(double): First moment - y barycentre </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xx_bar</td><td>(double): Second moment - xx </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">yy_bar</td><td>(double): Second moment - yy </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xy_bar</td><td>(double): Second moment - xy </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rms_est</td><td>(double): RMS estimation </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">analysis_n_sigma</td><td>(double): Analysis threshold as multiple of RMS </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a617f8e09216bdaaf6b2a17199457e214"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a617f8e09216bdaaf6b2a17199457e214">&#9670;&nbsp;</a></span>leastsq_fit_gaussian_2d()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void stp::IslandParams::leastsq_fit_gaussian_2d </td>
           <td>(</td>
           <td class="paramtype">const arma::Mat&lt; <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> &gt; &amp;&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -381,20 +450,6 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a186ff1073490b97895fc3a4b0685eb08"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a186ff1073490b97895fc3a4b0685eb08">&#9670;&nbsp;</a></span>fit</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structstp_1_1_gaussian2d_fit.html">Gaussian2dFit</a> stp::IslandParams::fit</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a9a5f305028eb66abd711df5e267cf19b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9a5f305028eb66abd711df5e267cf19b">&#9670;&nbsp;</a></span>label_idx</h2>
 
@@ -409,6 +464,48 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a412c5e30d41c65697cd1bec5b64965cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a412c5e30d41c65697cd1bec5b64965cf">&#9670;&nbsp;</a></span>leastsq_fit</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structstp_1_1_gaussian2d_params.html">Gaussian2dParams</a> stp::IslandParams::leastsq_fit</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae3da157a13f449fd7137e667b43c94f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3da157a13f449fd7137e667b43c94f8">&#9670;&nbsp;</a></span>moments_fit</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structstp_1_1_gaussian2d_params.html">Gaussian2dParams</a> stp::IslandParams::moments_fit</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad20fcf903dee8bc42429f6a02751a41f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad20fcf903dee8bc42429f6a02751a41f">&#9670;&nbsp;</a></span>num_samples</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int stp::IslandParams::num_samples</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="adc57d892636ca70f215ddee5d0436aa8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adc57d892636ca70f215ddee5d0436aa8">&#9670;&nbsp;</a></span>sign</h2>
 
@@ -417,34 +514,6 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">int stp::IslandParams::sign</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9bc8572b2950d081c47daa3ef963910d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9bc8572b2950d081c47daa3ef963910d">&#9670;&nbsp;</a></span>xbar</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double stp::IslandParams::xbar</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a41767366442b987aafb1cd33b4dfe330"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a41767366442b987aafb1cd33b4dfe330">&#9670;&nbsp;</a></span>ybar</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double stp::IslandParams::ybar</td>
         </tr>
       </table>
 </div><div class="memdoc">

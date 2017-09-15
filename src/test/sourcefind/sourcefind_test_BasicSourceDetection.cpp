@@ -84,8 +84,6 @@ public:
 
         absolute_x_idx = std::abs(found_src.extremum_x_idx - bright_src.x_mean);
         absolute_y_idx = std::abs(found_src.extremum_y_idx - bright_src.y_mean);
-        absolute_xbar = std::abs(found_src.xbar - bright_src.x_mean);
-        absolute_ybar = std::abs(found_src.ybar - bright_src.y_mean);
 
         img += evaluate_model_on_pixel_grid(ydim, xdim, faint_src);
 #ifndef FFTSHIFT
@@ -114,8 +112,6 @@ public:
 
     double absolute_x_idx;
     double absolute_y_idx;
-    double absolute_xbar;
-    double absolute_ybar;
 };
 
 TEST_F(SourceFindBasicSourceDetection, Total_islands0)
@@ -131,16 +127,6 @@ TEST_F(SourceFindBasicSourceDetection, Absolute_x_idx)
 TEST_F(SourceFindBasicSourceDetection, Absolute_y_idx)
 {
     EXPECT_LT(absolute_y_idx, 0.5);
-}
-
-TEST_F(SourceFindBasicSourceDetection, Absolute_xbar)
-{
-    EXPECT_LT(absolute_xbar, 0.1);
-}
-
-TEST_F(SourceFindBasicSourceDetection, Absolute_ybar)
-{
-    EXPECT_LT(absolute_ybar, 0.1);
 }
 
 TEST_F(SourceFindBasicSourceDetection, Total_islands1)

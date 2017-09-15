@@ -152,19 +152,20 @@ if(VALGRIND)
     set(VALGRIND_OUTFILE valgrind_output)
     # add valgrind as a custom target
     add_custom_target(valgrind
-            COMMAND ${VALGRIND}
-                    --leak-check=full
-                    --show-reachable=no
-                    --show-possibly-lost=no
-                    --error-exitcode=0
-                    --track-origins=yes
-                    --log-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log
-                    # This is optional:
-                    #--xml=yes --xml-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.xml
-                    ${CMAKE_CURRENT_BINARY_DIR}/test/test_pipeline_gaussiansinc
-            WORKING_DIRECTORY
-                    ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Valgrind report will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log"
+        DEPENDS test_pipeline_gaussiansinc
+        COMMAND ${VALGRIND}
+                --leak-check=full
+                --show-reachable=no
+                --show-possibly-lost=no
+                --error-exitcode=0
+                --track-origins=yes
+                --log-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log
+                # This is optional:
+                #--xml=yes --xml-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.xml
+                ${CMAKE_CURRENT_BINARY_DIR}/test/test_pipeline_gaussiansinc
+        WORKING_DIRECTORY
+                ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Valgrind report will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log"
     )
 endif(VALGRIND)
 
@@ -172,13 +173,13 @@ endif(VALGRIND)
 set(FFTWPLAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/fftw-wisdom)
 set(FFTWPLAN_SCRIPT generate_wisdom.sh)
 # Script options
-set(FFTWPLAN_OPTIONS "-e third-party/fftw/bin")
+set(FFTWPLAN_OPTIONS -e third-party/fftw/bin)
 if(USE_FLOAT)
-    set(FFTWPLAN_OPTIONS ${FFTWPLAN_OPTIONS} "-f")
+    set(FFTWPLAN_OPTIONS ${FFTWPLAN_OPTIONS} -f)
 endif()
 # Output directory
 set(FFTWPLAN_OUTPUTDIR "wisdomfiles")
-# Create custom target
+# Create custom target for out-of-place fft plans (used in STP)
 add_custom_target(fftwplans
     DEPENDS fftw
     COMMENT "Generated FFTW plans will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
@@ -188,3 +189,16 @@ add_custom_target(fftwplans
     # Run command
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_SCRIPT} ${FFTWPLAN_OPTIONS}
 )
+
+# Create custom target for in-place fft plans (just for benchmark)
+set(IFFTWPLAN_OPTIONS ${FFTWPLAN_OPTIONS} -p)
+add_custom_target(ifftwplans
+    DEPENDS fftw
+    COMMENT "Generated FFTW plans will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    # Copy script to build directory
+    COMMAND ${CMAKE_COMMAND} -E copy ${FFTWPLAN_PATH}/${FFTWPLAN_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}
+    # Run command
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_SCRIPT} ${IFFTWPLAN_OPTIONS}
+)
+

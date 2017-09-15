@@ -95,8 +95,6 @@ public:
 
         absolute_x_idx = std::abs(found_src.extremum_x_idx - negative_src.x_mean);
         absolute_y_idx = std::abs(found_src.extremum_y_idx - negative_src.y_mean);
-        absolute_xbar = std::abs(found_src.xbar - negative_src.x_mean);
-        absolute_ybar = std::abs(found_src.ybar - negative_src.y_mean);
 
         img += evaluate_model_on_pixel_grid(ydim, xdim, bright_src);
 #ifndef FFTSHIFT
@@ -133,8 +131,6 @@ public:
 
     double absolute_x_idx;
     double absolute_y_idx;
-    double absolute_xbar;
-    double absolute_ybar;
 
     double total_positive_islands;
     double total_negative_islands;
@@ -154,15 +150,11 @@ TEST_F(SourceFindNegativeSourceDetection, Negative_island)
 {
     EXPECT_LT(absolute_x_idx, 0.5);
     EXPECT_LT(absolute_y_idx, 0.5);
-    EXPECT_LT(absolute_xbar, 0.1);
-    EXPECT_LT(absolute_ybar, 0.1);
     EXPECT_TRUE(same_island);
 }
 
 TEST_F(SourceFindNegativeSourceDetection, Positive_island)
 {
     EXPECT_LT(positive_islands[0].extremum_x_idx - bright_src.x_mean, 0.5);
-    EXPECT_LT(positive_islands[0].xbar - bright_src.x_mean, 0.1);
     EXPECT_LT(positive_islands[0].extremum_y_idx - bright_src.y_mean, 0.5);
-    EXPECT_LT(positive_islands[0].ybar - bright_src.y_mean, 0.1);
 }

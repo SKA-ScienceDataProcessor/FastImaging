@@ -12,7 +12,7 @@
   - third-party: external code, mostly libraries
 - configs: auxiliary configuration files
 - test-data: input test data files
-- scripts: auxiliary scripts to generate FFTW plans and plot benchmarking results
+- scripts: auxiliary scripts to generate FFTW plans, test python bindings and plot benchmarking results
 - vagrant: virtual machine configuration
 
 ## Build & Run
@@ -30,8 +30,8 @@
 - [RapidJSON](https://github.com/miloyip/rapidjson) [1.1.0]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
 - [spdlog](https://github.com/gabime/spdlog) [0.14.0]
-- [eigen](http://eigen.tuxfamily.org/) [3.3.4]
-- [ceres](http://ceres-solver.org/) [1.13.0rc1]
+- [Eigen](http://eigen.tuxfamily.org/) [3.3.4]
+- [Ceres Solver](http://ceres-solver.org/) [1.13.0rc1]
 
 
 ### Clone
@@ -126,6 +126,7 @@ $ make benchmarking
 ```
 Note that some benchmarks use the pre-generated FFTW plans by fftw-wisdom tool. 
 Please, be sure to run 'make fftwplans' before the benchmarks.
+If in-place fft configuration needs to benchmarked, additional plans must be generated using 'make ifftwplans'.
 
 ## STP Execution using Reduce module
 The reduce executable is located in build-directory/reduce. It accepts the following arguments:
@@ -167,6 +168,12 @@ $ make valgrind
 ```
 
 ## Release Notes
+### 15 September 2017
+- Implemented method of moments for initial gaussian fitting
+- Changed output data for each island
+- Removed compute_barycentre option
+- Improved documentation
+
 ### 29 August 2017
 - Improved doxygen documentation
 - Added CMake target to generate FFTW plans

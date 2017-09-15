@@ -82,7 +82,7 @@ $(function() {
 </li>
 <li>configs: auxiliary configuration files</li>
 <li>test-data: input test data files</li>
-<li>scripts: auxiliary scripts to generate FFTW plans and plot benchmarking results</li>
+<li>scripts: auxiliary scripts to generate FFTW plans, test python bindings and plot benchmarking results</li>
 <li>vagrant: virtual machine configuration</li>
 </ul>
 <h2>Build &amp; Run</h2>
@@ -100,8 +100,8 @@ $(function() {
 <li><a href="https://github.com/miloyip/rapidjson">RapidJSON</a> [1.1.0]</li>
 <li><a href="http://tclap.sourceforge.net/">TCLAP</a> [1.2.1]</li>
 <li><a href="https://github.com/gabime/spdlog">spdlog</a> [0.14.0]</li>
-<li><a href="http://eigen.tuxfamily.org/">eigen</a> [3.3.4]</li>
-<li><a href="http://ceres-solver.org/">ceres</a> [1.13.0rc1]</li>
+<li><a href="http://eigen.tuxfamily.org/">Eigen</a> [3.3.4]</li>
+<li><a href="http://ceres-solver.org/">Ceres Solver</a> [1.13.0rc1]</li>
 </ul>
 <h3>Clone</h3>
 <div class="fragment"><div class="line">$ git clone https://github.com/SKA-ScienceDataProcessor/FastImaging.git</div><div class="line">$ cd &lt;path/to/project&gt;</div><div class="line">$ git submodule init</div><div class="line">$ git submodule update    # Update test-data directory</div></div><!-- fragment --><h3>Build</h3>
@@ -145,7 +145,7 @@ $(function() {
 </table>
 <p>#### Manually </p><div class="fragment"><div class="line">$ mkdir -p &lt;path/to/build/directory&gt;</div><div class="line">$ cd &lt;path/to/build/directory&gt;</div><div class="line">$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF &lt;path/to/project/src&gt;</div><div class="line">$ make all -j4</div></div><!-- fragment --><p> Then, generate the FFTW plans using the available CMake target: </p><div class="fragment"><div class="line">$ make fftwplans</div></div><!-- fragment --><p> Alternatively, the generate_wisdom.sh script can be manually executed (see available options using &ndash;help): </p><div class="fragment"><div class="line">$ cd &lt;path/to/project&gt;/scripts/fftw-wisdom</div><div class="line">$ ./generate_wisdom.sh &lt;OPTIONS&gt;</div></div><!-- fragment --><p> For instance, when compiled in Release mode with -DUSE_FLOAT=ON run: </p><div class="fragment"><div class="line">$ ./generate_wisdom.sh -r -f</div></div><!-- fragment --><p> When executed manually, the plans are written into the wisdomfiles sub-directory created in the working directory.</p>
 <h2>Tests Execution</h2>
-<p>### Using CMake (after successful build) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make test</div></div><!-- fragment --><p>### Running on the Command Line (all tests) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ run-parts ./tests</div></div><!-- fragment --><p>## Benchmark Execution </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make benchmarking</div></div><!-- fragment --><p> Note that some benchmarks use the pre-generated FFTW plans by fftw-wisdom tool. Please, be sure to run 'make fftwplans' before the benchmarks.</p>
+<p>### Using CMake (after successful build) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make test</div></div><!-- fragment --><p>### Running on the Command Line (all tests) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ run-parts ./tests</div></div><!-- fragment --><p>## Benchmark Execution </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make benchmarking</div></div><!-- fragment --><p> Note that some benchmarks use the pre-generated FFTW plans by fftw-wisdom tool. Please, be sure to run 'make fftwplans' before the benchmarks. If in-place fft configuration needs to benchmarked, additional plans must be generated using 'make ifftwplans'.</p>
 <h2>STP Execution using Reduce module</h2>
 <p>The reduce executable is located in build-directory/reduce. It accepts the following arguments:</p>
 <table class="doxtable">
@@ -175,6 +175,13 @@ $(function() {
 <li>Callgrind usage example: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ cd reduce</div><div class="line">$ valgrind --tool=callgrind --separate-threads=yes ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l</div><div class="line">$ kcachegrind callgrind.out.*</div></div><!-- fragment --> For memory checking purposes, a CMake target for valgrind that executes the test_pipeline_gaussiansinc test is provided: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make valgrind</div></div><!-- fragment --></li>
 </ul>
 <h2>Release Notes</h2>
+<h3>15 September 2017</h3>
+<ul>
+<li>Implemented method of moments for initial gaussian fitting</li>
+<li>Changed output data for each island</li>
+<li>Removed compute_barycentre option</li>
+<li>Improved documentation</li>
+</ul>
 <h3>29 August 2017</h3>
 <ul>
 <li>Improved doxygen documentation</li>

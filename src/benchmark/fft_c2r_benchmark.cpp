@@ -177,12 +177,14 @@ BENCHMARK(fft_c2r_test_benchmark)
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 13 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 14 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 15 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 10 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 11 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 12 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 13 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 14 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 15 })
+    // By default CMake target will not generate FFTW wisdom files for inplace FFT
+    // so this is commented.
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 10 })
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 11 })
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 12 })
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 13 })
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 14 })
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 15 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

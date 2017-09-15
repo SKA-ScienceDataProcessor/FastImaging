@@ -64,7 +64,7 @@ $(function() {
 
 <h3><a id="index_a"></a>- a -</h3><ul>
 <li>amplitude
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#a70741214b36229ea1f4e5332442f10b1">stp::Gaussian2dFit</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#a90d7341e560ced7fca96c0d29904aef2">stp::Gaussian2dParams</a>
 </li>
 <li>analysis_n_sigma
 : <a class="el" href="classstp_1_1_source_find_image.html#aff1c7414afe9648987d311c7ef05bc0c">stp::SourceFindImage</a>
@@ -95,6 +95,9 @@ $(function() {
 <li>col_start
 : <a class="el" href="structstp_1_1_label_data_thread.html#af036d19b43cbc62e34b9c29c2f328c46">stp::LabelDataThread</a>
 </li>
+<li>convert_to_constrained_parameters()
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#aafc490771377c94fd7e50f06f21f9063">stp::Gaussian2dParams</a>
+</li>
 </ul>
 
 
@@ -121,12 +124,15 @@ $(function() {
 
 
 <h3><a id="index_e"></a>- e -</h3><ul>
+<li>estimate_moments_fit()
+: <a class="el" href="structstp_1_1_island_params.html#a0d4cecb4ef7d17b1aeb3e9e4d6fac379">stp::IslandParams</a>
+</li>
 <li>Evaluate()
 : <a class="el" href="classstp_1_1_gaussian_analytic.html#aa7c0d6cc2384fd6ec613b1fa320059b9">stp::GaussianAnalytic</a>
 , <a class="el" href="classstp_1_1_gaussian_analytic_all_residuals.html#ab605113e4302ce09c27ad3f323e0376b">stp::GaussianAnalyticAllResiduals</a>
 </li>
 <li>evaluate_point()
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#a4714216562a0bf33ff0f38d0a6a7bb5a">stp::Gaussian2dFit</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#a4b79ea113d30a6d558133d92ddde6c99">stp::Gaussian2dParams</a>
 </li>
 <li>extremum_val
 : <a class="el" href="structstp_1_1_island_params.html#ab36d033ef48f7b33b86b4fe6d9da7784">stp::IslandParams</a>
@@ -144,11 +150,8 @@ $(function() {
 <li>f
 : <a class="el" href="unionstp_1_1_float_twiddler.html#aac94f58c0fd61637eb835a52fb7b5582">stp::FloatTwiddler</a>
 </li>
-<li>fit
-: <a class="el" href="structstp_1_1_island_params.html#a186ff1073490b97895fc3a4b0685eb08">stp::IslandParams</a>
-</li>
-<li>fit_gaussian_2d()
-: <a class="el" href="structstp_1_1_island_params.html#a7996d64c7362179c35c7bed8005596c6">stp::IslandParams</a>
+<li>fit_gaussian
+: <a class="el" href="classstp_1_1_source_find_image.html#ae55ee7646e038c38dd7e34e1dbd0a43e">stp::SourceFindImage</a>
 </li>
 <li>FloatTwiddler()
 : <a class="el" href="unionstp_1_1_float_twiddler.html#aa9326bedbbd5e9f32a064dac1a40257c">stp::FloatTwiddler</a>
@@ -160,8 +163,8 @@ $(function() {
 <li>Gaussian()
 : <a class="el" href="classstp_1_1_gaussian.html#a64b9371474d9ae92ac1e807b147ad4a7">stp::Gaussian</a>
 </li>
-<li>Gaussian2dFit()
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#ad4a6ecef61116e3d841a99875f10dc3b">stp::Gaussian2dFit</a>
+<li>Gaussian2dParams()
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#ac3a87b140387c80fd780c89644000ee9">stp::Gaussian2dParams</a>
 </li>
 <li>GaussianAllResiduals()
 : <a class="el" href="classstp_1_1_gaussian_all_residuals.html#acd0a39caab3be9fa027f4b4d4701ab82">stp::GaussianAllResiduals</a>
@@ -204,12 +207,6 @@ $(function() {
 
 
 <h3><a id="index_l"></a>- l -</h3><ul>
-<li>label_extrema_barycentre_neg
-: <a class="el" href="classstp_1_1_source_find_image.html#a203cd728d478b51f93283f29df16775f">stp::SourceFindImage</a>
-</li>
-<li>label_extrema_barycentre_pos
-: <a class="el" href="classstp_1_1_source_find_image.html#a39cff59abe5c12f7cd9a94f9b696a260">stp::SourceFindImage</a>
-</li>
 <li>label_extrema_boundingbox_neg
 : <a class="el" href="classstp_1_1_source_find_image.html#aa961cc77e4a68f50f30ca1c964e15c20">stp::SourceFindImage</a>
 </li>
@@ -228,6 +225,18 @@ $(function() {
 <li>label_extrema_linear_idx_pos
 : <a class="el" href="classstp_1_1_source_find_image.html#af4063901421cfb5f753b479aab2ad7db">stp::SourceFindImage</a>
 </li>
+<li>label_extrema_moments_neg
+: <a class="el" href="classstp_1_1_source_find_image.html#acdff033172be6d05a9e5bc7a24891b58">stp::SourceFindImage</a>
+</li>
+<li>label_extrema_moments_pos
+: <a class="el" href="classstp_1_1_source_find_image.html#a69988bb06facb29276a15586b01947ba">stp::SourceFindImage</a>
+</li>
+<li>label_extrema_numsamples_neg
+: <a class="el" href="classstp_1_1_source_find_image.html#aa4e72e5a8ec5dc83e572ef644905258c">stp::SourceFindImage</a>
+</li>
+<li>label_extrema_numsamples_pos
+: <a class="el" href="classstp_1_1_source_find_image.html#aa9fb89b779123ea4f86ebf9f648fab86">stp::SourceFindImage</a>
+</li>
 <li>label_extrema_val_neg
 : <a class="el" href="classstp_1_1_source_find_image.html#a34a8772f9d3dc287c7e4910a7168f372">stp::SourceFindImage</a>
 </li>
@@ -242,6 +251,12 @@ $(function() {
 </li>
 <li>LabelDataThread()
 : <a class="el" href="structstp_1_1_label_data_thread.html#ade599105640ff8996e8691aafc49247f">stp::LabelDataThread</a>
+</li>
+<li>leastsq_fit
+: <a class="el" href="structstp_1_1_island_params.html#a412c5e30d41c65697cd1bec5b64965cf">stp::IslandParams</a>
+</li>
+<li>leastsq_fit_gaussian_2d()
+: <a class="el" href="structstp_1_1_island_params.html#a617f8e09216bdaaf6b2a17199457e214">stp::IslandParams</a>
 </li>
 <li>left
 : <a class="el" href="structstp_1_1_bounding_box.html#ac14eb4f1efe47409b913fab82387af0e">stp::BoundingBox</a>
@@ -271,12 +286,18 @@ $(function() {
 <li>mem_ptr
 : <a class="el" href="classstp_1_1_zero_mem_alloc.html#ac7325dbaf6d7992612a4a3b38e81c7f8">stp::ZeroMemAlloc&lt; T &gt;</a>
 </li>
+<li>moments_fit
+: <a class="el" href="structstp_1_1_island_params.html#ae3da157a13f449fd7137e667b43c94f8">stp::IslandParams</a>
+</li>
 </ul>
 
 
 <h3><a id="index_n"></a>- n -</h3><ul>
 <li>num_elems
 : <a class="el" href="classstp_1_1_zero_mem_alloc.html#ad3e08a17496bb05c121535943dc0ec44">stp::ZeroMemAlloc&lt; T &gt;</a>
+</li>
+<li>num_samples
+: <a class="el" href="structstp_1_1_island_params.html#ad20fcf903dee8bc42429f6a02751a41f">stp::IslandParams</a>
 </li>
 </ul>
 
@@ -322,10 +343,10 @@ $(function() {
 : <a class="el" href="classstp_1_1_gridder_output.html#a02d28321016ab51f04ecb17431583d8c">stp::GridderOutput</a>
 </li>
 <li>semimajor
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#a56010c0b1910b15f716ec079f9e96721">stp::Gaussian2dFit</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#abcc84128fc4674ae4de612f2ae1f5e72">stp::Gaussian2dParams</a>
 </li>
 <li>semiminor
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#ab516face3c6a2aef1eaae187cc517b8c">stp::Gaussian2dFit</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#a6dd82f8315768ccc80cd2655551e6e52">stp::Gaussian2dParams</a>
 </li>
 <li>sigma
 : <a class="el" href="structstp_1_1_data_stats.html#a0f55affaf1d6473ffd7d1f162f33a720">stp::DataStats</a>
@@ -337,14 +358,14 @@ $(function() {
 : <a class="el" href="classstp_1_1_sinc.html#ae165bea8cd83851af4c5136020c76c30">stp::Sinc</a>
 </li>
 <li>SourceFindImage()
-: <a class="el" href="classstp_1_1_source_find_image.html#a49a43cd6260e2cc4ecc6853f7ab42246">stp::SourceFindImage</a>
+: <a class="el" href="classstp_1_1_source_find_image.html#af89a0351284eee0ff849f0f51937c0e0">stp::SourceFindImage</a>
 </li>
 </ul>
 
 
 <h3><a id="index_t"></a>- t -</h3><ul>
 <li>theta
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#a7f08f1d195d56ec03896c22219923ea1">stp::Gaussian2dFit</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#afadecebcd37b9b5bba92f916039a7a28">stp::Gaussian2dParams</a>
 </li>
 <li>top
 : <a class="el" href="structstp_1_1_bounding_box.html#a42675b807603afceddf023780b44ee15">stp::BoundingBox</a>
@@ -367,20 +388,14 @@ $(function() {
 
 <h3><a id="index_x"></a>- x -</h3><ul>
 <li>x_centre
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#a749842ca57caedb0050961d4edda463b">stp::Gaussian2dFit</a>
-</li>
-<li>xbar
-: <a class="el" href="structstp_1_1_island_params.html#a9bc8572b2950d081c47daa3ef963910d">stp::IslandParams</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#a29a7961ecb1900df7cddd1ef5bd76870">stp::Gaussian2dParams</a>
 </li>
 </ul>
 
 
 <h3><a id="index_y"></a>- y -</h3><ul>
 <li>y_centre
-: <a class="el" href="structstp_1_1_gaussian2d_fit.html#a06c0a70f9f5fb23c6ea7cb55fba33527">stp::Gaussian2dFit</a>
-</li>
-<li>ybar
-: <a class="el" href="structstp_1_1_island_params.html#a41767366442b987aafb1cd33b4dfe330">stp::IslandParams</a>
+: <a class="el" href="structstp_1_1_gaussian2d_params.html#ab821ae86352e7507d83cadc8fdef9cc0">stp::Gaussian2dParams</a>
 </li>
 </ul>
 

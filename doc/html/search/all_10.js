@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['theta',['theta',['../structstp_1_1_gaussian2d_fit.html#a7f08f1d195d56ec03896c22219923ea1',1,'stp::Gaussian2dFit']]],
+  ['theta',['theta',['../structstp_1_1_gaussian2d_params.html#afadecebcd37b9b5bba92f916039a7a28',1,'stp::Gaussian2dParams']]],
   ['times_5fsf',['times_sf',['../namespacestp.html#a54c6b61e9265ab85495b35c81b13d43d',1,'stp']]],
   ['top',['top',['../structstp_1_1_bounding_box.html#a42675b807603afceddf023780b44ee15',1,'stp::BoundingBox']]],
   ['tophat',['TopHat',['../classstp_1_1_top_hat.html',1,'stp::TopHat'],['../classstp_1_1_top_hat.html#a535d01d323f653076addd3108c5cbc10',1,'stp::TopHat::TopHat()'],['../namespacestp.html#a92421a2e1781ba7c1263b57c12082d58acd678285c2431c505ac62192462e0b04',1,'stp::TopHat()']]],

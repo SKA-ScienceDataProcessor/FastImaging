@@ -66,11 +66,11 @@ struct IslandParams {
     double extremum_val;
     int extremum_y_idx;
     int extremum_x_idx;
-    double ybar;
-    double xbar;
     int sign;
+    int num_samples;
     BoundingBox bounding_box;
-    Gaussian2dFit fit;
+    Gaussian2dParams moments_fit;
+    Gaussian2dParams leastsq_fit;
     std::string ceres_report;
 
     /**
@@ -87,13 +87,26 @@ struct IslandParams {
      * @param[in] l_extremum (real_t): the extremum value
      * @param[in] l_extremum_coord_y (int): the y-coordinate index of the extremum value
      * @param[in] l_extremum_coord_x (int): the x-coordinate index of the extremum value
-     * @param[in] barycentre_y (real_t): the y-value of barycentric centre
-     * @param[in] barycentre_x (real_t): the x-value of barycentric centre
+     * @param[in] l_num_samples (int): number of samples in the island
      * @param[in] bbox (BoundingBox): the bounding box defined around the source
      */
     IslandParams(const int label, const real_t l_extremum, const int l_extremum_coord_y,
-        const int l_extremum_coord_x, const real_t barycentre_y, const real_t barycentre_x,
-        const BoundingBox& box = BoundingBox());
+        const int l_extremum_coord_x, const int l_num_samples, const BoundingBox& box = BoundingBox());
+
+    /**
+     * @brief Estimate initial 2D gaussian fit to the island using the method of moments.
+     *
+     * The moments information used to estimate the 2D gaussian are passed as input parameters.
+     *
+     * @param[in] x_bar (double): First moment - x barycentre
+     * @param[in] y_bar (double): First moment - y barycentre
+     * @param[in] xx_bar (double): Second moment - xx
+     * @param[in] yy_bar (double): Second moment - yy
+     * @param[in] xy_bar (double): Second moment - xy
+     * @param[in] rms_est (double): RMS estimation
+     * @param[in] analysis_n_sigma (double): Analysis threshold as multiple of RMS
+     */
+    void estimate_moments_fit(const double x_bar, const double y_bar, const double xx_bar, const double yy_bar, const double xy_bar, const double rms_est, const double analysis_n_sigma);
 
     /**
      * @brief Fit 2D gaussian to the island.
@@ -106,7 +119,7 @@ struct IslandParams {
      * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
      * @param[in] ceres_solvertype (CeresSolverType): Solver type used by ceres library for gaussian fitting.
      */
-    void fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, CeresDiffMethod ceres_diffmethod, CeresSolverType ceres_solvertype);
+    void leastsq_fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, CeresDiffMethod ceres_diffmethod, CeresSolverType ceres_solvertype);
 
     /**
      * @brief Compare two IslandParams objects
@@ -138,8 +151,10 @@ public:
     arma::uvec label_extrema_linear_idx_neg;
     arma::ivec label_extrema_id_pos;
     arma::ivec label_extrema_id_neg;
-    arma::mat label_extrema_barycentre_pos;
-    arma::mat label_extrema_barycentre_neg;
+    arma::mat label_extrema_moments_pos;
+    arma::mat label_extrema_moments_neg;
+    arma::Col<int> label_extrema_numsamples_pos;
+    arma::Col<int> label_extrema_numsamples_neg;
     tbb::concurrent_vector<BoundingBox> label_extrema_boundingbox_pos;
     tbb::concurrent_vector<BoundingBox> label_extrema_boundingbox_neg;
     double detection_n_sigma;
@@ -147,6 +162,7 @@ public:
     double rms_est;
     double bg_level;
     std::vector<IslandParams> islands;
+    bool fit_gaussian;
 
     // There's no default constructor
     SourceFindImage() = delete;
@@ -163,7 +179,6 @@ public:
      * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
      * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function.
      * @param[in] binapprox_median (bool): Compute approximated median using the fast binapprox method
-     * @param[in] compute_barycentre (bool): Compute barycentric centre of each island.
      * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island.
      * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold.
      * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
@@ -177,7 +192,6 @@ public:
         bool find_negative_sources = true,
         uint sigma_clip_iters = 5,
         bool binapprox_median = false,
-        bool compute_barycentre = true,
         bool gaussian_fitting = false,
         bool generate_labelmap = true,
         CeresDiffMethod ceres_diffmethod = CeresDiffMethod::AnalyticDiff_SingleResBlk,
@@ -189,13 +203,12 @@ private:
      *
      * @param[in] data (arma::Mat): Image data.
      * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
-     * @param[in] compute_barycentre (bool): Compute barycentric centre of each island.
      * @param[in] gaussian_fitting (bool): Compute auxiliary structures used for gaussian fitting.
      *
      * @return (uint) Number of valid labels
      */
     template <bool generateLabelMap>
-    uint _label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources = true, bool compute_barycentre = true, bool gaussian_fitting = false);
+    uint _label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources = true, bool gaussian_fitting = true);
 };
 }
 

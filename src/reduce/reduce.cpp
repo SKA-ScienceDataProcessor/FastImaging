@@ -108,7 +108,6 @@ int main(int argc, char** argv)
         _logger->info(" - rms_estimation={}", cfg.estimate_rms);
         _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
         _logger->info(" - binapprox_median={}", cfg.binapprox_median);
-        _logger->info(" - compute_barycentre={}", cfg.compute_barycentre);
         _logger->info(" - gaussian_fitting={}", cfg.gaussian_fitting);
         _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
         _logger->info(" - generate_beam={}", cfg.generate_beam);
@@ -174,7 +173,7 @@ int main(int argc, char** argv)
 
     // Run source find
     stp::SourceFindImage sfimage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms, true,
-        cfg.sigma_clip_iters, cfg.binapprox_median, cfg.compute_barycentre, cfg.gaussian_fitting, cfg.generate_labelmap,
+        cfg.sigma_clip_iters, cfg.binapprox_median, cfg.gaussian_fitting, cfg.generate_labelmap,
         cfg.ceres_diffmethod, cfg.ceres_solvertype);
 
 #ifdef FUNCTION_TIMINGS
@@ -204,13 +203,15 @@ int main(int argc, char** argv)
 
         std::size_t island_num = 0;
         for (auto&& i : sfimage.islands) {
-            _logger->info(" * Island {}: label={}, sign={}, extremum_val={}, extremum_x_idx={}, extremum_y_idy={}, xbar={}, ybar={}",
-                island_num, i.label_idx, i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.xbar, i.ybar);
+            _logger->info(" * Island {}: label={}, sign={}, extremum_val={}, extremum_x_idx={}, extremum_y_idy={}",
+                island_num, i.label_idx, i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx);
+            _logger->info("   Moments fit: amplitude={}, x_centre={}, y_centre={}, semimajor={}, semiminor={}, theta={}",
+                i.moments_fit.amplitude, i.moments_fit.x_centre, i.moments_fit.y_centre, i.moments_fit.semimajor, i.moments_fit.semiminor, i.moments_fit.theta);
             if (cfg.gaussian_fitting) {
                 _logger->info("   Bounding box: top={}, bottom={}, left={}, right={}, width={}, height={}",
                     i.bounding_box.top, i.bounding_box.bottom, i.bounding_box.left, i.bounding_box.right, i.bounding_box.get_width(), i.bounding_box.get_height());
-                _logger->info("   Gaussian fitting: amplitude={}, x_centre={}, y_centre={}, semimajor={}, semiminor={}, theta={}",
-                    i.fit.amplitude, i.fit.x_centre, i.fit.y_centre, i.fit.semimajor, i.fit.semiminor, i.fit.theta);
+                _logger->info("   Gaussian fit: amplitude={}, x_centre={}, y_centre={}, semimajor={}, semiminor={}, theta={}",
+                    i.leastsq_fit.amplitude, i.leastsq_fit.x_centre, i.leastsq_fit.y_centre, i.leastsq_fit.semimajor, i.leastsq_fit.semiminor, i.leastsq_fit.theta);
                 _logger->info("   {}", i.ceres_report);
                 _logger->info("");
             }

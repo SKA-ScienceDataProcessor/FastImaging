@@ -41,10 +41,18 @@ function(add_unit_test unit_test_name unit_test_source)
 endfunction()
 
 # Test Cases: Matrix Math Functions ------------------------------------------------------------------------------------
-add_unit_test(test_matrix_math_funcs matrixmath/test_matrix_math_funcs.cpp)
 
-# Test Cases: Median Functions -----------------------------------------------------------------------------------------
-add_unit_test(test_median_funcs matrixmath/test_median_funcs.cpp)
+# Stats functions
+add_unit_test(test_matrixmath_stat_funcs matrixmath/matrixmath_test_stat_funcs.cpp)
+
+# Median functions
+add_unit_test(test_matrixmath_median_funcs matrixmath/matrixmath_test_median_funcs.cpp)
+
+# FFT shift
+add_unit_test(test_matrixmath_fftshift matrixmath/matrixmath_test_fftshift.cpp)
+
+# In-place matrix division
+add_unit_test(test_matrixmath_inplacediv matrixmath/matrixmath_test_inplacediv.cpp)
 
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
@@ -176,10 +184,10 @@ add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp
 # Note: for practicality each unit test has its own executable.
 
 # Matrix math
-add_test(NAME MatrixMathFunctions COMMAND test_matrix_math_funcs)
-
-# Median
-add_test(NAME MedianFunctions COMMAND test_median_funcs)
+add_test(NAME MatrixMathStatFuncs COMMAND test_matrixmath_stat_funcs)
+add_test(NAME MatrixMathMedianFuncs COMMAND test_matrixmath_median_funcs)
+add_test(NAME MatrixMathFFTShift COMMAND test_matrixmath_fftshift)
+add_test(NAME MatrixMathInplaceDiv COMMAND test_matrixmath_inplacediv)
 
 # Convolution
 add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle)

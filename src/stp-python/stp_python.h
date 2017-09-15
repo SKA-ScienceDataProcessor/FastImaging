@@ -76,7 +76,6 @@ pybind11::tuple image_visibilities_wrapper(
  * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1). Default = true.
  * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function. Default = 5.
  * @param[in] binapprox_median (bool): Compute approximated median using the fast binapprox method. Default = false.
- * @param[in] compute_barycentre (bool): Compute barycentric centre of each island. Default = true.
  * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island. Default = false.
  * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold. Default = true.
  * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
@@ -87,12 +86,14 @@ pybind11::tuple image_visibilities_wrapper(
  *                             - 'sign' is +1 or -1 (int), representing whether the source is positive or negative;
  *                             - 'val' (double) is the 'extremum_val', i.e. max or min pixel value for the positive or negative source case;
  *                             - 'x_idx,y_idx' (int) are the pixel-index of the extremum value;
- *                             - 'xbar, ybar' (double) are 'centre-of-mass' locations for the source-detection island.
- * The following are valid only if gaussian fitting is enabled:
- *                             - 'gaussian_fit' (Gaussian2dFit) represents the gaussian 2D parameters: 'amplitude', 'x_centre', 'y_centre', 'x_stddev', 'y_stddev', 'theta'.
+ *                             - 'moments_fit' (Gaussian2dParams) represents initial 2D gaussian fitting estimated from moments method:
+ *                                                             'amplitude', 'x_centre', 'y_centre', 'x_stddev', 'y_stddev', 'theta'.
+ * The following are valid only if input gaussian_fitting flag is enabled:
+ *                             - 'gaussian_fit' (Gaussian2dParams) represents 2D gaussian fitting estimated from least-squares method:
+ *                                                              'amplitude', 'x_centre', 'y_centre', 'x_stddev', 'y_stddev', 'theta'.
  *                             - 'ceres_report' (string) is the ceres solver report.
  */
-std::vector<std::tuple<int, double, int, int, double, double, stp::Gaussian2dFit, std::string>> source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> source_find_wrapper(
     np_real_array image_data, // numpy.ndarray<np.float_>
     double detection_n_sigma,
     double analysis_n_sigma,
@@ -100,7 +101,6 @@ std::vector<std::tuple<int, double, int, int, double, double, stp::Gaussian2dFit
     bool find_negative_sources,
     uint sigma_clip_iters,
     bool binapprox_median,
-    bool compute_barycentre,
     bool gaussian_fitting,
     bool generate_labelmap,
     stp::CeresDiffMethod ceres_diffmethod,

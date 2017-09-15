@@ -153,13 +153,13 @@ SourceFindImage::SourceFindImage(
     bool find_negative_sources,
     uint sigma_clip_iters,
     bool binapprox_median,
-    bool compute_barycentre,
     bool gaussian_fitting,
     bool generate_labelmap,
     CeresDiffMethod ceres_diffmethod,
     CeresSolverType ceres_solvertype)
     : detection_n_sigma(input_detection_n_sigma)
     , analysis_n_sigma(input_analysis_n_sigma)
+    , fit_gaussian(gaussian_fitting)
 {
 #ifdef FUNCTION_TIMINGS
     times_sf.reserve(NUM_TIME_INST);
@@ -190,9 +190,9 @@ SourceFindImage::SourceFindImage(
     // Perform label detection (for both positive and negative sources)
     uint numValidLabels = 0;
     if (generate_labelmap) {
-        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, compute_barycentre, gaussian_fitting);
+        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, fit_gaussian);
     } else {
-        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, compute_barycentre, gaussian_fitting);
+        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, fit_gaussian);
     }
 
 #ifdef FUNCTION_TIMINGS
@@ -221,8 +221,12 @@ SourceFindImage::SourceFindImage(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            islands.push_back(std::move(IslandParams(label_extrema_id_pos.at(i), label_extrema_val_pos.at(i), y_idx, x_idx,
-                label_extrema_barycentre_pos.col(i)(0), label_extrema_barycentre_pos.col(i)(1), label_extrema_boundingbox_pos[i])));
+            IslandParams island(label_extrema_id_pos[i], label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_numsamples_pos[i],
+                label_extrema_boundingbox_pos[i]);
+            island.estimate_moments_fit(label_extrema_moments_pos.col(i)(0), label_extrema_moments_pos.col(i)(1),
+                label_extrema_moments_pos.col(i)(2), label_extrema_moments_pos.col(i)(3), label_extrema_moments_pos.col(i)(4),
+                rms_est, analysis_n_sigma);
+            islands.push_back(std::move(island));
         }
     }
 
@@ -238,18 +242,22 @@ SourceFindImage::SourceFindImage(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            islands.push_back(std::move(IslandParams(label_extrema_id_neg.at(i), label_extrema_val_neg.at(i), y_idx, x_idx,
-                label_extrema_barycentre_neg.col(i)(0), label_extrema_barycentre_neg.col(i)(1), label_extrema_boundingbox_neg[i])));
+            IslandParams island(label_extrema_id_neg[i], label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_numsamples_neg[i],
+                label_extrema_boundingbox_neg[i]);
+            island.estimate_moments_fit(label_extrema_moments_neg.col(i)(0), label_extrema_moments_neg.col(i)(1),
+                label_extrema_moments_neg.col(i)(2), label_extrema_moments_neg.col(i)(3), label_extrema_moments_neg.col(i)(4),
+                rms_est, analysis_n_sigma);
+            islands.push_back(std::move(island));
         }
     }
 
-    // Perform gaussian fitting for each island
-    if (gaussian_fitting) {
+    // Perform gaussian fitting for each source
+    if (fit_gaussian) {
         tbb::parallel_for(tbb::blocked_range<size_t>(0, islands.size()), [&](const tbb::blocked_range<size_t>& r) {
             const size_t& begin = r.begin();
             const size_t& end = r.end();
             for (size_t i = begin; i < end; i++) {
-                islands[i].fit_gaussian_2d(input_data, label_map, ceres_diffmethod, ceres_solvertype);
+                islands[i].leastsq_fit_gaussian_2d(input_data, label_map, ceres_diffmethod, ceres_solvertype);
             }
         });
     }
@@ -261,7 +269,7 @@ SourceFindImage::SourceFindImage(
 }
 
 template <bool generateLabelMap>
-uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool compute_barycentre, bool gaussian_fitting)
+uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool gaussian_fitting)
 {
     // Compute analysis and detection thresholds
     const real_t analysis_thresh_pos = bg_level + analysis_n_sigma * rms_est;
@@ -269,11 +277,6 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     const real_t detection_thresh_pos = bg_level + detection_n_sigma * rms_est;
     const real_t detection_thresh_neg = bg_level - detection_n_sigma * rms_est;
     std::tuple<MatStp<int>, MatStp<uint>, size_t, size_t> labeling_output;
-
-    // Computation of barycentre data is required for gaussian fitting
-    if (gaussian_fitting) {
-        compute_barycentre = true;
-    }
 
     // Perform connected components labeling algorithm
     if (find_negative_sources) {
@@ -299,7 +302,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     tbb::combinable<std::pair<arma::Col<real_t>, arma::uvec>> data_extrema_pos(std::make_pair(arma::Col<real_t>(num_l_pos).fill(detection_thresh_pos), arma::uvec(num_l_pos)));
     tbb::combinable<std::pair<arma::Col<real_t>, arma::uvec>> data_extrema_neg(std::make_pair(arma::Col<real_t>(num_l_neg).fill(detection_thresh_neg), arma::uvec(num_l_neg)));
 
-    // Performs the final labeling stage, and searches the maximum/minimum sources (based on detection threshold).
+    // Performs the final labeling stage and searches the maximum/minimum sources (based on detection threshold).
     // These steps are merged in the same loop to minimize memory accesses.
     tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_elem), [&](const tbb::blocked_range<size_t>& r) {
         auto& r_data_extrema_pos = data_extrema_pos.local();
@@ -368,16 +371,12 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     label_extrema_linear_idx_neg = std::move(comb_extrema_neg.second);
     label_extrema_id_pos.set_size(num_l_pos);
     label_extrema_id_neg.set_size(num_l_neg);
-    label_extrema_barycentre_pos.set_size(2, num_l_pos);
-    label_extrema_barycentre_neg.set_size(2, num_l_neg);
+    label_extrema_moments_pos.set_size(5, num_l_pos);
+    label_extrema_moments_neg.set_size(5, num_l_neg);
     label_extrema_boundingbox_pos.resize(num_l_pos);
     label_extrema_boundingbox_neg.resize(num_l_neg);
-    if (!compute_barycentre) {
-        label_extrema_barycentre_pos.zeros();
-        label_extrema_barycentre_neg.zeros();
-    }
 
-    // Set label_extream_id for positive labels
+    // Set label_extream_id for valid positive labels. Set invalid sources with 0 label id
     for (size_t i = 0; i < label_extrema_val_pos.n_elem; i++) {
         // Maximum extrema labels will be higher than detection_thresh_pos
         if (label_extrema_val_pos.at(i) > detection_thresh_pos) {
@@ -388,7 +387,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
         }
     }
 
-    // Set label_extream_id for negative labels
+    // Set label_extream_id for negative labels. Set invalid sources with 0 label id
     for (size_t i = 0; i < label_extrema_val_neg.n_elem; i++) {
         // Minimum extrema labels will be lower than detection_thresh_neg
         if (label_extrema_val_neg.at(i) < detection_thresh_neg) {
@@ -399,142 +398,190 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
         }
     }
 
-    // Compute barycentric centre or/and generate updated label map (i.e. remove undetected labels) and/or find bounding boxes
-    if (generateLabelMap || compute_barycentre || gaussian_fitting) {
+    // The following code performs these steps:
+    //  - Compute moments
+    //  - Count number of samples of each island
+    //  - Optional: Generate updated label map (i.e. remove undetected labels)
+    //  - Optional: Find bounding box of each island
+    tbb::combinable<arma::Mat<double>> moments_pos(arma::Mat<double>(6, num_l_pos).zeros());
+    tbb::combinable<arma::Mat<double>> moments_neg(arma::Mat<double>(6, num_l_neg).zeros());
+    tbb::combinable<arma::Col<int>> numsamples_pos(arma::Col<int>(num_l_pos).zeros());
+    tbb::combinable<arma::Col<int>> numsamples_neg(arma::Col<int>(num_l_neg).zeros());
 
-        tbb::combinable<arma::Mat<double>> barycentre_pos(arma::Mat<double>(3, num_l_pos).zeros());
-        tbb::combinable<arma::Mat<double>> barycentre_neg(arma::Mat<double>(3, num_l_neg).zeros());
-
-        // Stores the rectangular boxes defined around each source
-        if (gaussian_fitting) {
-            label_extrema_boundingbox_pos.assign(num_l_pos, BoundingBox(data.n_rows, -1, data.n_cols, -1)); // Init bounding box values
-            label_extrema_boundingbox_neg.assign(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1));
-        }
+    // Stores the rectangular boxes defined around each source
+    if (gaussian_fitting) {
+        label_extrema_boundingbox_pos.assign(num_l_pos, BoundingBox(data.n_rows, -1, data.n_cols, -1)); // Init bounding box values
+        label_extrema_boundingbox_neg.assign(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1));
+    }
 #ifndef FFTSHIFT
-        int h_shift = (int)(data.n_cols / 2);
-        int v_shift = (int)(data.n_rows / 2);
+    int h_shift = (int)(data.n_cols / 2);
+    int v_shift = (int)(data.n_rows / 2);
 #endif
 
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_cols), [&](const tbb::blocked_range<size_t>& r) {
-            size_t li = arma::sub2ind(arma::size(data), 0, r.begin());
-            arma::Mat<double>& r_barycentre_pos = barycentre_pos.local();
-            arma::Mat<double>& r_barycentre_neg = barycentre_neg.local();
-            for (arma::uword i = r.begin(); i < r.end(); i++) {
-                for (arma::uword j = 0; j < data.n_rows; j++, li++) {
-                    int label = label_map.at(li);
-                    if (label == 0) {
+    // Loop over image
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, data.n_cols), [&](const tbb::blocked_range<size_t>& r) {
+        size_t li = arma::sub2ind(arma::size(data), 0, r.begin());
+        arma::Mat<double>& r_moments_pos = moments_pos.local();
+        arma::Mat<double>& r_moments_neg = moments_neg.local();
+        arma::Col<int>& r_numsamples_pos = numsamples_pos.local();
+        arma::Col<int>& r_numsamples_neg = numsamples_neg.local();
+        for (arma::uword i = r.begin(); i < r.end(); i++) {
+            for (arma::uword j = 0; j < data.n_rows; j++, li++) {
+                int label = label_map.at(li);
+                if (label == 0) {
+                    continue;
+                }
+                int idx;
+                if (label > 0) {
+                    idx = label - 1;
+                    // This will remove weak sources (below the detection threshold)
+                    if (label_extrema_id_pos.at(idx) == 0) {
+                        // Update label_map with final label indexes (and clean weak sources)
+                        if (generateLabelMap) {
+                            label_map.at(li) = 0;
+                        }
                         continue;
                     }
-                    int idx;
-                    if (label > 0) {
-                        idx = label - 1;
-                        // This will remove weak sources (below the detection threshold)
-                        if (label_extrema_id_pos.at(idx) == 0) {
-                            // Update label_map with final label indexes (and clean weak sources)
-                            if (generateLabelMap) {
-                                label_map.at(li) = 0;
-                            }
-                            continue;
+                } else {
+                    idx = -label - 1;
+                    // This will remove weak sources (below the detection threshold)
+                    if (label_extrema_id_neg.at(idx) == 0) {
+                        // Update label_map with final label indexes (and clean weak sources)
+                        if (generateLabelMap) {
+                            label_map.at(li) = 0;
                         }
-                    } else {
-                        idx = -label - 1;
-                        // This will remove weak sources (below the detection threshold)
-                        if (label_extrema_id_neg.at(idx) == 0) {
-                            // Update label_map with final label indexes (and clean weak sources)
-                            if (generateLabelMap) {
-                                label_map.at(li) = 0;
-                            }
-                            continue;
-                        }
+                        continue;
                     }
-                    // Compute barycentre data
-                    if (compute_barycentre) {
-                        assert(idx > -1);
-                        const double val = data.at(li);
-#ifdef FFTSHIFT
-                        const double y_idx = (double)j;
-                        const double x_idx = (double)i;
-#else
-                        // Get shifted coordinates centered in the image
-                        const double y_idx = (int)j < v_shift ? (double)(j + v_shift) : (double)(j - v_shift);
-                        const double x_idx = (int)i < h_shift ? (double)(i + h_shift) : (double)(i - h_shift);
-#endif
-                        if (label > 0) {
-                            r_barycentre_pos.at(0, idx) += y_idx * val;
-                            r_barycentre_pos.at(1, idx) += x_idx * val;
-                            r_barycentre_pos.at(2, idx) += val;
-                        } else {
-                            r_barycentre_neg.at(0, idx) += y_idx * val;
-                            r_barycentre_neg.at(1, idx) += x_idx * val;
-                            r_barycentre_neg.at(2, idx) += val;
-                        }
-                    }
+                }
 
-                    if (gaussian_fitting) {
+                // Calculate moments
+                assert(idx > -1);
+                double val = data.at(li);
 #ifdef FFTSHIFT
-                        const int col = (int)i;
-                        const int row = (int)j;
+                const double y_idx = (double)j;
+                const double x_idx = (double)i;
+#else
+                // Get shifted coordinates centered in the image
+                const double y_idx = (int)j < v_shift ? (double)(j + v_shift) : (double)(j - v_shift);
+                const double x_idx = (int)i < h_shift ? (double)(i + h_shift) : (double)(i - h_shift);
+#endif
+                const double x_bar = x_idx * val;
+                const double y_bar = y_idx * val;
+                const double xx_bar = x_bar * x_idx;
+                const double yy_bar = y_bar * y_idx;
+                const double xy_bar = x_bar * y_idx;
+
+                if (label > 0) {
+                    r_numsamples_pos.at(idx)++;
+                    r_moments_pos.at(0, idx) += x_bar;
+                    r_moments_pos.at(1, idx) += y_bar;
+                    r_moments_pos.at(2, idx) += xx_bar;
+                    r_moments_pos.at(3, idx) += yy_bar;
+                    r_moments_pos.at(4, idx) += xy_bar;
+                    r_moments_pos.at(5, idx) += val;
+                } else {
+                    r_numsamples_neg.at(idx)++;
+                    r_moments_neg.at(0, idx) += x_bar;
+                    r_moments_neg.at(1, idx) += y_bar;
+                    r_moments_neg.at(2, idx) += xx_bar;
+                    r_moments_neg.at(3, idx) += yy_bar;
+                    r_moments_neg.at(4, idx) += xy_bar;
+                    r_moments_neg.at(5, idx) += val;
+                }
+
+                if (gaussian_fitting) {
+#ifdef FFTSHIFT
+                    const int col = (int)i;
+                    const int row = (int)j;
 #else
                         const int col = (int)i < h_shift ? (int)i + h_shift : (int)i - h_shift;
                         const int row = (int)j < v_shift ? (int)j + v_shift : (int)j - v_shift;
 #endif
-                        if (label > 0) {
-                            if (col < label_extrema_boundingbox_pos[idx].left) {
-                                label_extrema_boundingbox_pos[idx].left = col;
-                            }
-                            if (col > label_extrema_boundingbox_pos[idx].right) {
-                                label_extrema_boundingbox_pos[idx].right = col;
-                            }
-                            if (row < label_extrema_boundingbox_pos[idx].top) {
-                                label_extrema_boundingbox_pos[idx].top = row;
-                            }
-                            if (row > label_extrema_boundingbox_pos[idx].bottom) {
-                                label_extrema_boundingbox_pos[idx].bottom = row;
-                            }
-                        } else {
-                            if (col < label_extrema_boundingbox_neg[idx].left) {
-                                label_extrema_boundingbox_neg[idx].left = col;
-                            }
-                            if (col > label_extrema_boundingbox_neg[idx].right) {
-                                label_extrema_boundingbox_neg[idx].right = col;
-                            }
-                            if (row < label_extrema_boundingbox_neg[idx].top) {
-                                label_extrema_boundingbox_neg[idx].top = row;
-                            }
-                            if (row > label_extrema_boundingbox_neg[idx].bottom) {
-                                label_extrema_boundingbox_neg[idx].bottom = row;
-                            }
+                    if (label > 0) {
+                        if (col < label_extrema_boundingbox_pos[idx].left) {
+                            label_extrema_boundingbox_pos[idx].left = col;
+                        }
+                        if (col > label_extrema_boundingbox_pos[idx].right) {
+                            label_extrema_boundingbox_pos[idx].right = col;
+                        }
+                        if (row < label_extrema_boundingbox_pos[idx].top) {
+                            label_extrema_boundingbox_pos[idx].top = row;
+                        }
+                        if (row > label_extrema_boundingbox_pos[idx].bottom) {
+                            label_extrema_boundingbox_pos[idx].bottom = row;
+                        }
+                    } else {
+                        if (col < label_extrema_boundingbox_neg[idx].left) {
+                            label_extrema_boundingbox_neg[idx].left = col;
+                        }
+                        if (col > label_extrema_boundingbox_neg[idx].right) {
+                            label_extrema_boundingbox_neg[idx].right = col;
+                        }
+                        if (row < label_extrema_boundingbox_neg[idx].top) {
+                            label_extrema_boundingbox_neg[idx].top = row;
+                        }
+                        if (row > label_extrema_boundingbox_neg[idx].bottom) {
+                            label_extrema_boundingbox_neg[idx].bottom = row;
                         }
                     }
                 }
             }
-        });
+        }
+    });
 
-        // Sum computations of each thread and set label_extrema_barycentre arrays
-        if (compute_barycentre) {
-            auto all_barycentre_pos = barycentre_pos.combine([&](const arma::Mat<double>& x, const arma::Mat<double>& y) {
-                auto r = x + y;
-                return std::move(r);
-            });
-            auto all_barycentre_neg = barycentre_neg.combine([&](const arma::Mat<double>& x, const arma::Mat<double>& y) {
-                auto r = x + y;
-                return std::move(r);
-            });
+    // Sum data of each thread to derive final moments
+    auto all_moments_pos = moments_pos.combine([&](const arma::Mat<double>& x, const arma::Mat<double>& y) {
+        auto r = x + y;
+        return std::move(r);
+    });
+    auto all_moments_neg = moments_neg.combine([&](const arma::Mat<double>& x, const arma::Mat<double>& y) {
+        auto r = x + y;
+        return std::move(r);
+    });
 
-            for (arma::uword l = 0; l < all_barycentre_pos.n_cols; l++) {
-                if (label_extrema_id_pos.at(l) != 0) {
-                    label_extrema_barycentre_pos.at(0, l) = (double)all_barycentre_pos.at(0, l) / (double)all_barycentre_pos.at(2, l);
-                    label_extrema_barycentre_pos.at(1, l) = (double)all_barycentre_pos.at(1, l) / (double)all_barycentre_pos.at(2, l);
-                }
-            }
-            for (arma::uword l = 0; l < all_barycentre_neg.n_cols; l++) {
-                if (label_extrema_id_neg.at(l) != 0) {
-                    label_extrema_barycentre_neg.at(0, l) = (double)all_barycentre_neg.at(0, l) / (double)all_barycentre_neg.at(2, l);
-                    label_extrema_barycentre_neg.at(1, l) = (double)all_barycentre_neg.at(1, l) / (double)all_barycentre_neg.at(2, l);
-                }
-            }
+    // Sum num of samples counted by each thread
+    label_extrema_numsamples_pos = numsamples_pos.combine([&](const arma::Col<int>& x, const arma::Col<int>& y) {
+        auto r = x + y;
+        return std::move(r);
+    });
+    label_extrema_numsamples_neg = numsamples_neg.combine([&](const arma::Col<int>& x, const arma::Col<int>& y) {
+        auto r = x + y;
+        return std::move(r);
+    });
+
+    // Set moments of positive sources in label_extrema_moments_pos array
+    for (arma::uword l = 0; l < all_moments_pos.n_cols; l++) {
+        // Skip invalid labels
+        if (label_extrema_id_pos.at(l) != 0) {
+            const double x_bar = all_moments_pos.at(0, l) / all_moments_pos.at(5, l);
+            const double y_bar = all_moments_pos.at(1, l) / all_moments_pos.at(5, l);
+            const double xx_bar = all_moments_pos.at(2, l) / all_moments_pos.at(5, l) - x_bar * x_bar;
+            const double yy_bar = all_moments_pos.at(3, l) / all_moments_pos.at(5, l) - y_bar * y_bar;
+            const double xy_bar = all_moments_pos.at(4, l) / all_moments_pos.at(5, l) - x_bar * y_bar;
+            label_extrema_moments_pos.at(0, l) = x_bar;
+            label_extrema_moments_pos.at(1, l) = y_bar;
+            label_extrema_moments_pos.at(2, l) = xx_bar;
+            label_extrema_moments_pos.at(3, l) = yy_bar;
+            label_extrema_moments_pos.at(4, l) = xy_bar;
         }
     }
+    // Set moments of negative sources in label_extrema_moments_neg array
+    for (arma::uword l = 0; l < all_moments_neg.n_cols; l++) {
+        // Skip invalid labels
+        if (label_extrema_id_neg.at(l) != 0) {
+            const double x_bar = all_moments_neg.at(0, l) / all_moments_neg.at(5, l);
+            const double y_bar = all_moments_neg.at(1, l) / all_moments_neg.at(5, l);
+            const double xx_bar = all_moments_neg.at(2, l) / all_moments_neg.at(5, l) - x_bar * x_bar;
+            const double yy_bar = all_moments_neg.at(3, l) / all_moments_neg.at(5, l) - y_bar * y_bar;
+            const double xy_bar = all_moments_neg.at(4, l) / all_moments_neg.at(5, l) - x_bar * y_bar;
+            label_extrema_moments_neg.at(0, l) = x_bar;
+            label_extrema_moments_neg.at(1, l) = y_bar;
+            label_extrema_moments_neg.at(2, l) = xx_bar;
+            label_extrema_moments_neg.at(3, l) = yy_bar;
+            label_extrema_moments_neg.at(4, l) = xy_bar;
+        }
+    }
+
     return numValidLabels;
 }
 
@@ -543,61 +590,55 @@ IslandParams::IslandParams(
     const real_t l_extremum,
     const int l_extremum_coord_y,
     const int l_extremum_coord_x,
-    const real_t barycentre_y,
-    const real_t barycentre_x,
+    const int l_num_samples,
     const BoundingBox& box)
     : label_idx(label) // Label index
     , extremum_val(l_extremum)
     , extremum_y_idx(l_extremum_coord_y)
     , extremum_x_idx(l_extremum_coord_x)
-    , ybar(barycentre_y)
-    , xbar(barycentre_x)
+    , num_samples(l_num_samples)
     , bounding_box(box)
 {
     // Determine if the label index is positive or negative
     sign = (label_idx < 0) ? -1 : 1;
 }
 
-void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, CeresDiffMethod ceres_diffmethod, CeresSolverType ceres_solvertype)
+void IslandParams::estimate_moments_fit(const double x_bar, const double y_bar, const double xx_bar, const double yy_bar, const double xy_bar, const double rms_est, const double analysis_n_sigma)
 {
-#ifndef FFTSHIFT
-    int h_shift = (int)(data.n_cols / 2);
-    int v_shift = (int)(data.n_rows / 2);
-#endif
-    // Get the number of residuals
-    int num_residuals = 0;
-    // Estimate initial x/y stddev using method of moments
-    double initial_x_stddev = 0.0;
-    double initial_y_stddev = 0.0;
-    double val_sum = 0.0;
-    for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
-        for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
-            const double x = (double)(i);
-            const double y = (double)(j);
-#ifdef FFTSHIFT
-            const int& ii = i;
-            const int& jj = j;
-#else
-            const int ii = i < h_shift ? i + h_shift : i - h_shift;
-            const int jj = j < v_shift ? j + v_shift : j - v_shift;
-#endif
-            if (label_map.at(jj, ii) == label_idx) {
-                const double& val = (double)data.at(jj, ii);
-                num_residuals++;
-                initial_x_stddev += (x - xbar) * (x - xbar) * val;
-                initial_y_stddev += (y - ybar) * (y - ybar) * val;
-                val_sum += val;
-            }
-        }
+    const double working1 = (xx_bar + yy_bar) / 2.0;
+    const double working2 = sqrt(((xx_bar - yy_bar) * (xx_bar - yy_bar) / 4) + xy_bar * xy_bar);
+    const double trunc_semimajor_sq = working1 + working2;
+    const double trunc_semiminor_sq = working1 - working2;
+
+    // Semimajor / minor axes are under-estimated due to thresholding
+    // Hanno calculated the following correction factor (eqns 2.60,2.61):
+    const double pixel_threshold = analysis_n_sigma * rms_est;
+
+    const double cutoff_ratio = sign * extremum_val / pixel_threshold;
+    const double axes_scale_factor = 1.0 - log(cutoff_ratio) / (cutoff_ratio - 1.0);
+    const double semimajor_est = sqrt(trunc_semimajor_sq / axes_scale_factor);
+    const double semiminor_est = sqrt(trunc_semiminor_sq / axes_scale_factor);
+
+    double theta_est = 0.5 * atan(2.0 * xy_bar / (xx_bar - yy_bar));
+
+    if (theta_est * xy_bar < 0.0) {
+        theta_est += arma::datum::pi / 2.0;
     }
-    assert(initial_x_stddev > 0.0);
-    assert(initial_y_stddev > 0.0);
-    initial_x_stddev = sqrt(initial_x_stddev / val_sum);
-    initial_y_stddev = sqrt(initial_y_stddev / val_sum);
+
+    // Set gaussian parameters estimation
+    moments_fit = Gaussian2dParams(extremum_val, x_bar, y_bar, semimajor_est, semiminor_est, theta_est);
+    // Convert gaussian parameters to ensure that theta varies between -pi/2 and pi/2, and semimajor is larger than semiminor
+    moments_fit.convert_to_constrained_parameters();
+}
+
+void IslandParams::leastsq_fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Mat<int>& label_map, CeresDiffMethod ceres_diffmethod, CeresSolverType ceres_solvertype)
+{
+    // Get the number of residuals
+    int num_residuals = num_samples;
 
     // Return if it is one-pixel source
     if (num_residuals == 1) {
-        fit = Gaussian2dFit(extremum_val, 0.0, 0.0, 0.0, 0.0, 0.0);
+        leastsq_fit = Gaussian2dParams(extremum_val, 0.0, 0.0, 0.0, 0.0, 0.0);
         ceres_report.assign("ceres::Solve was not called.");
         return;
     }
@@ -605,8 +646,9 @@ void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Ma
     // The variable to solve for with its initial value.
     // It will be mutated in place by the solver.
     // Variable fields: amplitude, x0, y0, x_stddev, y_stddev and theta
-    double initial_theta = 0.0;
-    double gaussian_params[] = { extremum_val, xbar, ybar, initial_x_stddev, initial_y_stddev, initial_theta };
+    // Initial values are the given by the moments_fit
+    double gaussian_params[] = { moments_fit.amplitude, moments_fit.x_centre, moments_fit.y_centre,
+        moments_fit.semimajor, moments_fit.semiminor, moments_fit.theta };
 
     // Build the problem.
     ceres::Problem problem;
@@ -615,6 +657,10 @@ void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Ma
     switch (ceres_diffmethod) {
 
     case CeresDiffMethod::AutoDiff: {
+#ifndef FFTSHIFT
+        int h_shift = (int)(data.n_cols / 2);
+        int v_shift = (int)(data.n_rows / 2);
+#endif
         // Compute each residual associated to label_idx
         for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
             for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
@@ -646,6 +692,10 @@ void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Ma
     } break;
 
     case CeresDiffMethod::AnalyticDiff: {
+#ifndef FFTSHIFT
+        int h_shift = (int)(data.n_cols / 2);
+        int v_shift = (int)(data.n_rows / 2);
+#endif
         // Compute each residual associated to label_idx
         for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
             for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
@@ -711,28 +761,13 @@ void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Ma
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    // Ensure that semimajor axis is larger than semiminor axis
-    if (gaussian_params[3] < gaussian_params[4]) {
-        double x_stddev = gaussian_params[3];
-        gaussian_params[3] = gaussian_params[4];
-        gaussian_params[4] = x_stddev;
-        // Add pi/2 to theta due to swapped axis
-        gaussian_params[5] += (arma::datum::pi / 2.0);
-    }
-    // Make theta vary between -pi/2 and pi/2
-    gaussian_params[5] = fmod(gaussian_params[5], arma::datum::pi);
-    if (gaussian_params[5] > (arma::datum::pi / 2.0)) {
-        gaussian_params[5] -= arma::datum::pi;
-    } else {
-        if (gaussian_params[5] < -(arma::datum::pi / 2.0)) {
-            gaussian_params[5] += arma::datum::pi;
-        }
-    }
-    assert(gaussian_params[5] <= (arma::datum::pi / 2.0));
-    assert(gaussian_params[5] >= -(arma::datum::pi / 2.0));
-
     // Save the results
-    fit = Gaussian2dFit(gaussian_params[0], gaussian_params[1], gaussian_params[2], gaussian_params[3], gaussian_params[4], gaussian_params[5]);
+    leastsq_fit = Gaussian2dParams(gaussian_params[0], gaussian_params[1], gaussian_params[2], gaussian_params[3], gaussian_params[4], gaussian_params[5]);
+    // Convert gaussian parameters to ensure that theta varies between -pi/2 and pi/2, and semimajor is larger than semiminor
+    leastsq_fit.convert_to_constrained_parameters();
+    assert(leastsq_fit.theta <= (arma::datum::pi / 2.0));
+    assert(leastsq_fit.theta >= -(arma::datum::pi / 2.0));
+
     ceres_report.assign(summary.BriefReport());
     ceres_report.append(", Reason: " + summary.message);
 }
@@ -741,12 +776,6 @@ void IslandParams::fit_gaussian_2d(const arma::Mat<real_t>& data, const arma::Ma
 bool IslandParams::operator==(const IslandParams& other) const
 {
     if (sign != other.sign) {
-        return false;
-    }
-    if (abs(xbar - other.xbar) > fptolerance) {
-        return false;
-    }
-    if (abs(ybar - other.ybar) > fptolerance) {
         return false;
     }
     if (extremum_x_idx != other.extremum_x_idx) {

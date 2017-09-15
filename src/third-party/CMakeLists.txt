@@ -38,7 +38,7 @@ add_subdirectory(pybind11)
 
 
 #############################
-# Dependency: eigen (3.3.4) #
+# Dependency: Eigen (3.3.4) #
 #############################
 set(EIGEN_TARGET_NAME eigen)
 set(EIGEN_PROJECT_NAME eigen_project)
@@ -59,9 +59,9 @@ add_dependencies(${EIGEN_TARGET_NAME} ${EIGEN_PROJECT_NAME})
 # add_subdirectory(eigen) is not used because ceres library needs the eigen include directories
 
 
-#################################
-# Dependency: ceres (1.13.0rc1) #
-#################################
+########################################
+# Dependency: Ceres Solver (1.13.0rc1) #
+########################################
 set(BUILD_EXAMPLES OFF CACHE BOOL "Build examples.")
 set(BUILD_TESTING OFF CACHE BOOL "Enable tests.")
 set(CXX11 ON CACHE BOOL "Enable use of C++11 headers if available (requires client code use C++11).")
@@ -77,7 +77,7 @@ set(EIGEN_INCLUDE_DIRS ${EIGEN_INSTALL_DIR}/include/eigen3 CACHE INTERNAL "")
 set(LAPACK OFF CACHE INTERNAL "")
 # Suppress logs written by ceres minilog if not in debug mode
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions(-DMAX_LOG_LEVEL=-1)
+    set(MINIGLOG_MAX_LOG_LEVEL -1 CACHE STRING "The maximum message severity level to be logged")
 endif()
 add_subdirectory(ceres)
 add_dependencies(ceres eigen)

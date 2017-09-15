@@ -23,7 +23,6 @@ private:
     bool find_negative_sources;
     uint sigma_clip_iters;
     bool binapprox_median;
-    bool compute_barycentre;
     bool gaussian_fitting;
     bool generate_labelmap;
     CeresDiffMethod ceres_diffmethod;
@@ -52,7 +51,6 @@ public:
         find_negative_sources = false;
         sigma_clip_iters = 5;
         binapprox_median = false;
-        compute_barycentre = true;
         gaussian_fitting = true;
         generate_labelmap = true;
         ceres_diffmethod = ::testing::get<0>(GetParam());
@@ -81,7 +79,7 @@ public:
         fftshift(img);
 #endif
         SourceFindImage sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources,
-            sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype);
+            sigma_clip_iters, binapprox_median, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype);
 #ifndef FFTSHIFT
         fftshift(img);
 #endif
@@ -91,8 +89,6 @@ public:
 
         absolute_x_idx = std::abs(found_src.extremum_x_idx - bright_src.x_mean);
         absolute_y_idx = std::abs(found_src.extremum_y_idx - bright_src.y_mean);
-        absolute_xbar = std::abs(found_src.xbar - bright_src.x_mean);
-        absolute_ybar = std::abs(found_src.ybar - bright_src.y_mean);
     }
 
     Gaussian2D bright_src;
@@ -100,8 +96,6 @@ public:
     double total_islands;
     double absolute_x_idx;
     double absolute_y_idx;
-    double absolute_xbar;
-    double absolute_ybar;
 
     IslandParams found_src;
 };
@@ -111,14 +105,12 @@ TEST_P(SourceFindFitting, GaussianFitting)
     EXPECT_EQ(total_islands, 1);
     EXPECT_LT(absolute_x_idx, 0.5);
     EXPECT_LT(absolute_y_idx, 0.5);
-    EXPECT_LT(absolute_xbar, 0.1);
-    EXPECT_LT(absolute_ybar, 0.1);
-    EXPECT_NEAR(found_src.fit.amplitude, bright_src.amplitude, fit_tolerance);
-    EXPECT_NEAR(found_src.fit.x_centre, bright_src.x_mean, fit_tolerance);
-    EXPECT_NEAR(found_src.fit.y_centre, bright_src.y_mean, fit_tolerance);
-    EXPECT_NEAR(found_src.fit.semimajor, bright_src.x_stddev, fit_tolerance);
-    EXPECT_NEAR(found_src.fit.semiminor, bright_src.y_stddev, fit_tolerance);
-    EXPECT_NEAR(found_src.fit.theta, bright_src.theta, fit_tolerance);
+    EXPECT_NEAR(found_src.leastsq_fit.amplitude, bright_src.amplitude, fit_tolerance);
+    EXPECT_NEAR(found_src.leastsq_fit.x_centre, bright_src.x_mean, fit_tolerance);
+    EXPECT_NEAR(found_src.leastsq_fit.y_centre, bright_src.y_mean, fit_tolerance);
+    EXPECT_NEAR(found_src.leastsq_fit.semimajor, bright_src.x_stddev, fit_tolerance);
+    EXPECT_NEAR(found_src.leastsq_fit.semiminor, bright_src.y_stddev, fit_tolerance);
+    EXPECT_NEAR(found_src.leastsq_fit.theta, bright_src.theta, fit_tolerance);
 }
 
 INSTANTIATE_TEST_CASE_P(DifferentCeresParameters,

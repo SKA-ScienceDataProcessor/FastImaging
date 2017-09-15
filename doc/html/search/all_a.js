@@ -22,5 +22,6 @@ var searchData=
   ['median',['median',['../structstp_1_1_data_stats.html#a75d60fefe7d8a506c3c7925e13acc9e0',1,'stp::DataStats']]],
   ['mem_5fptr',['mem_ptr',['../classstp_1_1_zero_mem_alloc.html#ac7325dbaf6d7992612a4a3b38e81c7f8',1,'stp::ZeroMemAlloc']]],
   ['min_5felems_5ffor_5fparshift',['MIN_ELEMS_FOR_PARSHIFT',['../matrix__math_8h.html#a37a9fea883d821f7feeaa40d6909437f',1,'matrix_math.h']]],
-  ['min_5fmedsize',['MIN_MEDSIZE',['../matrix__math_8cpp.html#af2922a59794a4a160df02579ff9817e4',1,'matrix_math.cpp']]]
+  ['min_5fmedsize',['MIN_MEDSIZE',['../matrix__math_8cpp.html#af2922a59794a4a160df02579ff9817e4',1,'matrix_math.cpp']]],
+  ['moments_5ffit',['moments_fit',['../structstp_1_1_island_params.html#ae3da157a13f449fd7137e667b43c94f8',1,'stp::IslandParams']]]
 ];

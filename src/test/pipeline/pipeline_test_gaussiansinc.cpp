@@ -33,7 +33,6 @@ public:
         rms_estimation = cfg.estimate_rms;
         sigma_clip_iters = cfg.sigma_clip_iters;
         binapprox_median = cfg.binapprox_median;
-        compute_barycentre = cfg.compute_barycentre;
         gaussian_fitting = cfg.gaussian_fitting;
         generate_labelmap = cfg.generate_labelmap;
         generate_beam = cfg.generate_beam;
@@ -57,7 +56,6 @@ public:
     double rms_estimation;
     int sigma_clip_iters;
     bool binapprox_median;
-    bool compute_barycentre;
     bool gaussian_fitting;
     bool generate_labelmap;
     bool generate_beam;
@@ -86,7 +84,7 @@ stp::SourceFindImage PipelineGaussianSincTest::run_pipeline()
         generate_beam, fft_routine);
 
     return stp::SourceFindImage(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, find_negative_sources,
-        sigma_clip_iters, binapprox_median, compute_barycentre, gaussian_fitting, generate_labelmap, ceres_diffmethod,
+        sigma_clip_iters, binapprox_median, gaussian_fitting, generate_labelmap, ceres_diffmethod,
         ceres_solvertype);
 }
 
@@ -107,8 +105,8 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_exact)
     double extremum_val = sfimage.islands[0].extremum_val;
     int extremum_x_idx = sfimage.islands[0].extremum_x_idx;
     int extremum_y_idx = sfimage.islands[0].extremum_y_idx;
-    double xbar = sfimage.islands[0].xbar;
-    double ybar = sfimage.islands[0].ybar;
+    double xbar = sfimage.islands[0].moments_fit.x_centre;
+    double ybar = sfimage.islands[0].moments_fit.y_centre;
 
     EXPECT_EQ(label_idx, 1);
     EXPECT_EQ(sign, 1);
@@ -136,8 +134,8 @@ TEST_F(PipelineGaussianSincTest, test_gaussiansinc_oversampling)
     double extremum_val = sfimage.islands[0].extremum_val;
     int extremum_x_idx = sfimage.islands[0].extremum_x_idx;
     int extremum_y_idx = sfimage.islands[0].extremum_y_idx;
-    double xbar = sfimage.islands[0].xbar;
-    double ybar = sfimage.islands[0].ybar;
+    double xbar = sfimage.islands[0].moments_fit.x_centre;
+    double ybar = sfimage.islands[0].moments_fit.y_centre;
 
     EXPECT_EQ(label_idx, 1);
     EXPECT_EQ(sign, 1);

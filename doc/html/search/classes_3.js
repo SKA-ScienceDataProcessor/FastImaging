@@ -1,7 +1,7 @@
 var searchData=
 [
   ['gaussian',['Gaussian',['../classstp_1_1_gaussian.html',1,'stp']]],
-  ['gaussian2dfit',['Gaussian2dFit',['../structstp_1_1_gaussian2d_fit.html',1,'stp']]],
+  ['gaussian2dparams',['Gaussian2dParams',['../structstp_1_1_gaussian2d_params.html',1,'stp']]],
   ['gaussianallresiduals',['GaussianAllResiduals',['../classstp_1_1_gaussian_all_residuals.html',1,'stp']]],
   ['gaussiananalytic',['GaussianAnalytic',['../classstp_1_1_gaussian_analytic.html',1,'stp']]],
   ['gaussiananalyticallresiduals',['GaussianAnalyticAllResiduals',['../classstp_1_1_gaussian_analytic_all_residuals.html',1,'stp']]],

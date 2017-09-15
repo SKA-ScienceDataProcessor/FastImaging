@@ -1,4 +1,3 @@
-#include <cblas.h>
 #include <common/matrix_math.h>
 #include <fixtures.h>
 #include <gtest/gtest.h>

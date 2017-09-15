@@ -72,16 +72,16 @@ struct BoundingBox {
 };
 
 /**
- * @brief The Gaussian2dFit struct
+ * @brief The Gaussian2dParams struct
  *
- *   Data structure for representing Gaussian Fits.
+ *   Data structure for representing 2D Gaussian parameters.
  *   It refers to semimajor/semiminor axis length rather than x_std_dev / y_std_dev.
  *   Always assumes that `x_std_dev > y_std_dev`, or equivalently, that theta describes the
  *   rotation in the counterclockwise sense of the semimajor axis from the positive x-direction.
  *   For fits returned where this does not happen to be true, we swap semi-major/minor and adjust theta accordingly.
  *   All values are in units of pixels, except for theta which has units of radians.
  */
-struct Gaussian2dFit {
+struct Gaussian2dParams {
     double amplitude;
     double x_centre;
     double y_centre;
@@ -90,11 +90,11 @@ struct Gaussian2dFit {
     double theta;
 
     /**
-     * @brief Default Gaussian2dFit constructor.
+     * @brief Default Gaussian2dParams constructor.
      *
      * All parameters set to zero.
      */
-    Gaussian2dFit()
+    Gaussian2dParams()
         : amplitude(0.0)
         , x_centre(0.0)
         , y_centre(0.0)
@@ -105,7 +105,7 @@ struct Gaussian2dFit {
     }
 
     /**
-     * @brief Gaussian2dFit constructor that sets all parameters.
+     * @brief Gaussian2dParams constructor that sets all parameters.
      *
      * @param[in] in_amplitude (double): Amplitude of the Gaussian.
      * @param[in] in_x_centre (double): Mean of the Gaussian in x.
@@ -114,7 +114,7 @@ struct Gaussian2dFit {
      * @param[in] in_semiminor (double): Semiminor axis length of the Gaussian. Corresponds to standard deviation of the Gaussian in y before rotating by theta.
      * @param[in] in_theta (double): Rotation angle in radians. The rotation angle increases counterclockwise.
      */
-    Gaussian2dFit(double in_amplitude, double in_x_centre, double in_y_centre, double in_semimajor, double in_semiminor, double in_theta)
+    Gaussian2dParams(double in_amplitude, double in_x_centre, double in_y_centre, double in_semimajor, double in_semiminor, double in_theta)
         : amplitude(in_amplitude)
         , x_centre(in_x_centre)
         , y_centre(in_y_centre)
@@ -133,6 +133,16 @@ struct Gaussian2dFit {
      * @return (double) 2D gaussian value at point x,y.
      */
     double evaluate_point(const double x, const double y);
+
+    /**
+     * @brief Converts to constrained gaussian parameters.
+     *
+     * The gaussian parameters are changed to satisfy:
+     *  - semimajor and semiminor values are both positive;
+     *  - semimajor is larger than semiminor;
+     *  - theta varies between -pi/2 and pi/2;
+     */
+    void convert_to_constrained_parameters();
 };
 
 /**

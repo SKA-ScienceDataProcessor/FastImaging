@@ -20,7 +20,7 @@ namespace stp {
 /**
  * @brief The gridder output class
  *
- * Stores matrices of gridded sampling and gridded visibilities as well as the total sampling grid value
+ * Stores matrices of visibility grid and sampling grid as well as the total sum of the sampling grid
  */
 class GridderOutput {
 public:
@@ -40,6 +40,9 @@ public:
      * The sampling grid matrix
      */
     MatStp<cx_real_t> sampling_grid;
+    /**
+     * Sum of sampling grid values
+     */
     double sample_grid_total;
 };
 
@@ -152,8 +155,8 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *  @param[in] halfplane_gridding (bool) : Grid only halfplane matrix. Used when halfplane c2r fft is used.
  *              Default is true.
  *
- *  @return (GridderRes) 2 slices: vis_grid and sampling_grid, representing the gridded visibilities
- *                       and the sampling weights. One value with the total sampling grid sum.
+ *  @return (GridderRes): stores vis_grid and sampling_grid, representing the visibility grid and the
+ *                         sampling grid matrices. Includes also value with the total sampling grid sum.
  */
 template <bool generateBeam, typename T>
 GridderOutput convolve_to_grid(const T& kernel_creator, const int support, int image_size, const arma::mat& uv, const arma::cx_mat& vis,

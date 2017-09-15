@@ -87,8 +87,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstp_1_1_gaussian.html">Gaussian</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="classstp_1_1_gaussian.html" title="The Gaussian functor class. ">Gaussian</a> functor class.  <a href="classstp_1_1_gaussian.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_gaussian2d_fit.html">Gaussian2dFit</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="structstp_1_1_gaussian2d_fit.html" title="The Gaussian2dFit struct. ">Gaussian2dFit</a> struct.  <a href="structstp_1_1_gaussian2d_fit.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstp_1_1_gaussian2d_params.html">Gaussian2dParams</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="structstp_1_1_gaussian2d_params.html" title="The Gaussian2dParams struct. ">Gaussian2dParams</a> struct.  <a href="structstp_1_1_gaussian2d_params.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstp_1_1_gaussian_all_residuals.html">GaussianAllResiduals</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functor that computes all residuals between source data and 2D gaussian model.  <a href="classstp_1_1_gaussian_all_residuals.html#details">More...</a><br /></td></tr>
@@ -663,7 +663,7 @@ template&lt;bool generateBeam, typename T &gt; </div>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>(GridderRes) 2 slices: vis_grid and sampling_grid, representing the gridded visibilities and the sampling weights. One value with the total sampling grid sum. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>(GridderRes): stores vis_grid and sampling_grid, representing the visibility grid and the sampling grid matrices. Includes also value with the total sampling grid sum. </dd></dl>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

@@ -1,4 +1,3 @@
-#include <cblas.h>
 #include <common/matrix_math.h>
 #include <fixtures.h>
 #include <gtest/gtest.h>
@@ -63,52 +62,6 @@ TEST_F(MatrixMathTest, MatrixStddevParallelFunction)
     double m_std = stp::mat_stddev_parallel(data);
 
     EXPECT_NEAR(arma_std, m_std, math_tolerance);
-}
-
-// Test matrix inplace division function
-TEST_F(MatrixMathTest, MatrixInplaceDivFunction)
-{
-    double a = 0.3549;
-
-    arma::Mat<real_t> div_arma = data;
-    arma::Mat<real_t> div_tbb = data;
-    arma::Mat<real_t> div_cblas = data;
-
-    // Arma inplace division
-    div_arma /= a;
-
-    // TBB inplace division
-    size_t n_elem = div_tbb.n_elem;
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, n_elem), [&](const tbb::blocked_range<size_t>& r) {
-        for (size_t i = r.begin(); i < r.end(); i++) {
-            div_tbb[i] /= a;
-        }
-    });
-
-    // Cblas inplace division
-    n_elem = div_cblas.n_elem;
-#ifdef USE_FLOAT
-    cblas_sscal((long)n_elem, (1.0f / a), div_cblas.memptr(), 1);
-#else
-    cblas_dscal(n_elem, (1.0 / a), div_cblas.memptr(), 1);
-#endif
-
-    EXPECT_TRUE(arma::approx_equal(div_arma, div_tbb, "absdiff", math_tolerance));
-    EXPECT_TRUE(arma::approx_equal(div_arma, div_cblas, "absdiff", math_tolerance)); //We need to reduce tolerance value
-}
-
-// Test matrix shift function
-TEST_F(MatrixMathTest, MatrixShiftFunction)
-{
-    arma::Mat<real_t> arma_out, matrix_out;
-
-    arma_out = stp::matrix_shift(data, size / 2, 0);
-    matrix_out = arma::shift(data, size / 2, 0);
-    EXPECT_TRUE(arma::approx_equal(arma_out, matrix_out, "absdiff", 0));
-
-    arma_out = stp::matrix_shift(data, size / 2, 1);
-    matrix_out = arma::shift(data, size / 2, 1);
-    EXPECT_TRUE(arma::approx_equal(arma_out, matrix_out, "absdiff", 0));
 }
 
 // Test the Matrix mean and stddev functions

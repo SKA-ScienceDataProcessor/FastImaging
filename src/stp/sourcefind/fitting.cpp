@@ -7,7 +7,7 @@
 
 namespace stp {
 
-double Gaussian2dFit::evaluate_point(const double x, const double y)
+double Gaussian2dParams::evaluate_point(const double x, const double y)
 {
     const double& x_stddev = semimajor;
     const double& y_stddev = semiminor;
@@ -29,6 +29,33 @@ double Gaussian2dFit::evaluate_point(const double x, const double y)
     return amplitude * exp(-(a * xdiff * xdiff
                            + b * xdiff * ydiff
                            + c * ydiff * ydiff));
+}
+
+void Gaussian2dParams::convert_to_constrained_parameters()
+{
+    const double half_pi = arma::datum::pi / 2.0;
+    // Semimajor / minor are only evaluated as squares, so unconstrained
+    // fits can easily stray into negative values:
+    semimajor = fabs(semimajor);
+    semiminor = fabs(semiminor);
+    if (semimajor < semiminor) {
+        const double aux_semimajor = semimajor;
+        semimajor = semiminor;
+        semiminor = aux_semimajor;
+        theta += half_pi;
+    }
+    // Rotations by pi are degeneracies
+    // This gets us to the range (-pi,pi);
+    double mod_theta = fmod(theta, arma::datum::pi);
+    // Now we add/subtract an additional pi as required to get down to (-pi/2, pi/2).
+    if (mod_theta <= -half_pi) {
+        mod_theta += arma::datum::pi;
+    } else {
+        if (mod_theta > half_pi) {
+            mod_theta -= arma::datum::pi;
+        }
+    }
+    theta = mod_theta;
 }
 
 bool GaussianAnalytic::Evaluate(double const* const* parameters, double* residuals, double** jacobians) const

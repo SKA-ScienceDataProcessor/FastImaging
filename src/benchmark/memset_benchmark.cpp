@@ -5,35 +5,7 @@
 #include <stp.h>
 #include <tbb/tbb.h>
 
-auto malloc_standard_memset_benchmark = [](benchmark::State& state) {
-    long size = pow(2, double(state.range(0)));
-    cx_real_t* m = (cx_real_t*)std::malloc(sizeof(cx_real_t) * size * size);
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(m);
-        std::memset(m, 0, sizeof(cx_real_t) * size * size);
-        benchmark::ClobberMemory();
-    }
-    if (m)
-        std::free(m);
-};
-
-auto malloc_parallel_memset_benchmark = [](benchmark::State& state) {
-    long size = pow(2, double(state.range(0)));
-    cx_real_t* m = (cx_real_t*)std::malloc(sizeof(cx_real_t) * size * size);
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(m);
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, size * size), [&m](const tbb::blocked_range<size_t>& r) {
-            std::memset(m + r.begin(), 0, sizeof(cx_real_t) * (r.end() - r.begin()));
-        });
-        benchmark::ClobberMemory();
-    }
-    if (m)
-        std::free(m);
-};
-
-auto arma_standard_memset_benchmark = [](benchmark::State& state) {
+auto standard_memset_benchmark = [](benchmark::State& state) {
     long size = pow(2, double(state.range(0)));
     arma::Mat<cx_real_t> m(size, size);
 
@@ -45,7 +17,7 @@ auto arma_standard_memset_benchmark = [](benchmark::State& state) {
     m.set_size(0);
 };
 
-auto arma_parallel_memset_benchmark = [](benchmark::State& state) {
+auto parallel_memset_benchmark = [](benchmark::State& state) {
     long size = pow(2, double(state.range(0)));
     arma::Mat<cx_real_t> m(size, size);
 
@@ -73,16 +45,10 @@ auto armadillo_zero_benchmark = [](benchmark::State& state) {
 
 int main(int argc, char** argv)
 {
-    benchmark::RegisterBenchmark("malloc_standard_memset_benchmark", malloc_standard_memset_benchmark)
+    benchmark::RegisterBenchmark("standard_memset_benchmark", standard_memset_benchmark)
         ->DenseRange(10, 15)
         ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("malloc_parallel_memset_benchmark", malloc_parallel_memset_benchmark)
-        ->DenseRange(10, 15)
-        ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("arma_standard_memset_benchmark", malloc_standard_memset_benchmark)
-        ->DenseRange(10, 15)
-        ->Unit(benchmark::kMicrosecond);
-    benchmark::RegisterBenchmark("arma_parallel_memset_benchmark", malloc_parallel_memset_benchmark)
+    benchmark::RegisterBenchmark("parallel_memset_benchmark", parallel_memset_benchmark)
         ->DenseRange(10, 15)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("armadillo_zero_benchmark", armadillo_zero_benchmark)
