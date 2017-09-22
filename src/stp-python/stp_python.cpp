@@ -230,7 +230,7 @@ PYBIND11_PLUGIN(stp_python)
 
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
-        pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("median_method,") = stp::MedianMethod::BINAPPROX,
+        pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("median_method") = stp::MedianMethod::BINAPPROX,
         pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true, pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
         pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
 
