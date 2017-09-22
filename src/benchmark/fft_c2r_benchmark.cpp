@@ -1,5 +1,5 @@
-/** @file fft_benchmark.cpp
- *  @brief Test fft performance
+/** @file fft_c2r_benchmark.cpp
+ *  @brief Test fft c2r performance
  */
 
 #include <../stp/common/fft.h>
@@ -23,7 +23,6 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
     stp::FFTRoutine r_fft = (stp::FFTRoutine)state.range(0);
 
     int image_size = pow(2, double(state.range(1)));
-    int kernel_support = 3;
 
     std::string wisdom_filename;
     if (r_fft == stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
@@ -53,9 +52,6 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 
     // Remove W column
     uv_in_pixels.shed_col(2);
-
-    // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
-    stp::convert_to_halfplane_visibilities(uv_in_pixels, residual_vis, input_snr_weights, kernel_support);
 
     stp::GaussianSinc kernel_func(cfg.kernel_support);
     stp::GridderOutput gridded_data = stp::convolve_to_grid<false>(kernel_func, cfg.kernel_support, image_size, uv_in_pixels, residual_vis, input_snr_weights, cfg.kernel_exact, cfg.oversampling);
@@ -159,24 +155,28 @@ BENCHMARK(fft_c2r_test_benchmark)
     ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 13 })
     ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 14 })
     ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 16 })
     ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 10 })
     ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 11 })
     ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 12 })
     ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 13 })
     ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 14 })
     ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 16 })
     ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 10 })
     ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 11 })
     ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 12 })
     ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 13 })
     ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 14 })
     ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 16 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 10 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 11 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 12 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 13 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 14 })
     ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 15 })
+    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 16 })
     // By default CMake target will not generate FFTW wisdom files for inplace FFT
     // so this is commented.
     //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 10 })
@@ -185,6 +185,7 @@ BENCHMARK(fft_c2r_test_benchmark)
     //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 13 })
     //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 14 })
     //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 15 })
+    //    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 16 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

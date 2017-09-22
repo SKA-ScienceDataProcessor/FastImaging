@@ -12,7 +12,7 @@
   - third-party: external code, mostly libraries
 - configs: auxiliary configuration files
 - test-data: input test data files
-- scripts: auxiliary scripts to generate FFTW plans, test python bindings and plot benchmarking results
+- scripts: auxiliary scripts to generate FFTW plans and test python bindings
 - vagrant: virtual machine configuration
 
 ## Build & Run
@@ -168,6 +168,13 @@ $ make valgrind
 ```
 
 ## Release Notes
+### 22 September 2017
+- Added option to select median function
+- Added option to disable negative source detection from reduce
+- Moved conversion of half-plane visibilities to the gridder
+- Added fftshift benchmark
+- Updated benchmarks to use larger image sizes 
+
 ### 15 September 2017
 - Implemented method of moments for initial gaussian fitting
 - Changed output data for each island
@@ -302,7 +309,6 @@ $ make valgrind
 - Parallelized gridder (oversampling case) using TBB
 - Enabled multithreaded FFTW
 - Disabled armadillo DEBUG flag 
-- Added gnuplot scripts to generate benchmark speedup plots
 
 ### 5 January 2017
 - Renamed libstp to stp

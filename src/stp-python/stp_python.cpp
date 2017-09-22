@@ -140,7 +140,7 @@ std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussi
     double rms_est,
     bool find_negative_sources,
     uint sigma_clip_iters,
-    bool binapprox_median,
+    stp::MedianMethod median_method,
     bool gaussian_fitting,
     bool generate_labelmap,
     stp::CeresDiffMethod ceres_diffmethod,
@@ -157,7 +157,7 @@ std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussi
 
     // Call source find function
     stp::SourceFindImage sfimage = stp::SourceFindImage(std::move(image_data_arma), detection_n_sigma, analysis_n_sigma, rms_est,
-        find_negative_sources, sigma_clip_iters, binapprox_median, gaussian_fitting, generate_labelmap,
+        find_negative_sources, sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap,
         ceres_diffmethod, ceres_solvertype);
 
     // Convert 'vector of stp::island' to 'vector of tuples'
@@ -188,6 +188,12 @@ PYBIND11_PLUGIN(stp_python)
         .value("FFTW_PATIENT_FFT", stp::FFTRoutine::FFTW_PATIENT_FFT)
         .value("FFTW_WISDOM_FFT", stp::FFTRoutine::FFTW_WISDOM_FFT)
         .value("FFTW_WISDOM_INPLACE_FFT", stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT);
+
+    pybind11::enum_<stp::MedianMethod>(m, "MedianMethod")
+        .value("ZEROMEDIAN", stp::MedianMethod::ZEROMEDIAN)
+        .value("BINMEDIAN", stp::MedianMethod::BINMEDIAN)
+        .value("BINAPPROX", stp::MedianMethod::BINAPPROX)
+        .value("NTHELEMENT", stp::MedianMethod::NTHELEMENT);
 
     pybind11::enum_<stp::CeresDiffMethod>(m, "CeresDiffMethod")
         .value("AutoDiff", stp::CeresDiffMethod::AutoDiff)
@@ -224,9 +230,9 @@ PYBIND11_PLUGIN(stp_python)
 
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
-        pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("binapprox_median") = false,
-        pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true,
-        pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk, pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
+        pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("median_method,") = stp::MedianMethod::BINAPPROX,
+        pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true, pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
+        pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
 
     return m.ptr();
 }

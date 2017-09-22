@@ -59,6 +59,9 @@ add_benchmark_test(populate_kernel_cache_benchmark populate_kernel_cache_benchma
 # FFT C2R
 add_benchmark_test(fft_c2r_benchmark fft_c2r_benchmark.cpp)
 
+# FFT shift
+add_benchmark_test(fft_shift_benchmark fftshift_benchmark.cpp)
+
 # Imager
 add_benchmark_test(imager_benchmark imager_benchmark.cpp)
 

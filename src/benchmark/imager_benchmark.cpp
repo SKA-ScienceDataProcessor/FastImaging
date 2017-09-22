@@ -43,6 +43,6 @@ static void imager_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(imager_test_benchmark)
-    ->DenseRange(10, 14) // 10,11,12,13,14
+    ->DenseRange(10, 16) // 10,11,12,13,14,15,16
     ->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN()

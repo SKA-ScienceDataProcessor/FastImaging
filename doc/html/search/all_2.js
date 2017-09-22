@@ -12,6 +12,6 @@ var searchData=
   ['conv_5ffunc_2eh',['conv_func.h',['../conv__func_8h.html',1,'']]],
   ['convert_5fto_5fconstrained_5fparameters',['convert_to_constrained_parameters',['../structstp_1_1_gaussian2d_params.html#aafc490771377c94fd7e50f06f21f9063',1,'stp::Gaussian2dParams']]],
   ['convert_5fto_5fhalfplane_5fvisibilities',['convert_to_halfplane_visibilities',['../namespacestp.html#a095277dc88e800af18a5e1e9e803792e',1,'stp']]],
-  ['convolve_5fto_5fgrid',['convolve_to_grid',['../namespacestp.html#a847bd8453dae496b2f22556831568c9a',1,'stp']]],
+  ['convolve_5fto_5fgrid',['convolve_to_grid',['../namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e',1,'stp']]],
   ['cx_5freal_5ft',['cx_real_t',['../types_8h.html#a1d2a57e59f061705d305d324a80d4ca1',1,'types.h']]]
 ];

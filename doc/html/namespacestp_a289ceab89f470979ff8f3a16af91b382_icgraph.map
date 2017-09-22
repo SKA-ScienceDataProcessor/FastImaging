@@ -1,6 +1,6 @@
 <map id="stp::mat_median_exact" name="stp::mat_median_exact">
-<area shape="rect" id="node2" href="$namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="235,5,371,32"/>
-<area shape="rect" id="node3" href="$structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="443,56,627,83"/>
-<area shape="rect" id="node4" href="$namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="212,107,395,133"/>
-<area shape="rect" id="node5" href="$namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="471,107,598,133"/>
+<area shape="rect" id="node2" href="$namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="235,74,371,100"/>
+<area shape="rect" id="node3" href="$structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="443,23,627,50"/>
+<area shape="rect" id="node5" href="$namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="212,23,395,50"/>
+<area shape="rect" id="node4" href="$namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="471,74,598,100"/>
 </map>

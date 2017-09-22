@@ -28,8 +28,15 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
 
     // Compute mean, sigma and median if it was not received as input
     if (!arma::is_finite(stats.median)) {
-        stats = mat_median_binapprox(data);
+        stats = mat_binmedian(data);
+    } else {
+        if ((!arma::is_finite(stats.mean)) || (!arma::is_finite(stats.sigma))) {
+            DataStats tmp_stats = mat_mean_and_stddev(data);
+            stats.mean = tmp_stats.mean;
+            stats.sigma = tmp_stats.sigma;
+        }
     }
+
     arma::uword n_elem = data.n_elem;
     real_t sigma = stats.sigma;
     const real_t median = stats.median;
@@ -152,7 +159,7 @@ SourceFindImage::SourceFindImage(
     double input_rms_est,
     bool find_negative_sources,
     uint sigma_clip_iters,
-    bool binapprox_median,
+    MedianMethod median_method,
     bool gaussian_fitting,
     bool generate_labelmap,
     CeresDiffMethod ceres_diffmethod,
@@ -168,13 +175,22 @@ SourceFindImage::SourceFindImage(
 
     // Compute statistics: mean, sigma, median
     DataStats data_stats(arma::datum::nan, arma::datum::nan, arma::datum::nan);
-    if (binapprox_median) {
+    switch (median_method) {
+    case MedianMethod::ZEROMEDIAN:
+        data_stats.median = 0.0;
+        break;
+    case MedianMethod::BINAPPROX:
         data_stats = mat_median_binapprox(input_data);
-        bg_level = data_stats.median;
-    } else {
+        break;
+    case MedianMethod::BINMEDIAN:
         data_stats = mat_binmedian(input_data);
-        bg_level = data_stats.median;
+        break;
+    case MedianMethod::NTHELEMENT:
+        data_stats.median = mat_median_exact(input_data);
+        break;
     }
+    // Set background level
+    bg_level = data_stats.median;
 
 #ifdef FUNCTION_TIMINGS
     times_sf.push_back(std::chrono::high_resolution_clock::now());

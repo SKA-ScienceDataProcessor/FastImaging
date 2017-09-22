@@ -14,7 +14,7 @@ std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
 
-void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& snr_weights, int image_size, double cell_size, int kernel_support)
+void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& snr_weights, int image_size, double cell_size)
 {
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
@@ -34,9 +34,6 @@ void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& s
 
     // Remove W column
     uv_in_pixels.shed_col(2);
-
-    // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
-    stp::convert_to_halfplane_visibilities(uv_in_pixels, residual_vis, snr_weights, kernel_support);
 }
 
 static void gridder_exact_benchmark(benchmark::State& state)
@@ -49,7 +46,7 @@ static void gridder_exact_benchmark(benchmark::State& state)
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
     arma::mat snr_weights;
-    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size, cfg.kernel_support);
+    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size);
 
     stp::GaussianSinc kernel_func(state.range(1));
 
@@ -67,7 +64,7 @@ static void gridder_oversampling_benchmark(benchmark::State& state)
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
     arma::mat snr_weights;
-    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size, cfg.kernel_support);
+    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size);
 
     stp::GaussianSinc kernel_func(state.range(1));
 
@@ -83,18 +80,21 @@ BENCHMARK(gridder_oversampling_benchmark)
     ->Args({ 13, 3 })
     ->Args({ 14, 3 })
     ->Args({ 15, 3 })
+    ->Args({ 16, 3 })
     ->Args({ 10, 5 })
     ->Args({ 11, 5 })
     ->Args({ 12, 5 })
     ->Args({ 13, 5 })
     ->Args({ 14, 5 })
     ->Args({ 15, 5 })
+    ->Args({ 16, 5 })
     ->Args({ 10, 7 })
     ->Args({ 11, 7 })
     ->Args({ 12, 7 })
     ->Args({ 13, 7 })
     ->Args({ 14, 7 })
     ->Args({ 15, 7 })
+    ->Args({ 16, 7 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(gridder_exact_benchmark)
@@ -104,18 +104,21 @@ BENCHMARK(gridder_exact_benchmark)
     ->Args({ 13, 3 })
     ->Args({ 14, 3 })
     ->Args({ 15, 3 })
+    ->Args({ 16, 3 })
     ->Args({ 10, 5 })
     ->Args({ 11, 5 })
     ->Args({ 12, 5 })
     ->Args({ 13, 5 })
     ->Args({ 14, 5 })
     ->Args({ 15, 5 })
+    ->Args({ 16, 5 })
     ->Args({ 10, 7 })
     ->Args({ 11, 7 })
     ->Args({ 12, 7 })
     ->Args({ 13, 7 })
     ->Args({ 14, 7 })
     ->Args({ 15, 7 })
+    ->Args({ 16, 7 })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

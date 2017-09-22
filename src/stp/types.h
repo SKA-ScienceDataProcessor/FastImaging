@@ -48,6 +48,16 @@ enum struct FFTRoutine {
 };
 
 /**
+ * @brief Enum of available median methods
+ */
+enum struct MedianMethod {
+    ZEROMEDIAN,
+    BINMEDIAN,
+    BINAPPROX,
+    NTHELEMENT,
+};
+
+/**
  * @brief Enum of available differentiation methods used by ceres library for gaussian fitting.
  */
 enum struct CeresDiffMethod {

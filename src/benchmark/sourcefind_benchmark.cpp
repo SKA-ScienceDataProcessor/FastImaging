@@ -38,13 +38,13 @@ static void sourcefind_test_benchmark(benchmark::State& state)
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
-            cfg.estimate_rms, true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.gaussian_fitting,
+            cfg.estimate_rms, cfg.find_negative_sources, cfg.sigma_clip_iters, cfg.median_method, cfg.gaussian_fitting,
             cfg.generate_labelmap, cfg.ceres_diffmethod, cfg.ceres_solvertype));
         benchmark::ClobberMemory();
     }
 }
 
 BENCHMARK(sourcefind_test_benchmark)
-    ->DenseRange(10, 14)
+    ->DenseRange(10, 16)
     ->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN()

@@ -102,12 +102,13 @@ int main(int argc, char** argv)
         _logger->info(" - oversampling={}", cfg.oversampling);
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
+        _logger->info(" - find_negative_sources={}", cfg.find_negative_sources);
         _logger->info(" - kernel_function={}", cfg.s_kernel_function);
         _logger->info(" - fft_routine={}", cfg.s_fft_routine);
         _logger->info(" - fft_wisdom_file={}", cfg.fft_wisdom_filename);
         _logger->info(" - rms_estimation={}", cfg.estimate_rms);
         _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
-        _logger->info(" - binapprox_median={}", cfg.binapprox_median);
+        _logger->info(" - median_method={}", cfg.s_median_method);
         _logger->info(" - gaussian_fitting={}", cfg.gaussian_fitting);
         _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
         _logger->info(" - generate_beam={}", cfg.generate_beam);
@@ -172,8 +173,8 @@ int main(int argc, char** argv)
 #endif
 
     // Run source find
-    stp::SourceFindImage sfimage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms, true,
-        cfg.sigma_clip_iters, cfg.binapprox_median, cfg.gaussian_fitting, cfg.generate_labelmap,
+    stp::SourceFindImage sfimage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
+        cfg.find_negative_sources, cfg.sigma_clip_iters, cfg.median_method, cfg.gaussian_fitting, cfg.generate_labelmap,
         cfg.ceres_diffmethod, cfg.ceres_solvertype);
 
 #ifdef FUNCTION_TIMINGS
@@ -226,7 +227,7 @@ int main(int argc, char** argv)
     std::chrono::duration<double> time_span;
     _logger->info("Running time of each pipeline step:");
 
-    std::vector<std::string> imager_steps = { "Gridder", "IFFT", "Normalise" };
+    std::vector<std::string> imager_steps = { "Gridder", "FFT", "Normalise" };
     _logger->info(" Imager:");
     for (uint i = 1; i < stp::times_iv.size(); i++) {
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv[i] - stp::times_iv[i - 1]);
@@ -235,7 +236,7 @@ int main(int argc, char** argv)
     time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv.back() - stp::times_iv.front());
     _logger->info(" - Total       = {:10.5f}", time_span.count());
 
-    std::vector<std::string> sourcefind_steps = { "Bg_level", "RMS est", "Label det", "Islands" };
+    std::vector<std::string> sourcefind_steps = { "Bg level", "RMS est", "Labeling", "GaussianFit" };
     _logger->info(" Source find:");
     for (uint i = 1; i < stp::times_sf.size(); i++) {
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_sf[i] - stp::times_sf[i - 1]);
@@ -244,7 +245,7 @@ int main(int argc, char** argv)
     time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_sf.back() - stp::times_sf.front());
     _logger->info(" - Total       = {:10.5f}", time_span.count());
 
-    std::vector<std::string> reduce_steps = { "Read data", "Image vis", "Source find", "Write data" };
+    std::vector<std::string> reduce_steps = { "Read data", "Imager", "Source find", "Write data" };
     _logger->info(" Reduce:");
     for (uint i = 1; i < times_red.size(); i++) {
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red[i] - times_red[i - 1]);

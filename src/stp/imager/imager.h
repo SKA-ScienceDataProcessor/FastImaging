@@ -21,17 +21,6 @@ extern std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
 #endif
 
 /**
- * @brief Convert the input visibilities to an array of half-plane visibilities.
- *
- * @param[in] uvw_lambda (arma::mat): UVW-coordinates of complex visibilities to be converted.
- *                                    2D double array with 3 columns. Assumed ordering is u,v,w.
- * @param[in] vis (arma::cx_mat): Complex visibilities to be converted (1D array).
- * @param[in] vis_weights (arma::mat): Visibility weights (1D array).
- * @param[in] kernel_support (int): Kernel support radius.
- */
-void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vis, arma::mat& vis_weights, int kernel_support);
-
-/**
  * @brief Generates image and beam data from input visibilities.
  *
  * Performs convolutional gridding of input visibilities and applies ifft.
@@ -83,21 +72,15 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * double(image_size)));
     arma::mat uv_in_pixels = (uvw_lambda / grid_pixel_width_lambda);
-    arma::cx_mat conv_vis = vis;
-    arma::mat conv_vis_weights = vis_weights;
-
     // Remove W column
     uv_in_pixels.shed_col(2);
-
-    // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
-    convert_to_halfplane_visibilities(uv_in_pixels, conv_vis, conv_vis_weights, kernel_support);
 
     // Perform convolutional gridding of complex visibilities
     GridderOutput gridded_data;
     if (generate_beam) {
-        gridded_data = convolve_to_grid<true>(kernel_creator, kernel_support, image_size, uv_in_pixels, conv_vis, conv_vis_weights, kernel_exact, oversampling);
+        gridded_data = convolve_to_grid<true>(kernel_creator, kernel_support, image_size, uv_in_pixels, vis, vis_weights, kernel_exact, oversampling);
     } else {
-        gridded_data = convolve_to_grid<false>(kernel_creator, kernel_support, image_size, uv_in_pixels, conv_vis, conv_vis_weights, kernel_exact, oversampling);
+        gridded_data = convolve_to_grid<false>(kernel_creator, kernel_support, image_size, uv_in_pixels, vis, vis_weights, kernel_exact, oversampling);
     }
 
 #ifdef FUNCTION_TIMINGS

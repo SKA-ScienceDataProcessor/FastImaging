@@ -1,6 +1,8 @@
 var searchData=
 [
   ['bg_5flevel',['bg_level',['../classstp_1_1_source_find_image.html#a397f803245e32fad66fcae3cb38ed1e8',1,'stp::SourceFindImage']]],
+  ['binapprox',['BINAPPROX',['../namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72aeed200605be93af6f651f10fa90483b4',1,'stp']]],
+  ['binmedian',['BINMEDIAN',['../namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72a02d428ccb411ef698f65f8b9e822fd02',1,'stp']]],
   ['binmedian_5fmin_5frange',['BINMEDIAN_MIN_RANGE',['../matrix__math_8cpp.html#a722ed8c394027592c800b8ec3db7df42',1,'matrix_math.cpp']]],
   ['bottom',['bottom',['../structstp_1_1_bounding_box.html#a42ffd05da73f34a9b92d67c988157b0b',1,'stp::BoundingBox']]],
   ['bounding_5fbox',['bounding_box',['../structstp_1_1_island_params.html#a1d638080a9de05dadff715186daf488e',1,'stp::IslandParams']]],

@@ -9,10 +9,11 @@
 
 #define CONST 0.03549
 
-std::vector<long> g_vsize = { 512, 1024, 1448, 2048, 2896, 4096, 5792, 8192, 11586, 16384, 23170, 32768 };
+std::vector<size_t> g_vsize = { 512, 1024, 1448, 2048, 2896, 4096, 5792, 8192, 11586, 16384, 23170, 32768, 49152, 65536 };
 
 auto armadillo_accumulate_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Col<real_t> v = arma::vectorise(data);
 
@@ -22,7 +23,8 @@ auto armadillo_accumulate_benchmark = [](benchmark::State& state) {
 };
 
 auto m_accumulate_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
@@ -31,7 +33,8 @@ auto m_accumulate_benchmark = [](benchmark::State& state) {
 };
 
 auto m_accumulate_parallel_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
@@ -40,7 +43,8 @@ auto m_accumulate_parallel_benchmark = [](benchmark::State& state) {
 };
 
 auto armadillo_mean_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Col<real_t> v = arma::vectorise(data);
 
@@ -50,7 +54,8 @@ auto armadillo_mean_benchmark = [](benchmark::State& state) {
 };
 
 auto m_mean_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
@@ -59,7 +64,8 @@ auto m_mean_benchmark = [](benchmark::State& state) {
 };
 
 auto m_mean_parallel_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
@@ -68,7 +74,8 @@ auto m_mean_parallel_benchmark = [](benchmark::State& state) {
 };
 
 auto armadillo_stddev_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Col<real_t> v = arma::vectorise(data);
 
@@ -78,7 +85,8 @@ auto armadillo_stddev_benchmark = [](benchmark::State& state) {
 };
 
 auto m_stddev_parallel_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
@@ -87,7 +95,8 @@ auto m_stddev_parallel_benchmark = [](benchmark::State& state) {
 };
 
 auto m_mean_stddev_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
 
     while (state.KeepRunning()) {
@@ -96,7 +105,8 @@ auto m_mean_stddev_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_arma_inplace_mul_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     real_t a = CONST;
 
@@ -107,13 +117,14 @@ auto matrix_arma_inplace_mul_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_serial_inplace_mul_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     real_t a = CONST;
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(data.memptr());
-        for (uint i = 0; i != data.n_elem; ++i) {
+        for (size_t i = 0; i != data.n_elem; ++i) {
             data[i] *= a;
         }
         benchmark::ClobberMemory();
@@ -121,15 +132,16 @@ auto matrix_serial_inplace_mul_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_tbb_inplace_mul_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     real_t a = CONST;
 
     while (state.KeepRunning()) {
-        uint n_elem = data.n_elem;
+        size_t n_elem = data.n_elem;
         benchmark::DoNotOptimize(data.memptr());
         tbb::parallel_for(tbb::blocked_range<size_t>(0, n_elem), [&](const tbb::blocked_range<size_t>& r) {
-            for (uint i = r.begin(); i < r.end(); i++) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
                 data[i] *= a;
             }
         });
@@ -138,12 +150,13 @@ auto matrix_tbb_inplace_mul_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_cblas_inplace_mul_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> data = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     real_t a = CONST;
 
     while (state.KeepRunning()) {
-        uint n_elem = data.n_elem;
+        size_t n_elem = data.n_elem;
         benchmark::DoNotOptimize(data.memptr());
 #ifdef USE_FLOAT
         cblas_sscal(n_elem, a, reinterpret_cast<real_t*>(data.memptr()), 1); // multiplication by a
@@ -155,7 +168,8 @@ auto matrix_cblas_inplace_mul_benchmark = [](benchmark::State& state) {
 };
 
 auto arma_shift_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Mat<real_t> out;
 
@@ -169,7 +183,8 @@ auto arma_shift_benchmark = [](benchmark::State& state) {
 };
 
 auto matrix_shift_benchmark = [](benchmark::State& state) {
-    long size = g_vsize[state.range(0)];
+    size_t size = g_vsize[state.range(0)];
+    state.SetLabel(std::to_string(size));
     arma::Mat<real_t> m = uncorrelated_gaussian_noise_background(size, size, 1.0, 0.0, 1);
     arma::Mat<real_t> out;
 
@@ -185,46 +200,46 @@ auto matrix_shift_benchmark = [](benchmark::State& state) {
 int main(int argc, char** argv)
 {
     benchmark::RegisterBenchmark("armadillo_accumulate_benchmark", armadillo_accumulate_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("stp_accumulate_benchmark", m_accumulate_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("stp_accumulate_parallel_benchmark", m_accumulate_parallel_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("armadillo_mean_benchmark", armadillo_mean_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("stp_mean_benchmark", m_mean_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("stp_mean_parallel_benchmark", m_mean_parallel_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("armadillo_stddev_benchmark", armadillo_stddev_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("stp_stddev_parallel_benchmark", m_stddev_parallel_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("stp_mean_stddev_benchmark", m_mean_stddev_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
 
     // Inplace multiplication
 
     benchmark::RegisterBenchmark("matrix_arma_inplace_mul_benchmark", matrix_arma_inplace_mul_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("matrix_serial_inplace_mul_benchmark", matrix_serial_inplace_mul_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("matrix_tbb_inplace_mul_benchmark", matrix_tbb_inplace_mul_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("matrix_cblas_inplace_mul_benchmark", matrix_cblas_inplace_mul_benchmark)
-        ->DenseRange(1, 11)
+        ->DenseRange(1, 13)
         ->Unit(benchmark::kMicrosecond);
 
     // Matrix shift

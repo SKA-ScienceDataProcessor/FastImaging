@@ -75,7 +75,7 @@ pybind11::tuple image_visibilities_wrapper(
  *                          Default = 0.0.
  * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1). Default = true.
  * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function. Default = 5.
- * @param[in] binapprox_median (bool): Compute approximated median using the fast binapprox method. Default = false.
+ * @param[in] median_method (MedianMethod): Method used to compute the median. Default = BINAPPROX.
  * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island. Default = false.
  * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold. Default = true.
  * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
@@ -100,7 +100,7 @@ std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussi
     double rms_est,
     bool find_negative_sources,
     uint sigma_clip_iters,
-    bool binapprox_median,
+    stp::MedianMethod median_method,
     bool gaussian_fitting,
     bool generate_labelmap,
     stp::CeresDiffMethod ceres_diffmethod,

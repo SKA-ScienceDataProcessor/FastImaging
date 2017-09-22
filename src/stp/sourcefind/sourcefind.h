@@ -178,7 +178,7 @@ public:
      * @param[in] input_rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
      * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
      * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function.
-     * @param[in] binapprox_median (bool): Compute approximated median using the fast binapprox method
+     * @param[in] median_method (MedianMethod): Method used to compute the median.
      * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island.
      * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold.
      * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
@@ -191,7 +191,7 @@ public:
         double input_rms_est = 0.0,
         bool find_negative_sources = true,
         uint sigma_clip_iters = 5,
-        bool binapprox_median = false,
+        MedianMethod median_method = MedianMethod::BINAPPROX,
         bool gaussian_fitting = false,
         bool generate_labelmap = true,
         CeresDiffMethod ceres_diffmethod = CeresDiffMethod::AnalyticDiff_SingleResBlk,

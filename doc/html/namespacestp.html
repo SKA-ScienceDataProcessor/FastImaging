@@ -157,6 +157,13 @@ Enumerations</h2></td></tr>
  }<tr class="memdesc:a464d541245c3d8f9ea82f5d2d5484c98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enum of available FFT algorithms.  <a href="namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a464d541245c3d8f9ea82f5d2d5484c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c175a4ce85e7fec4cfe1906e85c5e72"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72">MedianMethod</a> { <a class="el" href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72a635eba164a6760bf0f3779cbc7cb66ad">MedianMethod::ZEROMEDIAN</a>, 
+<a class="el" href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72a02d428ccb411ef698f65f8b9e822fd02">MedianMethod::BINMEDIAN</a>, 
+<a class="el" href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72aeed200605be93af6f651f10fa90483b4">MedianMethod::BINAPPROX</a>, 
+<a class="el" href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72a5aaa30bb35632a66d651feeaf6bd6ee8">MedianMethod::NTHELEMENT</a>
+ }<tr class="memdesc:a6c175a4ce85e7fec4cfe1906e85c5e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enum of available median methods.  <a href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72">More...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:a6c175a4ce85e7fec4cfe1906e85c5e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30ea75fc2a28e18b48e3a9939e3760a9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9">CeresDiffMethod</a> { <a class="el" href="namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9ae8967ede587723717837909c3712390e">CeresDiffMethod::AutoDiff</a>, 
 <a class="el" href="namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9a4db6200d2a3fb2b994ff83a49c99a6d4">CeresDiffMethod::AutoDiff_SingleResBlk</a>, 
 <a class="el" href="namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9accc88f7642b52779190d6a143d1a8fe7">CeresDiffMethod::AnalyticDiff</a>, 
@@ -229,6 +236,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aae328999b307d32ea32e65caa64eac0b"><td class="memTemplItemLeft" align="right" valign="top">arma::vec&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacestp.html#aae328999b307d32ea32e65caa64eac0b">make_1D_kernel</a> (const T &amp;kernel_creator, int support, const double offset, int oversampling=1, bool pad=false, bool normalize=true)</td></tr>
 <tr class="memdesc:aae328999b307d32ea32e65caa64eac0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make 1D Kernel Array.  <a href="#aae328999b307d32ea32e65caa64eac0b">More...</a><br /></td></tr>
 <tr class="separator:aae328999b307d32ea32e65caa64eac0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a095277dc88e800af18a5e1e9e803792e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacestp.html#a095277dc88e800af18a5e1e9e803792e">convert_to_halfplane_visibilities</a> (arma::mat &amp;uv_in_pixels, arma::cx_mat &amp;vis, arma::mat &amp;vis_weights, int kernel_support)</td></tr>
+<tr class="memdesc:a095277dc88e800af18a5e1e9e803792e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert the input visibilities to an array of half-plane visibilities.  <a href="#a095277dc88e800af18a5e1e9e803792e">More...</a><br /></td></tr>
+<tr class="separator:a095277dc88e800af18a5e1e9e803792e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64e9b2a4405d8f3ded5155a4c9cdf844"><td class="memItemLeft" align="right" valign="top">arma::uvec&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacestp.html#a64e9b2a4405d8f3ded5155a4c9cdf844">bounds_check_kernel_centre_locations</a> (arma::imat &amp;kernel_centre_indices, int support, int image_size)</td></tr>
 <tr class="memdesc:a64e9b2a4405d8f3ded5155a4c9cdf844"><td class="mdescLeft">&#160;</td><td class="mdescRight">bounds_check_kernel_centre_locations function  <a href="#a64e9b2a4405d8f3ded5155a4c9cdf844">More...</a><br /></td></tr>
 <tr class="separator:a64e9b2a4405d8f3ded5155a4c9cdf844"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -239,13 +249,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a9d34b3ed2504bd5c0fc106e3299a5d62"><td class="memTemplItemLeft" align="right" valign="top">arma::field&lt; arma::mat &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62">populate_kernel_cache</a> (const T &amp;kernel_creator, const int support, const int oversampling, const bool pad=false, const bool normalize=true)</td></tr>
 <tr class="memdesc:a9d34b3ed2504bd5c0fc106e3299a5d62"><td class="mdescLeft">&#160;</td><td class="mdescRight">populate_kernel_cache function  <a href="#a9d34b3ed2504bd5c0fc106e3299a5d62">More...</a><br /></td></tr>
 <tr class="separator:a9d34b3ed2504bd5c0fc106e3299a5d62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a847bd8453dae496b2f22556831568c9a"><td class="memTemplParams" colspan="2">template&lt;bool generateBeam, typename T &gt; </td></tr>
-<tr class="memitem:a847bd8453dae496b2f22556831568c9a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classstp_1_1_gridder_output.html">GridderOutput</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacestp.html#a847bd8453dae496b2f22556831568c9a">convolve_to_grid</a> (const T &amp;kernel_creator, const int support, int image_size, const arma::mat &amp;uv, const arma::cx_mat &amp;vis, const arma::mat &amp;vis_weights, bool kernel_exact=true, int oversampling=1, bool pad=false, bool normalize=true, bool shift_uv=true, bool halfplane_gridding=true)</td></tr>
-<tr class="memdesc:a847bd8453dae496b2f22556831568c9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Grid visibilities using convolutional gridding.  <a href="#a847bd8453dae496b2f22556831568c9a">More...</a><br /></td></tr>
-<tr class="separator:a847bd8453dae496b2f22556831568c9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a095277dc88e800af18a5e1e9e803792e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacestp.html#a095277dc88e800af18a5e1e9e803792e">convert_to_halfplane_visibilities</a> (arma::mat &amp;uv_in_pixels, arma::cx_mat &amp;vis, arma::mat &amp;vis_weights, int kernel_support)</td></tr>
-<tr class="memdesc:a095277dc88e800af18a5e1e9e803792e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert the input visibilities to an array of half-plane visibilities.  <a href="#a095277dc88e800af18a5e1e9e803792e">More...</a><br /></td></tr>
-<tr class="separator:a095277dc88e800af18a5e1e9e803792e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52281cb4b4f86251170ed68ec09fb59e"><td class="memTemplParams" colspan="2">template&lt;bool generateBeam, typename T &gt; </td></tr>
+<tr class="memitem:a52281cb4b4f86251170ed68ec09fb59e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classstp_1_1_gridder_output.html">GridderOutput</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e">convolve_to_grid</a> (const T &amp;kernel_creator, const int support, int image_size, arma::mat uv, arma::cx_mat vis, arma::mat vis_weights, bool kernel_exact=true, int oversampling=1, bool pad=false, bool normalize=true, bool shift_uv=true, bool halfplane_gridding=true)</td></tr>
+<tr class="memdesc:a52281cb4b4f86251170ed68ec09fb59e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Grid visibilities using convolutional gridding.  <a href="#a52281cb4b4f86251170ed68ec09fb59e">More...</a><br /></td></tr>
+<tr class="separator:a52281cb4b4f86251170ed68ec09fb59e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e61918609243705d9649a09c4efd1ba"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a7e61918609243705d9649a09c4efd1ba"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; arma::Mat&lt; <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> &gt;, arma::Mat&lt; <a class="el" href="types_8h.html#ab46614359717672dc9a4eed4669be6e6">real_t</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacestp.html#a7e61918609243705d9649a09c4efd1ba">image_visibilities</a> (const T kernel_creator, const arma::cx_mat &amp;vis, const arma::mat &amp;vis_weights, const arma::mat &amp;uvw_lambda, int image_size, double cell_size, int kernel_support, bool kernel_exact=true, int oversampling=1, bool generate_beam=false, <a class="el" href="namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98">FFTRoutine</a> r_fft=<a class="el" href="namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98a1551a8f00e3ff5f46b18636fb963ad8c">FFTRoutine::FFTW_ESTIMATE_FFT</a>, const std::string &amp;fft_wisdom_filename=std::string())</td></tr>
 <tr class="memdesc:a7e61918609243705d9649a09c4efd1ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates image and beam data from input visibilities.  <a href="#a7e61918609243705d9649a09c4efd1ba">More...</a><br /></td></tr>
@@ -392,6 +399,36 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a6c175a4ce85e7fec4cfe1906e85c5e72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c175a4ce85e7fec4cfe1906e85c5e72">&#9670;&nbsp;</a></span>MedianMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72">stp::MedianMethod</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Enum of available median methods. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a6c175a4ce85e7fec4cfe1906e85c5e72a635eba164a6760bf0f3779cbc7cb66ad"></a>ZEROMEDIAN&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a6c175a4ce85e7fec4cfe1906e85c5e72a02d428ccb411ef698f65f8b9e822fd02"></a>BINMEDIAN&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a6c175a4ce85e7fec4cfe1906e85c5e72aeed200605be93af6f651f10fa90483b4"></a>BINAPPROX&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a6c175a4ce85e7fec4cfe1906e85c5e72a5aaa30bb35632a66d651feeaf6bd6ee8"></a>NTHELEMENT&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a64e9b2a4405d8f3ded5155a4c9cdf844"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a64e9b2a4405d8f3ded5155a4c9cdf844">&#9670;&nbsp;</a></span>bounds_check_kernel_centre_locations()</h2>
@@ -442,7 +479,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="namespacestp_a64e9b2a4405d8f3ded5155a4c9cdf844_icgraph.png" border="0" usemap="#namespacestp_a64e9b2a4405d8f3ded5155a4c9cdf844_icgraph" alt=""/></div>
 <map name="namespacestp_a64e9b2a4405d8f3ded5155a4c9cdf844_icgraph" id="namespacestp_a64e9b2a4405d8f3ded5155a4c9cdf844_icgraph">
 <area shape="rect" id="node2" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="228,5,367,47"/>
-<area shape="rect" id="node3" href="namespacestp.html#a847bd8453dae496b2f22556831568c9a" title="Grid visibilities using convolutional gridding. " alt="" coords="415,42,561,69"/>
+<area shape="rect" id="node3" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e" title="Grid visibilities using convolutional gridding. " alt="" coords="415,42,561,69"/>
 </map>
 </div>
 
@@ -490,7 +527,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="namespacestp_ad2191add2b4abbc6ff7cb8c4102097ca_icgraph.png" border="0" usemap="#namespacestp_ad2191add2b4abbc6ff7cb8c4102097ca_icgraph" alt=""/></div>
 <map name="namespacestp_ad2191add2b4abbc6ff7cb8c4102097ca_icgraph" id="namespacestp_ad2191add2b4abbc6ff7cb8c4102097ca_icgraph">
 <area shape="rect" id="node2" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="235,5,373,47"/>
-<area shape="rect" id="node3" href="namespacestp.html#a847bd8453dae496b2f22556831568c9a" title="Grid visibilities using convolutional gridding. " alt="" coords="421,42,568,69"/>
+<area shape="rect" id="node3" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e" title="Grid visibilities using convolutional gridding. " alt="" coords="421,42,568,69"/>
 </map>
 </div>
 
@@ -549,14 +586,15 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_a095277dc88e800af18a5e1e9e803792e_icgraph.png" border="0" usemap="#namespacestp_a095277dc88e800af18a5e1e9e803792e_icgraph" alt=""/></div>
 <map name="namespacestp_a095277dc88e800af18a5e1e9e803792e_icgraph" id="namespacestp_a095277dc88e800af18a5e1e9e803792e_icgraph">
-<area shape="rect" id="node2" href="namespacestp.html#a7e61918609243705d9649a09c4efd1ba" title="Generates image and beam data from input visibilities. " alt="" coords="221,13,368,39"/>
+<area shape="rect" id="node2" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="221,5,360,47"/>
+<area shape="rect" id="node3" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e" title="Grid visibilities using convolutional gridding. " alt="" coords="408,42,555,69"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a847bd8453dae496b2f22556831568c9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a847bd8453dae496b2f22556831568c9a">&#9670;&nbsp;</a></span>convolve_to_grid()</h2>
+<a id="a52281cb4b4f86251170ed68ec09fb59e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52281cb4b4f86251170ed68ec09fb59e">&#9670;&nbsp;</a></span>convolve_to_grid()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -584,19 +622,19 @@ template&lt;bool generateBeam, typename T &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const arma::mat &amp;&#160;</td>
+          <td class="paramtype">arma::mat&#160;</td>
           <td class="paramname"><em>uv</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const arma::cx_mat &amp;&#160;</td>
+          <td class="paramtype">arma::cx_mat&#160;</td>
           <td class="paramname"><em>vis</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const arma::mat &amp;&#160;</td>
+          <td class="paramtype">arma::mat&#160;</td>
           <td class="paramname"><em>vis_weights</em>, </td>
         </tr>
         <tr>
@@ -667,14 +705,15 @@ template&lt;bool generateBeam, typename T &gt; </div>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="namespacestp_a847bd8453dae496b2f22556831568c9a_cgraph.png" border="0" usemap="#namespacestp_a847bd8453dae496b2f22556831568c9a_cgraph" alt=""/></div>
-<map name="namespacestp_a847bd8453dae496b2f22556831568c9a_cgraph" id="namespacestp_a847bd8453dae496b2f22556831568c9a_cgraph">
-<area shape="rect" id="node2" href="namespacestp.html#a64e9b2a4405d8f3ded5155a4c9cdf844" title="bounds_check_kernel_centre_locations function " alt="" coords="410,5,585,47"/>
-<area shape="rect" id="node3" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="210,64,349,105"/>
-<area shape="rect" id="node5" href="namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca" title="calculate_oversampled_kernel_indices function " alt="" coords="407,123,588,164"/>
-<area shape="rect" id="node6" href="namespacestp.html#a1dec62be138cc7a88f2fb0eebae6c63e" title="Make 2D Kernel Array. " alt="" coords="200,181,359,207"/>
-<area shape="rect" id="node7" href="classstp_1_1_gridder_output.html#a875fc3decf005dff279ed0d43195942b" title="stp::GridderOutput\l::GridderOutput" alt="" coords="215,232,344,273"/>
-<area shape="rect" id="node4" href="namespacestp.html#aae328999b307d32ea32e65caa64eac0b" title="Make 1D Kernel Array. " alt="" coords="424,71,571,98"/>
+<div class="center"><img src="namespacestp_a52281cb4b4f86251170ed68ec09fb59e_cgraph.png" border="0" usemap="#namespacestp_a52281cb4b4f86251170ed68ec09fb59e_cgraph" alt=""/></div>
+<map name="namespacestp_a52281cb4b4f86251170ed68ec09fb59e_cgraph" id="namespacestp_a52281cb4b4f86251170ed68ec09fb59e_cgraph">
+<area shape="rect" id="node2" href="namespacestp.html#a095277dc88e800af18a5e1e9e803792e" title="Convert the input visibilities to an array of half&#45;plane visibilities. " alt="" coords="413,5,581,47"/>
+<area shape="rect" id="node3" href="namespacestp.html#a64e9b2a4405d8f3ded5155a4c9cdf844" title="bounds_check_kernel_centre_locations function " alt="" coords="410,71,585,112"/>
+<area shape="rect" id="node4" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="210,129,349,171"/>
+<area shape="rect" id="node6" href="namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca" title="calculate_oversampled_kernel_indices function " alt="" coords="407,188,588,229"/>
+<area shape="rect" id="node7" href="namespacestp.html#a1dec62be138cc7a88f2fb0eebae6c63e" title="Make 2D Kernel Array. " alt="" coords="200,246,359,273"/>
+<area shape="rect" id="node8" href="classstp_1_1_gridder_output.html#a875fc3decf005dff279ed0d43195942b" title="stp::GridderOutput\l::GridderOutput" alt="" coords="215,297,344,339"/>
+<area shape="rect" id="node5" href="namespacestp.html#aae328999b307d32ea32e65caa64eac0b" title="Make 1D Kernel Array. " alt="" coords="424,137,571,163"/>
 </map>
 </div>
 
@@ -762,9 +801,9 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_a276a9a7f4bb8bc1db6451515349d3e8d_cgraph.png" border="0" usemap="#namespacestp_a276a9a7f4bb8bc1db6451515349d3e8d_cgraph" alt=""/></div>
 <map name="namespacestp_a276a9a7f4bb8bc1db6451515349d3e8d_cgraph" id="namespacestp_a276a9a7f4bb8bc1db6451515349d3e8d_cgraph">
-<area shape="rect" id="node2" href="namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="180,31,363,57"/>
-<area shape="rect" id="node3" href="namespacestp.html#aaec4a7dcd30598f388f96794a9c44c68" title="Compute matrix mean and standard deviation at once. " alt="" coords="411,5,593,32"/>
-<area shape="rect" id="node4" href="namespacestp.html#a289ceab89f470979ff8f3a16af91b382" title="Compute exact median using the nth_element function. " alt="" coords="423,56,581,83"/>
+<area shape="rect" id="node2" href="namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="180,56,316,83"/>
+<area shape="rect" id="node3" href="namespacestp.html#aaec4a7dcd30598f388f96794a9c44c68" title="Compute matrix mean and standard deviation at once. " alt="" coords="364,5,547,32"/>
+<area shape="rect" id="node4" href="namespacestp.html#a289ceab89f470979ff8f3a16af91b382" title="Compute exact median using the nth_element function. " alt="" coords="376,56,535,83"/>
 </map>
 </div>
 
@@ -1124,11 +1163,10 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_a7e61918609243705d9649a09c4efd1ba_cgraph.png" border="0" usemap="#namespacestp_a7e61918609243705d9649a09c4efd1ba_cgraph" alt=""/></div>
 <map name="namespacestp_a7e61918609243705d9649a09c4efd1ba_cgraph" id="namespacestp_a7e61918609243705d9649a09c4efd1ba_cgraph">
-<area shape="rect" id="node2" href="namespacestp.html#a095277dc88e800af18a5e1e9e803792e" title="Convert the input visibilities to an array of half&#45;plane visibilities. " alt="" coords="200,5,368,47"/>
-<area shape="rect" id="node3" href="namespacestp.html#a4af482cb10c30fd252b434dd0aef3074" title="Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (co..." alt="" coords="227,71,341,98"/>
-<area shape="rect" id="node4" href="classstp_1_1_mat_stp.html#a647f2e90b61e3e2a43c9f3baa8b3c248" title="Delete matrix buffer. " alt="" coords="217,123,351,164"/>
-<area shape="rect" id="node5" href="namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="241,189,327,215"/>
-<area shape="rect" id="node6" href="namespacestp.html#ad37648a3b9f67014a4e20050b9d7b478" title="Shift elements of the input matrix in a circular manner. " alt="" coords="416,189,532,215"/>
+<area shape="rect" id="node2" href="namespacestp.html#a4af482cb10c30fd252b434dd0aef3074" title="Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (co..." alt="" coords="209,5,324,32"/>
+<area shape="rect" id="node3" href="classstp_1_1_mat_stp.html#a647f2e90b61e3e2a43c9f3baa8b3c248" title="Delete matrix buffer. " alt="" coords="200,57,333,98"/>
+<area shape="rect" id="node4" href="namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="224,123,309,149"/>
+<area shape="rect" id="node5" href="namespacestp.html#ad37648a3b9f67014a4e20050b9d7b478" title="Shift elements of the input matrix in a circular manner. " alt="" coords="381,123,497,149"/>
 </map>
 </div>
 
@@ -1263,7 +1301,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="namespacestp_aae328999b307d32ea32e65caa64eac0b_icgraph.png" border="0" usemap="#namespacestp_aae328999b307d32ea32e65caa64eac0b_icgraph" alt=""/></div>
 <map name="namespacestp_aae328999b307d32ea32e65caa64eac0b_icgraph" id="namespacestp_aae328999b307d32ea32e65caa64eac0b_icgraph">
 <area shape="rect" id="node2" href="namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="200,5,339,47"/>
-<area shape="rect" id="node3" href="namespacestp.html#a847bd8453dae496b2f22556831568c9a" title="Grid visibilities using convolutional gridding. " alt="" coords="387,13,533,39"/>
+<area shape="rect" id="node3" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e" title="Grid visibilities using convolutional gridding. " alt="" coords="387,13,533,39"/>
 </map>
 </div>
 
@@ -1340,7 +1378,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_a1dec62be138cc7a88f2fb0eebae6c63e_icgraph.png" border="0" usemap="#namespacestp_a1dec62be138cc7a88f2fb0eebae6c63e_icgraph" alt=""/></div>
 <map name="namespacestp_a1dec62be138cc7a88f2fb0eebae6c63e_icgraph" id="namespacestp_a1dec62be138cc7a88f2fb0eebae6c63e_icgraph">
-<area shape="rect" id="node2" href="namespacestp.html#a847bd8453dae496b2f22556831568c9a" title="Grid visibilities using convolutional gridding. " alt="" coords="212,5,359,32"/>
+<area shape="rect" id="node2" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e" title="Grid visibilities using convolutional gridding. " alt="" coords="212,5,359,32"/>
 </map>
 </div>
 
@@ -1461,6 +1499,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="namespacestp_ae4a233c007f57992374feef8d621a50f_icgraph.png" border="0" usemap="#namespacestp_ae4a233c007f57992374feef8d621a50f_icgraph" alt=""/></div>
 <map name="namespacestp_ae4a233c007f57992374feef8d621a50f_icgraph" id="namespacestp_ae4a233c007f57992374feef8d621a50f_icgraph">
 <area shape="rect" id="node2" href="structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="189,5,373,32"/>
+<area shape="rect" id="node3" href="namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="218,56,345,83"/>
 </map>
 </div>
 
@@ -1540,10 +1579,10 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_aaec4a7dcd30598f388f96794a9c44c68_icgraph.png" border="0" usemap="#namespacestp_aaec4a7dcd30598f388f96794a9c44c68_icgraph" alt=""/></div>
 <map name="namespacestp_aaec4a7dcd30598f388f96794a9c44c68_icgraph" id="namespacestp_aaec4a7dcd30598f388f96794a9c44c68_icgraph">
-<area shape="rect" id="node2" href="namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="259,5,395,32"/>
-<area shape="rect" id="node3" href="structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="467,56,651,83"/>
-<area shape="rect" id="node4" href="namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="236,107,419,133"/>
-<area shape="rect" id="node5" href="namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="495,107,622,133"/>
+<area shape="rect" id="node2" href="namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="259,75,395,102"/>
+<area shape="rect" id="node3" href="structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="467,25,651,51"/>
+<area shape="rect" id="node4" href="namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="495,101,622,127"/>
+<area shape="rect" id="node5" href="namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="236,25,419,51"/>
 </map>
 </div>
 
@@ -1634,7 +1673,6 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="namespacestp_a8a6eb0890f98de3f27e5342cd288672e_icgraph.png" border="0" usemap="#namespacestp_a8a6eb0890f98de3f27e5342cd288672e_icgraph" alt=""/></div>
 <map name="namespacestp_a8a6eb0890f98de3f27e5342cd288672e_icgraph" id="namespacestp_a8a6eb0890f98de3f27e5342cd288672e_icgraph">
 <area shape="rect" id="node2" href="structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="236,5,420,32"/>
-<area shape="rect" id="node3" href="namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="265,56,391,83"/>
 </map>
 </div>
 
@@ -1669,10 +1707,10 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_a289ceab89f470979ff8f3a16af91b382_icgraph.png" border="0" usemap="#namespacestp_a289ceab89f470979ff8f3a16af91b382_icgraph" alt=""/></div>
 <map name="namespacestp_a289ceab89f470979ff8f3a16af91b382_icgraph" id="namespacestp_a289ceab89f470979ff8f3a16af91b382_icgraph">
-<area shape="rect" id="node2" href="namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="235,5,371,32"/>
-<area shape="rect" id="node3" href="structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="443,56,627,83"/>
-<area shape="rect" id="node4" href="namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="212,107,395,133"/>
-<area shape="rect" id="node5" href="namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="471,107,598,133"/>
+<area shape="rect" id="node2" href="namespacestp.html#ae4a233c007f57992374feef8d621a50f" title="Compute exact median using a method that combines sucessive binning and nth_element function..." alt="" coords="235,74,371,100"/>
+<area shape="rect" id="node3" href="structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="443,23,627,50"/>
+<area shape="rect" id="node5" href="namespacestp.html#a8a6eb0890f98de3f27e5342cd288672e" title="Compute approximation of the median using the binapprox method. " alt="" coords="212,23,395,50"/>
+<area shape="rect" id="node4" href="namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="471,74,598,100"/>
 </map>
 </div>
 
@@ -1856,8 +1894,9 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_cgraph.png" border="0" usemap="#namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_cgraph" alt=""/></div>
 <map name="namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_cgraph" id="namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_cgraph">
 <area shape="rect" id="node2" href="namespacestp.html#aae328999b307d32ea32e65caa64eac0b" title="Make 1D Kernel Array. " alt="" coords="209,5,356,32"/>
-<area shape="rect" id="node3" href="namespacestp.html#a64e9b2a4405d8f3ded5155a4c9cdf844" title="bounds_check_kernel_centre_locations function " alt="" coords="195,57,370,98"/>
-<area shape="rect" id="node4" href="namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca" title="calculate_oversampled_kernel_indices function " alt="" coords="192,122,373,163"/>
+<area shape="rect" id="node3" href="namespacestp.html#a095277dc88e800af18a5e1e9e803792e" title="Convert the input visibilities to an array of half&#45;plane visibilities. " alt="" coords="199,57,367,98"/>
+<area shape="rect" id="node4" href="namespacestp.html#a64e9b2a4405d8f3ded5155a4c9cdf844" title="bounds_check_kernel_centre_locations function " alt="" coords="195,122,370,163"/>
+<area shape="rect" id="node5" href="namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca" title="calculate_oversampled_kernel_indices function " alt="" coords="192,187,373,229"/>
 </map>
 </div>
 <div class="dynheader">
@@ -1865,7 +1904,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_icgraph.png" border="0" usemap="#namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_icgraph" alt=""/></div>
 <map name="namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_icgraph" id="namespacestp_a9d34b3ed2504bd5c0fc106e3299a5d62_icgraph">
-<area shape="rect" id="node2" href="namespacestp.html#a847bd8453dae496b2f22556831568c9a" title="Grid visibilities using convolutional gridding. " alt="" coords="192,13,339,39"/>
+<area shape="rect" id="node2" href="namespacestp.html#a52281cb4b4f86251170ed68ec09fb59e" title="Grid visibilities using convolutional gridding. " alt="" coords="192,13,339,39"/>
 </map>
 </div>
 

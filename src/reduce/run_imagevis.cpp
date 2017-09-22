@@ -41,6 +41,12 @@ void createFlags()
 
 int main(int argc, char** argv)
 {
+#ifdef FUNCTION_TIMINGS
+    std::vector<std::chrono::high_resolution_clock::time_point> times_red;
+    times_red.reserve(NUM_TIME_INST);
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     // Adds the flags to the parser
     createFlags();
 
@@ -101,6 +107,10 @@ int main(int argc, char** argv)
     // Create output matrix
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result;
 
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     // Run image_visibilities
     switch (cfg.kernel_function) {
     case stp::KernelFunction::TopHat: {
@@ -143,6 +153,10 @@ int main(int argc, char** argv)
         break;
     }
 
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     if (use_logger) {
         _logger->info("Finished pipeline execution");
     }
@@ -155,6 +169,32 @@ int main(int argc, char** argv)
         npz_save(_outNpzFileArg.getValue(), "image", result.first, "w");
         npz_save(_outNpzFileArg.getValue(), "beam", result.second, "a");
     }
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+
+    // Display benchmarking times
+    std::chrono::duration<double> time_span;
+    _logger->info("Running time of each imager step:");
+
+    std::vector<std::string> imager_steps = { "Gridder", "FFT", "Normalise" };
+    _logger->info(" Imager:");
+    for (uint i = 1; i < stp::times_iv.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv[i] - stp::times_iv[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", imager_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv.back() - stp::times_iv.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+
+    std::vector<std::string> reduce_steps = { "Read data", "Imager", "Write data" };
+    _logger->info(" Reduce:");
+    for (uint i = 1; i < times_red.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red[i] - times_red[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", reduce_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red.back() - times_red.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+#endif
 
     return 0;
 }

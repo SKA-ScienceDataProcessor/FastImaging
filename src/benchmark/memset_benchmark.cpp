@@ -6,7 +6,7 @@
 #include <tbb/tbb.h>
 
 auto standard_memset_benchmark = [](benchmark::State& state) {
-    long size = pow(2, double(state.range(0)));
+    size_t size = pow(2, double(state.range(0)));
     arma::Mat<cx_real_t> m(size, size);
 
     while (state.KeepRunning()) {
@@ -18,7 +18,7 @@ auto standard_memset_benchmark = [](benchmark::State& state) {
 };
 
 auto parallel_memset_benchmark = [](benchmark::State& state) {
-    long size = pow(2, double(state.range(0)));
+    size_t size = pow(2, double(state.range(0)));
     arma::Mat<cx_real_t> m(size, size);
 
     while (state.KeepRunning()) {
@@ -32,7 +32,7 @@ auto parallel_memset_benchmark = [](benchmark::State& state) {
 };
 
 auto armadillo_zero_benchmark = [](benchmark::State& state) {
-    long size = pow(2, double(state.range(0)));
+    size_t size = pow(2, double(state.range(0)));
     arma::Mat<cx_real_t> m(size, size);
 
     while (state.KeepRunning()) {
@@ -46,13 +46,13 @@ auto armadillo_zero_benchmark = [](benchmark::State& state) {
 int main(int argc, char** argv)
 {
     benchmark::RegisterBenchmark("standard_memset_benchmark", standard_memset_benchmark)
-        ->DenseRange(10, 15)
+        ->DenseRange(10, 16)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("parallel_memset_benchmark", parallel_memset_benchmark)
-        ->DenseRange(10, 15)
+        ->DenseRange(10, 16)
         ->Unit(benchmark::kMicrosecond);
     benchmark::RegisterBenchmark("armadillo_zero_benchmark", armadillo_zero_benchmark)
-        ->DenseRange(10, 15)
+        ->DenseRange(10, 16)
         ->Unit(benchmark::kMicrosecond);
 
     benchmark::Initialize(&argc, argv);

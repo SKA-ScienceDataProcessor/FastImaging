@@ -87,6 +87,17 @@ arma::field<arma::mat> populate_kernel_cache(const T& kernel_creator, const int 
     return cache;
 }
 
+/**
+ * @brief Convert the input visibilities to an array of half-plane visibilities.
+ *
+ * @param[in] uvw_lambda (arma::mat): UVW-coordinates of complex visibilities to be converted.
+ *                                    2D double array with 3 columns. Assumed ordering is u,v,w.
+ * @param[in] vis (arma::cx_mat): Complex visibilities to be converted (1D array).
+ * @param[in] vis_weights (arma::mat): Visibility weights (1D array).
+ * @param[in] kernel_support (int): Kernel support radius.
+ */
+void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vis, arma::mat& vis_weights, int kernel_support);
+
 /** @brief bounds_check_kernel_centre_locations function
  *
  *  Vectorized bounds check.
@@ -159,8 +170,8 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *                         sampling grid matrices. Includes also value with the total sampling grid sum.
  */
 template <bool generateBeam, typename T>
-GridderOutput convolve_to_grid(const T& kernel_creator, const int support, int image_size, const arma::mat& uv, const arma::cx_mat& vis,
-    const arma::mat& vis_weights, bool kernel_exact = true, int oversampling = 1, bool pad = false, bool normalize = true, bool shift_uv = true, bool halfplane_gridding = true)
+GridderOutput convolve_to_grid(const T& kernel_creator, const int support, int image_size, arma::mat uv, arma::cx_mat vis, arma::mat vis_weights,
+    bool kernel_exact = true, int oversampling = 1, bool pad = false, bool normalize = true, bool shift_uv = true, bool halfplane_gridding = true)
 {
     assert(uv.n_cols == 2);
     assert(uv.n_rows == vis.n_rows);
@@ -170,6 +181,11 @@ GridderOutput convolve_to_grid(const T& kernel_creator, const int support, int i
 
     if (kernel_exact == true)
         oversampling = 1;
+
+    // If a visibility point is located in the top half-plane, move it to the bottom half-plane to a symmetric position with respect to the matrix centre (0,0)
+    if (halfplane_gridding) {
+        convert_to_halfplane_visibilities(uv, vis, vis_weights, support);
+    }
 
     arma::mat uv_rounded = uv;
     uv_rounded.for_each([](arma::mat::elem_type& val) {

@@ -1,7 +1,6 @@
 <map id="stp::image_visibilities" name="stp::image_visibilities">
-<area shape="rect" id="node2" href="$namespacestp.html#a095277dc88e800af18a5e1e9e803792e" title="Convert the input visibilities to an array of half&#45;plane visibilities. " alt="" coords="200,5,368,47"/>
-<area shape="rect" id="node3" href="$namespacestp.html#a4af482cb10c30fd252b434dd0aef3074" title="Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (co..." alt="" coords="227,71,341,98"/>
-<area shape="rect" id="node4" href="$classstp_1_1_mat_stp.html#a647f2e90b61e3e2a43c9f3baa8b3c248" title="Delete matrix buffer. " alt="" coords="217,123,351,164"/>
-<area shape="rect" id="node5" href="$namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="241,189,327,215"/>
-<area shape="rect" id="node6" href="$namespacestp.html#ad37648a3b9f67014a4e20050b9d7b478" title="Shift elements of the input matrix in a circular manner. " alt="" coords="416,189,532,215"/>
+<area shape="rect" id="node2" href="$namespacestp.html#a4af482cb10c30fd252b434dd0aef3074" title="Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (co..." alt="" coords="209,5,324,32"/>
+<area shape="rect" id="node3" href="$classstp_1_1_mat_stp.html#a647f2e90b61e3e2a43c9f3baa8b3c248" title="Delete matrix buffer. " alt="" coords="200,57,333,98"/>
+<area shape="rect" id="node4" href="$namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="224,123,309,149"/>
+<area shape="rect" id="node5" href="$namespacestp.html#ad37648a3b9f67014a4e20050b9d7b478" title="Shift elements of the input matrix in a circular manner. " alt="" coords="381,123,497,149"/>
 </map>

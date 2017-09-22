@@ -22,7 +22,7 @@ private:
     double rms_est;
     bool find_negative_sources;
     uint sigma_clip_iters;
-    bool binapprox_median;
+    stp::MedianMethod median_method;
     bool gaussian_fitting;
     bool generate_labelmap;
     CeresDiffMethod ceres_diffmethod;
@@ -50,7 +50,7 @@ public:
         rms_est = rms;
         find_negative_sources = false;
         sigma_clip_iters = 5;
-        binapprox_median = false;
+        median_method = stp::MedianMethod::BINMEDIAN;
         gaussian_fitting = true;
         generate_labelmap = true;
         ceres_diffmethod = ::testing::get<0>(GetParam());
@@ -79,7 +79,7 @@ public:
         fftshift(img);
 #endif
         SourceFindImage sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources,
-            sigma_clip_iters, binapprox_median, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype);
+            sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype);
 #ifndef FFTSHIFT
         fftshift(img);
 #endif

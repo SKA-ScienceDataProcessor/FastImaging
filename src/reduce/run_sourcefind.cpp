@@ -44,6 +44,12 @@ void createFlags()
 
 int main(int argc, char** argv)
 {
+#ifdef FUNCTION_TIMINGS
+    std::vector<std::chrono::high_resolution_clock::time_point> times_red;
+    times_red.reserve(NUM_TIME_INST);
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     // Adds the flags to the parser
     createFlags();
 
@@ -72,9 +78,10 @@ int main(int argc, char** argv)
         _logger->info("Configuration parameters:");
         _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
         _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
+        _logger->info(" - find_negative_sources={}", cfg.find_negative_sources);
         _logger->info(" - rms_estimation={}", cfg.estimate_rms);
         _logger->info(" - sigma_clip_iters={}", cfg.sigma_clip_iters);
-        _logger->info(" - binapprox_median={}", cfg.binapprox_median);
+        _logger->info(" - median_method={}", cfg.s_median_method);
         _logger->info(" - gaussian_fitting={}", cfg.gaussian_fitting);
         _logger->info(" - generate_labelmap={}", cfg.generate_labelmap);
         _logger->info(" - ceres_diffmethod={}", cfg.s_ceres_diffmethod);
@@ -82,10 +89,18 @@ int main(int argc, char** argv)
         _logger->info("Running source find");
     }
 
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     // Run source find
-    stp::SourceFindImage sfimage(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms, true,
-        cfg.sigma_clip_iters, cfg.binapprox_median, cfg.gaussian_fitting, cfg.generate_labelmap,
+    stp::SourceFindImage sfimage(std::move(image), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
+        cfg.find_negative_sources, cfg.sigma_clip_iters, cfg.median_method, cfg.gaussian_fitting, cfg.generate_labelmap,
         cfg.ceres_diffmethod, cfg.ceres_solvertype);
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     if (use_logger) {
         _logger->info("Finished pipeline execution");
@@ -125,6 +140,32 @@ int main(int argc, char** argv)
             island_num++;
         }
     }
+
+#ifdef FUNCTION_TIMINGS
+    times_red.push_back(std::chrono::high_resolution_clock::now());
+
+    // Display benchmarking times
+    std::chrono::duration<double> time_span;
+    _logger->info("Running time of each sourcefind step:");
+
+    std::vector<std::string> sourcefind_steps = { "Bg level", "RMS est", "Labeling", "GaussianFit" };
+    _logger->info(" Source find:");
+    for (uint i = 1; i < stp::times_sf.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_sf[i] - stp::times_sf[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", sourcefind_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_sf.back() - stp::times_sf.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+
+    std::vector<std::string> reduce_steps = { "Read data", "Source find", "Write data" };
+    _logger->info(" Reduce:");
+    for (uint i = 1; i < times_red.size(); i++) {
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red[i] - times_red[i - 1]);
+        _logger->info(" - {:11s} = {:10.5f}", reduce_steps[i - 1], time_span.count());
+    }
+    time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red.back() - times_red.front());
+    _logger->info(" - Total       = {:10.5f}", time_span.count());
+#endif
 
     return 0;
 }

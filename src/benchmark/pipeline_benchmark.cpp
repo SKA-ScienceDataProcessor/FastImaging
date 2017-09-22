@@ -30,7 +30,7 @@ stp::SourceFindImage run_pipeline(arma::mat& uvw_lambda, arma::cx_mat& residual_
     result.second.reset();
 
     return stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma, cfg.estimate_rms,
-        true, cfg.sigma_clip_iters, cfg.binapprox_median, cfg.gaussian_fitting, cfg.generate_labelmap,
+        cfg.find_negative_sources, cfg.sigma_clip_iters, cfg.median_method, cfg.gaussian_fitting, cfg.generate_labelmap,
         cfg.ceres_diffmethod, cfg.ceres_solvertype);
 }
 
@@ -83,11 +83,11 @@ static void pipeline_kernel_oversampling_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(pipeline_kernel_oversampling_benchmark)
-    ->DenseRange(10, 14) // 10,11,12,13,14
+    ->DenseRange(10, 16) // 10,11,12,13,14,15,16
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(pipeline_kernel_exact_benchmark)
-    ->DenseRange(10, 14)
+    ->DenseRange(10, 16)
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN()

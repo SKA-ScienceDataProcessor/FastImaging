@@ -20,6 +20,7 @@ var searchData=
   ['matstp_3c_20int_20_3e',['MatStp&lt; int &gt;',['../classstp_1_1_mat_stp.html',1,'stp']]],
   ['mean',['mean',['../structstp_1_1_data_stats.html#a3edd0760b3a027b367095d6ab3191cb9',1,'stp::DataStats']]],
   ['median',['median',['../structstp_1_1_data_stats.html#a75d60fefe7d8a506c3c7925e13acc9e0',1,'stp::DataStats']]],
+  ['medianmethod',['MedianMethod',['../namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72',1,'stp']]],
   ['mem_5fptr',['mem_ptr',['../classstp_1_1_zero_mem_alloc.html#ac7325dbaf6d7992612a4a3b38e81c7f8',1,'stp::ZeroMemAlloc']]],
   ['min_5felems_5ffor_5fparshift',['MIN_ELEMS_FOR_PARSHIFT',['../matrix__math_8h.html#a37a9fea883d821f7feeaa40d6909437f',1,'matrix_math.h']]],
   ['min_5fmedsize',['MIN_MEDSIZE',['../matrix__math_8cpp.html#af2922a59794a4a160df02579ff9817e4',1,'matrix_math.cpp']]],

@@ -34,14 +34,14 @@ analysis_n_sigma = 50.0
 rms_est = 0.0
 find_negative = True
 sigma_clip_iters = 5
-binapprox_median = True
+median_method = 'BINAPPROX'  # Other options: ZEROMEDIAN, BINMEDIAN, NTHELEMENT
 gaussian_fitting = True
 generate_labelmap = False
 ceres_diffmethod = stp_python.CeresDiffMethod.AnalyticDiff_SingleResBlk # Other options: stp_python.CeresDiffMethod.AnalyticDiff, stp_python.CeresDiffMethod.AutoDiff_SingleResBlk, stp_python.CeresDiffMethod.AutoDiff
 ceres_solvertype = stp_python.CeresSolverType.LinearSearch_LBFGS # Other options: stp_python.CeresSolverType.LinearSearch_BFGS, stp_python.CeresSolverType.TrustRegion_DenseQR
 
 # Call source_find
-islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative, sigma_clip_iters, binapprox_median, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype)
+islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative, sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype)
 
 # Print result
 for i in islands:

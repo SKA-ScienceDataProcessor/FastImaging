@@ -175,6 +175,13 @@ $(function() {
 <li>Callgrind usage example: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ cd reduce</div><div class="line">$ valgrind --tool=callgrind --separate-threads=yes ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l</div><div class="line">$ kcachegrind callgrind.out.*</div></div><!-- fragment --> For memory checking purposes, a CMake target for valgrind that executes the test_pipeline_gaussiansinc test is provided: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make valgrind</div></div><!-- fragment --></li>
 </ul>
 <h2>Release Notes</h2>
+<h3>22 September 2017</h3>
+<ul>
+<li>Added option to select median function</li>
+<li>Moved conversion of half-plane visibilities to gridder</li>
+<li>Added fftshift benchmark</li>
+<li>Updated benchmarks to use larger image sizes</li>
+</ul>
 <h3>15 September 2017</h3>
 <ul>
 <li>Implemented method of moments for initial gaussian fitting</li>

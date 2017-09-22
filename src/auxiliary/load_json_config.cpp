@@ -57,6 +57,25 @@ stp::FFTRoutine ConfigurationFile::parse_fft_routine(const std::string& fft)
     return r_fft;
 }
 
+stp::MedianMethod ConfigurationFile::parse_median_method(const std::string& medianmethod)
+{
+    // Convert string to MedianMethod enum
+    stp::MedianMethod e_median = stp::MedianMethod::BINAPPROX;
+    if (medianmethod == "ZEROMEDIAN") {
+        e_median = stp::MedianMethod::ZEROMEDIAN;
+    } else if (medianmethod == "BINMEDIAN") {
+        e_median = stp::MedianMethod::BINMEDIAN;
+    } else if (medianmethod == "BINAPPROX") {
+        e_median = stp::MedianMethod::BINAPPROX;
+    } else if (medianmethod == "NTHELEMENT") {
+        e_median = stp::MedianMethod::NTHELEMENT;
+    } else {
+        assert(0);
+    }
+
+    return e_median;
+}
+
 stp::CeresDiffMethod ConfigurationFile::parse_ceres_diffmethod(const std::string& diffmet)
 {
     // Convert string to CeresDifMethod enum

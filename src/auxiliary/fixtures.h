@@ -9,16 +9,16 @@
  *
  *  Returns a matrix of gaussian noise.
  *
- *  @param[in] rows (double): number of rows
- *  @param[in] cols (double): number of columns
+ *  @param[in] rows (size_t): number of rows
+ *  @param[in] cols (size_t): number of columns
  *  @param[in] sigma (double): noise standard deviation (default: 1.0)
  *  @param[in] mean (double): noise mean value (default: 0.0)
  *
  *  @return (arma::mat): gaussian noise background
  */
 arma::Mat<real_t> uncorrelated_gaussian_noise_background(
-    double rows,
-    double cols,
+    size_t rows,
+    size_t cols,
     double sigma = 1.0,
     double mean = 0.0,
     long seed = -1)

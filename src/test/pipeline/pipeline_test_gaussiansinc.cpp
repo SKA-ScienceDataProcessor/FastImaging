@@ -32,13 +32,13 @@ public:
         fft_routine = cfg.fft_routine;
         rms_estimation = cfg.estimate_rms;
         sigma_clip_iters = cfg.sigma_clip_iters;
-        binapprox_median = cfg.binapprox_median;
+        median_method = cfg.median_method;
         gaussian_fitting = cfg.gaussian_fitting;
         generate_labelmap = cfg.generate_labelmap;
         generate_beam = cfg.generate_beam;
         ceres_diffmethod = cfg.ceres_diffmethod;
         ceres_solvertype = cfg.ceres_solvertype;
-        find_negative_sources = true;
+        find_negative_sources = cfg.find_negative_sources;
     }
 
     stp::SourceFindImage run_pipeline();
@@ -55,7 +55,7 @@ public:
     stp::FFTRoutine fft_routine;
     double rms_estimation;
     int sigma_clip_iters;
-    bool binapprox_median;
+    stp::MedianMethod median_method;
     bool gaussian_fitting;
     bool generate_labelmap;
     bool generate_beam;
@@ -84,7 +84,7 @@ stp::SourceFindImage PipelineGaussianSincTest::run_pipeline()
         generate_beam, fft_routine);
 
     return stp::SourceFindImage(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, find_negative_sources,
-        sigma_clip_iters, binapprox_median, gaussian_fitting, generate_labelmap, ceres_diffmethod,
+        sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap, ceres_diffmethod,
         ceres_solvertype);
 }
 

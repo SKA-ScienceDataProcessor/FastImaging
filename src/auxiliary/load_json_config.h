@@ -45,6 +45,8 @@ public:
                 detection_n_sigma = config_document["sourcefind_detection"].GetDouble();
             if (config_document.HasMember("sourcefind_analysis"))
                 analysis_n_sigma = config_document["sourcefind_analysis"].GetDouble();
+            if (config_document.HasMember("find_negative_sources"))
+                find_negative_sources = config_document["find_negative_sources"].GetBool();
 
             if (config_document.HasMember("kernel_func")) {
                 s_kernel_function = config_document["kernel_func"].GetString();
@@ -61,8 +63,11 @@ public:
                 estimate_rms = config_document["rms_estimation"].GetDouble();
             if (config_document.HasMember("sigma_clip_iters"))
                 sigma_clip_iters = config_document["sigma_clip_iters"].GetInt();
-            if (config_document.HasMember("binapprox_median"))
-                binapprox_median = config_document["binapprox_median"].GetBool();
+            if (config_document.HasMember("median_method")) {
+                s_median_method = config_document["median_method"].GetString();
+                median_method = parse_median_method(s_median_method);
+            }
+
             if (config_document.HasMember("gaussian_fitting"))
                 gaussian_fitting = config_document["gaussian_fitting"].GetBool();
             if (config_document.HasMember("generate_labelmap"))
@@ -99,6 +104,7 @@ public:
     int oversampling = 9;
     double detection_n_sigma = 0.0;
     double analysis_n_sigma = 0.0;
+    bool find_negative_sources = true;
     std::string s_kernel_function = "GaussianSinc";
     std::string s_fft_routine = "FFTW_ESTIMATE_FFT";
     stp::KernelFunction kernel_function = stp::KernelFunction::GaussianSinc;
@@ -106,7 +112,8 @@ public:
     std::string fft_wisdom_filename;
     double estimate_rms = 0.0;
     int sigma_clip_iters = 5;
-    bool binapprox_median = true;
+    std::string s_median_method = "BINAPPROX";
+    stp::MedianMethod median_method = stp::MedianMethod::BINAPPROX;
     bool gaussian_fitting = true;
     bool generate_labelmap = false;
     bool generate_beam = false;
@@ -133,6 +140,15 @@ private:
      * @return (FFTRoutine) Enumeration value for the input fft routine
      */
     stp::FFTRoutine parse_fft_routine(const std::string& fft);
+
+    /**
+     * @brief Parse string of median method
+     *
+     * @param[in] medianmethod (string): Input median method string
+     *
+     * @return (MedianMethod) Enumeration value for the input median method
+     */
+    stp::MedianMethod parse_median_method(const std::string& medianmethod);
 
     /**
      * @brief Parse differentiation method used by ceres
