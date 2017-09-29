@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['label_5fextrema_5fboundingbox_5fneg',['label_extrema_boundingbox_neg',['../classstp_1_1_source_find_image.html#aa961cc77e4a68f50f30ca1c964e15c20',1,'stp::SourceFindImage']]],
-  ['label_5fextrema_5fboundingbox_5fpos',['label_extrema_boundingbox_pos',['../classstp_1_1_source_find_image.html#ad32a230f6466de8a8e7332a6d277de1f',1,'stp::SourceFindImage']]],
+  ['label_5fextrema_5fboundingbox_5fneg',['label_extrema_boundingbox_neg',['../classstp_1_1_source_find_image.html#a247c1a9cce7fb4b7079ffb57b2fad09b',1,'stp::SourceFindImage']]],
+  ['label_5fextrema_5fboundingbox_5fpos',['label_extrema_boundingbox_pos',['../classstp_1_1_source_find_image.html#a4b5537aae92b603d1ade5203b4bef96f',1,'stp::SourceFindImage']]],
   ['label_5fextrema_5fid_5fneg',['label_extrema_id_neg',['../classstp_1_1_source_find_image.html#af562c6560092d63c664cc5e9de2821e9',1,'stp::SourceFindImage']]],
   ['label_5fextrema_5fid_5fpos',['label_extrema_id_pos',['../classstp_1_1_source_find_image.html#a5f310d11c64d245279667759f87c77c5',1,'stp::SourceFindImage']]],
   ['label_5fextrema_5flinear_5fidx_5fneg',['label_extrema_linear_idx_neg',['../classstp_1_1_source_find_image.html#a1d2c033d79392d1d97aa9f8cb868e5be',1,'stp::SourceFindImage']]],

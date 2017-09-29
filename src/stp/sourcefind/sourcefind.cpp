@@ -425,10 +425,9 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     tbb::combinable<arma::Col<int>> numsamples_neg(arma::Col<int>(num_l_neg).zeros());
 
     // Stores the rectangular boxes defined around each source
-    if (gaussian_fitting) {
-        label_extrema_boundingbox_pos.assign(num_l_pos, BoundingBox(data.n_rows, -1, data.n_cols, -1)); // Init bounding box values
-        label_extrema_boundingbox_neg.assign(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1));
-    }
+    tbb::combinable<std::vector<BoundingBox>> boundingbox_pos(std::vector<BoundingBox>(num_l_pos, BoundingBox(data.n_rows, -1, data.n_cols, -1)));
+    tbb::combinable<std::vector<BoundingBox>> boundingbox_neg(std::vector<BoundingBox>(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1)));
+
 #ifndef FFTSHIFT
     int h_shift = (int)(data.n_cols / 2);
     int v_shift = (int)(data.n_rows / 2);
@@ -441,6 +440,9 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
         arma::Mat<double>& r_moments_neg = moments_neg.local();
         arma::Col<int>& r_numsamples_pos = numsamples_pos.local();
         arma::Col<int>& r_numsamples_neg = numsamples_neg.local();
+        std::vector<BoundingBox>& r_boundingbox_pos = boundingbox_pos.local();
+        std::vector<BoundingBox>& r_boundingbox_neg = boundingbox_neg.local();
+
         for (arma::uword i = r.begin(); i < r.end(); i++) {
             for (arma::uword j = 0; j < data.n_rows; j++, li++) {
                 int label = label_map.at(li);
@@ -510,34 +512,34 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
                     const int col = (int)i;
                     const int row = (int)j;
 #else
-                        const int col = (int)i < h_shift ? (int)i + h_shift : (int)i - h_shift;
-                        const int row = (int)j < v_shift ? (int)j + v_shift : (int)j - v_shift;
+                    const int col = (int)i < h_shift ? (int)i + h_shift : (int)i - h_shift;
+                    const int row = (int)j < v_shift ? (int)j + v_shift : (int)j - v_shift;
 #endif
                     if (label > 0) {
-                        if (col < label_extrema_boundingbox_pos[idx].left) {
-                            label_extrema_boundingbox_pos[idx].left = col;
+                        if (col < r_boundingbox_pos[idx].left) {
+                            r_boundingbox_pos[idx].left = col;
                         }
-                        if (col > label_extrema_boundingbox_pos[idx].right) {
-                            label_extrema_boundingbox_pos[idx].right = col;
+                        if (col > r_boundingbox_pos[idx].right) {
+                            r_boundingbox_pos[idx].right = col;
                         }
-                        if (row < label_extrema_boundingbox_pos[idx].top) {
-                            label_extrema_boundingbox_pos[idx].top = row;
+                        if (row < r_boundingbox_pos[idx].top) {
+                            r_boundingbox_pos[idx].top = row;
                         }
-                        if (row > label_extrema_boundingbox_pos[idx].bottom) {
-                            label_extrema_boundingbox_pos[idx].bottom = row;
+                        if (row > r_boundingbox_pos[idx].bottom) {
+                            r_boundingbox_pos[idx].bottom = row;
                         }
                     } else {
-                        if (col < label_extrema_boundingbox_neg[idx].left) {
-                            label_extrema_boundingbox_neg[idx].left = col;
+                        if (col < r_boundingbox_neg[idx].left) {
+                            r_boundingbox_neg[idx].left = col;
                         }
-                        if (col > label_extrema_boundingbox_neg[idx].right) {
-                            label_extrema_boundingbox_neg[idx].right = col;
+                        if (col > r_boundingbox_neg[idx].right) {
+                            r_boundingbox_neg[idx].right = col;
                         }
-                        if (row < label_extrema_boundingbox_neg[idx].top) {
-                            label_extrema_boundingbox_neg[idx].top = row;
+                        if (row < r_boundingbox_neg[idx].top) {
+                            r_boundingbox_neg[idx].top = row;
                         }
-                        if (row > label_extrema_boundingbox_neg[idx].bottom) {
-                            label_extrema_boundingbox_neg[idx].bottom = row;
+                        if (row > r_boundingbox_neg[idx].bottom) {
+                            r_boundingbox_neg[idx].bottom = row;
                         }
                     }
                 }
@@ -596,6 +598,44 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
             label_extrema_moments_neg.at(3, l) = yy_bar;
             label_extrema_moments_neg.at(4, l) = xy_bar;
         }
+    }
+
+    // Combine the bounding box info of each thread
+    if (gaussian_fitting) {
+        label_extrema_boundingbox_pos.assign(num_l_pos, BoundingBox(data.n_rows, -1, data.n_cols, -1));
+        boundingbox_pos.combine_each([&](const std::vector<BoundingBox>& bb) {
+            for (size_t i = 0; i < bb.size(); i++) {
+                if (bb[i].left < label_extrema_boundingbox_pos[i].left) {
+                    label_extrema_boundingbox_pos[i].left = bb[i].left;
+                }
+                if (bb[i].right > label_extrema_boundingbox_pos[i].right) {
+                    label_extrema_boundingbox_pos[i].right = bb[i].right;
+                }
+                if (bb[i].top < label_extrema_boundingbox_pos[i].top) {
+                    label_extrema_boundingbox_pos[i].top = bb[i].top;
+                }
+                if (bb[i].bottom > label_extrema_boundingbox_pos[i].bottom) {
+                    label_extrema_boundingbox_pos[i].bottom = bb[i].bottom;
+                }
+            }
+        });
+        label_extrema_boundingbox_neg.assign(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1));
+        boundingbox_neg.combine_each([&](const std::vector<BoundingBox>& bb) {
+            for (size_t i = 0; i < bb.size(); i++) {
+                if (bb[i].left < label_extrema_boundingbox_neg[i].left) {
+                    label_extrema_boundingbox_neg[i].left = bb[i].left;
+                }
+                if (bb[i].right > label_extrema_boundingbox_neg[i].right) {
+                    label_extrema_boundingbox_neg[i].right = bb[i].right;
+                }
+                if (bb[i].top < label_extrema_boundingbox_neg[i].top) {
+                    label_extrema_boundingbox_neg[i].top = bb[i].top;
+                }
+                if (bb[i].bottom > label_extrema_boundingbox_neg[i].bottom) {
+                    label_extrema_boundingbox_neg[i].bottom = bb[i].bottom;
+                }
+            }
+        });
     }
 
     return numValidLabels;

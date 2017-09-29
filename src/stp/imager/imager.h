@@ -32,6 +32,7 @@ extern std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
  * @param[in] uvw_lambda (arma::mat): UVW-coordinates of complex visibilities. Units are multiples of wavelength.
  *                                    2D double array with 3 columns. Assumed ordering is u,v,w.
  * @param[in] image_size (int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space.
+ *                              Must be multiple of 4.
  * @param[in] cell_size (double): Angular-width of a synthesized pixel in the image to be created (arcsecond).
  * @param[in] kernel_support (int): Defines the 'radius' of the bounding box within which convolution takes place (also known as half-support).
  *                                  Box width in pixels = 2*support + 1. The central pixel is the one nearest to the UV co-ordinates.
@@ -60,6 +61,7 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
 {
     assert(kernel_exact || (oversampling >= 1)); // If kernel exact is false, then oversampling must be >= 1
     assert(image_size > 0);
+    assert(image_size % 4 == 0); // Parallel complex2real FFTW function only works with image sizes multiple of 4.
     assert(kernel_support > 0);
     assert(cell_size > 0.0);
     assert(vis.n_elem == vis_weights.n_elem);

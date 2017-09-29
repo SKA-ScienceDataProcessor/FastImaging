@@ -1146,7 +1146,7 @@ template&lt;typename T &gt; </div>
     <tr><td class="paramdir">[in]</td><td class="paramname">vis</td><td>(arma::cx_mat): Complex visibilities (1D array). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">vis_weights</td><td>(arma::mat): Visibility weights (1D array). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uvw_lambda</td><td>(arma::mat): UVW-coordinates of complex visibilities. Units are multiples of wavelength. 2D double array with 3 columns. Assumed ordering is u,v,w. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">image_size</td><td>(int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">image_size</td><td>(int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space. Must be multiple of 4. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cell_size</td><td>(double): Angular-width of a synthesized pixel in the image to be created (arcsecond). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">kernel_support</td><td>(int): Defines the 'radius' of the bounding box within which convolution takes place (also known as half-support). Box width in pixels = 2*support + 1. The central pixel is the one nearest to the UV co-ordinates. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">kernel_exact</td><td>(bool): Calculate exact kernel-values for every UV-sample. </td></tr>

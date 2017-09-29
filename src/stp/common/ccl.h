@@ -111,11 +111,10 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
     const size_t cshift = cols / 2;
     const size_t rshift = rows / 2;
 #endif
+    assert(cols % 2 == 0);
+    assert(rows % 2 == 0);
     assert(cols <= 65536);
     assert(rows <= 65536);
-    // Assert cols and rows are power of two
-    assert(!(cols & (cols - 1)));
-    assert(!(rows & (rows - 1)));
 
     // Use MapStp because L (label map) shall be initialized with zeroes
     MatStp<int> L(I.n_rows, I.n_cols);
@@ -133,26 +132,13 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
     uint* Pn = (uint*)P.colptr(Pcols - 1);
 
     // Define maximum number of slices based on the number of available threads
-    uint max_num_slices = tbb::task_scheduler_init::default_num_threads() * 8;
-    uint num_slices = 1;
-    while (num_slices < max_num_slices) {
-        num_slices *= 2;
-        if ((cols / num_slices) < num_slices) {
-            break;
-        }
-        // Cols must be divisible by the number of chunks
-        if ((cols % num_slices) != 0) {
-            break;
-        }
-    }
-    num_slices /= 2;
-    assert(cols % num_slices == 0);
+    uint num_slices = tbb::task_scheduler_init::default_num_threads() * 4;
 
     // Grain size
-    size_t grainsize = cols / num_slices;
+    size_t grainsize = std::max(int(cols / num_slices), 2);
 
     // Use this vector to store start column and number of labels assigned by each thread
-    tbb::concurrent_vector<LabelDataThread> label_data_per_thread(num_slices);
+    tbb::concurrent_vector<LabelDataThread> label_data_per_thread;
 
     // Scanning phase
     // Use static partitioner because image partitions need to be known in the next step of border merging
@@ -279,10 +265,14 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling(const arma::Mat<real_
             }
 #endif
         }
-        uint idx = col_start / (grainsize);
-        label_data_per_thread[idx] = LabelDataThread(col_start, lunique_start, lunique_p, lunique_n);
+        label_data_per_thread.push_back(LabelDataThread(col_start, lunique_start, lunique_p, lunique_n));
     },
         tbb::static_partitioner());
+
+    // Sort label_data_per_thread
+    std::sort(label_data_per_thread.begin(), label_data_per_thread.end(), [&](const LabelDataThread& a, const LabelDataThread& b) {
+        return a.col_start < b.col_start;
+    });
 
     // COLUMN BORDER MERGING
     // Merges the matrix left and right borders as well as all the partitioned regions required for parallel processing

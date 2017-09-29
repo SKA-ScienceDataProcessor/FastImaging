@@ -1,4 +1,8 @@
 ## Release Notes
+### 30 September 2017
+- Improved parallel scalability of labeling function
+- Fixed computation of bounding box using multiple threads
+
 ### 29 September 2017
 - Added Changelog file
 - Updated usage description in Readme file

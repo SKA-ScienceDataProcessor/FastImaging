@@ -155,8 +155,8 @@ public:
     arma::mat label_extrema_moments_neg;
     arma::Col<int> label_extrema_numsamples_pos;
     arma::Col<int> label_extrema_numsamples_neg;
-    tbb::concurrent_vector<BoundingBox> label_extrema_boundingbox_pos;
-    tbb::concurrent_vector<BoundingBox> label_extrema_boundingbox_neg;
+    std::vector<BoundingBox> label_extrema_boundingbox_pos;
+    std::vector<BoundingBox> label_extrema_boundingbox_neg;
     double detection_n_sigma;
     double analysis_n_sigma;
     double rms_est;

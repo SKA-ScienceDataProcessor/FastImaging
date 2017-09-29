@@ -29,6 +29,7 @@ using np_real_array = pybind11::array_t<real_t, pybind11::array::f_style | pybin
  * @param[in] uvw_lambda (numpy.ndarray<np.float_>): UVW-coordinates of visibilities. Units are multiples of wavelength.
  *                                               2D array, shape: (n_vis, 3). Assumed ordering is u,v,w.
  * @param[in] image_size (int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space.
+ *                              Must be multiple of 4.
  * @param[in] cell_size (double): Angular-width of a synthesized pixel in the image to be created (arcsecond).
  * @param[in] kernel_func (KernelFunction): Choice of kernel function from limited selection (see KernelFunction enum structure).
  *                                      Default = KernelFunction::GaussianSinc.
