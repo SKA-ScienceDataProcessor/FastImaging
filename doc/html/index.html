@@ -82,7 +82,7 @@ $(function() {
 </li>
 <li>configs: auxiliary configuration files</li>
 <li>test-data: input test data files</li>
-<li>scripts: auxiliary scripts to generate FFTW plans, test python bindings and plot benchmarking results</li>
+<li>scripts: auxiliary scripts to generate FFTW wisdom files and test python bindings</li>
 <li>vagrant: virtual machine configuration</li>
 </ul>
 <h2>Build &amp; Run</h2>
@@ -114,19 +114,19 @@ $(function() {
 <tr>
 <td>BUILD_BENCHMARK </td><td>Builds the benchmark tests (default=ON) </td></tr>
 <tr>
-<td>USE_GLIBCXX_PARALLEL </td><td>Uses GLIBCXX parallel mode (default=ON) </td></tr>
+<td>USE_GLIBCXX_PARALLEL </td><td>Uses GLIBCXX parallel mode - required for parallel nth_element (default=ON) </td></tr>
 <tr>
-<td>USE_FLOAT </td><td>Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON) </td></tr>
+<td>USE_FLOAT </td><td>Builds STP using FLOAT type to represent large arrays of real/complex numbers (default=ON) </td></tr>
 <tr>
 <td>WITH_FUNCTION_TIMINGS </td><td>Measures function execution times from the reduce executable (default=ON) </td></tr>
 <tr>
 <td>USE_SERIAL_GRIDDER </td><td>Uses serial implementation of gridder (default=OFF) </td></tr>
 <tr>
-<td>USE_FFTSHIFT </td><td>Explicitly shifts the image and beam matrices in memory after FFT - results in slower imager (default=OFF) </td></tr>
+<td>USE_FFTSHIFT </td><td>Explicitly performs FFT shifting of the image matrix (and beam if generated) after the FFT - results in slower imager (default=OFF) </td></tr>
 </table>
-<p>When compiled with USE_FLOAT=ON, most algorithm data structures of real or complex numbers will use single-precision floating-point type instead of double-precision floating-point type. In most systems the FLOAT type uses 4 bytes while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time. However, it reduces the algorithm floating-point accuracy.</p>
-<p>After building STP the FFTW plans shall be generated using the fftw-wisdom tool. By using these plans, the FFT step executes much faster. A CMake target is provided to generate the FFTW plans. This target executes a script located in "project-root/scripts/fftw-wisdom" directory. The location and filename of the generated FFTW plans shall be provided in the input JSON configuration file.</p>
-<p>By default, FFTW plans are generated for the following matrix sizes: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536. When executing the STP only the above image sizes can be used as input, since the FFTW plans were generated only for these sizes. If different image sizes are required, the script for plan generation shall be manually executed indicating the required image sizes.</p>
+<p>When compiled with USE_FLOAT=ON, the large data arrays of real or complex numbers use the single-precision floating-point representation instead of the double-precision floating-point. In most systems the FLOAT type uses 4 bytes while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time. However, it reduces the algorithm's accuracy.</p>
+<p>After building STP, the FFTW wisdom files shall be generated using the fftw-wisdom tool. By using these files, the FFT step executes much faster. A CMake target is provided to generate the FFTW wisdom files. This target executes a script located in "project-root/scripts/fftw-wisdom" directory. The location and filename of the generated FFTW wisdom files shall be provided in the input JSON configuration file.</p>
+<p>By default, FFTW wisdom files are generated for the following matrix sizes: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536. When executing the STP only the above image sizes can be used as input, since the FFTW wisdom files were generated only for these sizes. If different image sizes are required, the script for wisdom file generation shall be manually executed indicating the required image sizes.</p>
 <p>#### Using a build script (Includes tests execution) </p><div class="fragment"><div class="line">$ cd &lt;path/to/project&gt;</div><div class="line">$ chmod +x build.sh</div><div class="line">$ ./build.sh &lt;OPTIONS&gt;</div></div><!-- fragment --> <table class="doxtable">
 <tr>
 <th>OPTION </th><th>Description  </th></tr>
@@ -141,20 +141,26 @@ $(function() {
 <tr>
 <td>-s </td><td>Set USE_FFTSHIFT=ON (default is USE_FFTSHIFT=OFF) </td></tr>
 <tr>
-<td>-n </td><td>Disable generation of fftw plans (enabled by default) </td></tr>
+<td>-n </td><td>Do not generate fftw wisdom files </td></tr>
 </table>
-<p>#### Manually </p><div class="fragment"><div class="line">$ mkdir -p &lt;path/to/build/directory&gt;</div><div class="line">$ cd &lt;path/to/build/directory&gt;</div><div class="line">$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF &lt;path/to/project/src&gt;</div><div class="line">$ make all -j4</div></div><!-- fragment --><p> Then, generate the FFTW plans using the available CMake target: </p><div class="fragment"><div class="line">$ make fftwplans</div></div><!-- fragment --><p> Alternatively, the generate_wisdom.sh script can be manually executed (see available options using &ndash;help): </p><div class="fragment"><div class="line">$ cd &lt;path/to/project&gt;/scripts/fftw-wisdom</div><div class="line">$ ./generate_wisdom.sh &lt;OPTIONS&gt;</div></div><!-- fragment --><p> For instance, when compiled in Release mode with -DUSE_FLOAT=ON run: </p><div class="fragment"><div class="line">$ ./generate_wisdom.sh -r -f</div></div><!-- fragment --><p> When executed manually, the plans are written into the wisdomfiles sub-directory created in the working directory.</p>
+<p>#### Manually </p><div class="fragment"><div class="line">$ mkdir -p &lt;path/to/build/directory&gt;</div><div class="line">$ cd &lt;path/to/build/directory&gt;</div><div class="line">$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF &lt;path/to/project/src&gt;</div><div class="line">$ make all -j4</div></div><!-- fragment --><p> Then, generate the FFTW wisdom files using the available CMake target: </p><div class="fragment"><div class="line">$ make fftwisdom</div></div><!-- fragment --><p> Alternatively, the generate_wisdom.sh script can be manually executed (see available options using &ndash;help): </p><div class="fragment"><div class="line">$ cd &lt;path/to/project&gt;/scripts/fftw-wisdom</div><div class="line">$ ./generate_wisdom.sh &lt;OPTIONS&gt;</div></div><!-- fragment --><p> For instance, when compiled in Release mode with -DUSE_FLOAT=ON run: </p><div class="fragment"><div class="line">$ ./generate_wisdom.sh -r -f</div></div><!-- fragment --><p> When executed manually, the wisdom files are written into the wisdomfiles sub-directory created in the working directory.</p>
 <h2>Tests Execution</h2>
-<p>### Using CMake (after successful build) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make test</div></div><!-- fragment --><p>### Running on the Command Line (all tests) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ run-parts ./tests</div></div><!-- fragment --><p>## Benchmark Execution </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make benchmarking</div></div><!-- fragment --><p> Note that some benchmarks use the pre-generated FFTW plans by fftw-wisdom tool. Please, be sure to run 'make fftwplans' before the benchmarks. If in-place fft configuration needs to benchmarked, additional plans must be generated using 'make ifftwplans'.</p>
-<h2>STP Execution using Reduce module</h2>
-<p>The reduce executable is located in build-directory/reduce. It accepts the following arguments:</p>
-<table class="doxtable">
+<p>### Using CMake (after successful build) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make test</div></div><!-- fragment --><p>### Running on the Command Line (all tests) </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ run-parts ./tests</div></div><!-- fragment --><p>## Benchmark Execution </p><div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make benchmarking</div></div><!-- fragment --><p> Note that some benchmarks use the pre-generated FFTW wisdom files by fftw-wisdom tool. Please, be sure to run 'make fftwisdom' before the benchmarks. If in-place fft configuration needs to benchmarked, additional wisdom files must be generated using 'make ifftwisdom'.</p>
+<h2>Run STP Executables</h2>
+<p>STP provides three executables:</p><ul>
+<li>reduce : Runs the entire pipeline (imager and source find stages);</li>
+<li>run_imagevis : Runs the imager stage (gridder + FFT + normalisation steps);</li>
+<li>run_sourcefind : Runs the source find stage (requires an input image).</li>
+</ul>
+<p>These executables are located in the build-directory/reduce.</p>
+<h3>Reduce</h3>
+<p>The pipeline can be executed using: </p><div class="fragment"><div class="line">./reduce [-d] [-l] &lt;input-file-json&gt; &lt;input-file-npz&gt; &lt;output-file-json&gt; &lt;output-file-npz&gt;</div></div><!-- fragment --><table class="doxtable">
 <tr>
 <th>Argument </th><th>Usage </th><th>Description  </th></tr>
 <tr>
-<td>&lt;input-file-json&gt; </td><td>required </td><td>Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json) </td></tr>
+<td>&lt;input-file-json&gt; </td><td>required </td><td>Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json). </td></tr>
 <tr>
-<td>&lt;input-file-npz&gt; </td><td>required </td><td>Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz) </td></tr>
+<td>&lt;input-file-npz&gt; </td><td>required </td><td>Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz). </td></tr>
 <tr>
 <td>&lt;output-file-json&gt; </td><td>required </td><td>Output JSON filename for detected islands. </td></tr>
 <tr>
@@ -164,7 +170,48 @@ $(function() {
 <tr>
 <td>-l, &ndash;log </td><td>optional </td><td>Enable logger. </td></tr>
 </table>
-<p>Example: </p><div class="fragment"><div class="line">$ ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l</div></div><!-- fragment --><p> Note that the provided fastimg_oversampling_config.json file assumes that the FFTW wisdom files (with the pre-generated plans) are located in &lt;build-directory&gt;/wisdomfiles. This is the default path of the FFTW plans when generated by the 'make fftwplans' command. If a different directory was used, the wisdom file path in the JSON configuration file shall be properly setup.</p>
+<p>Example: </p><div class="fragment"><div class="line">$ cd build-directory/reduce</div><div class="line">$ ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l</div></div><!-- fragment --><p> Note that the provided fastimg_oversampling_config.json file assumes that the pre-generated FFTW wisdom files are located in &lt;build-directory&gt;/wisdomfiles. This is the default path of the FFTW wisdom files when generated by the 'make fftwisdom' command. If a different directory was used, the wisdom file path in the JSON configuration file shall be properly setup.</p>
+<h3>Run_imagevis</h3>
+<p>The imager can be executed using:</p>
+<div class="fragment"><div class="line">./run_imagevis [-d] [-l] &lt;input-file-json&gt; &lt;input-file-npz&gt; &lt;output-file-npz&gt;</div></div><!-- fragment --><table class="doxtable">
+<tr>
+<th>Argument </th><th>Usage </th><th>Description  </th></tr>
+<tr>
+<td>&lt;input-file-json&gt; </td><td>required </td><td>Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json). </td></tr>
+<tr>
+<td>&lt;input-file-npz&gt; </td><td>required </td><td>Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz). </td></tr>
+<tr>
+<td>&lt;output-file-npz&gt; </td><td>optional </td><td>Output NPZ filename for image and beam matrices (image, beam). </td></tr>
+<tr>
+<td>-d, &ndash;diff </td><td>optional </td><td>Use residual visibilities - difference between 'input_vis' and 'model' visibilities. </td></tr>
+<tr>
+<td>-l, &ndash;log </td><td>optional </td><td>Enable logger. </td></tr>
+</table>
+<p>Example: </p><div class="fragment"><div class="line">$ cd build-directory/reduce</div><div class="line">$ ./run_imagevis fastimg_oversampling_config.json simdata_nstep10.npz dirty_image.npz -d -l</div></div><!-- fragment --><h3>Run_sourcefind</h3>
+<p>The source find procedure can be executed using:</p>
+<div class="fragment"><div class="line">./run_sourcefind  [-l] &lt;input-file-json&gt; &lt;input-file-npz&gt; &lt;output-file-json&gt; &lt;output-file-npz&gt;</div></div><!-- fragment --><table class="doxtable">
+<tr>
+<th>Argument </th><th>Usage </th><th>Description  </th></tr>
+<tr>
+<td>&lt;input-file-json&gt; </td><td>required </td><td>Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json). </td></tr>
+<tr>
+<td>&lt;input-file-npz&gt; </td><td>required </td><td>Input NPZ filename with simulation data (image). </td></tr>
+<tr>
+<td>&lt;output-file-json&gt; </td><td>required </td><td>Output JSON filename for detected islands. </td></tr>
+<tr>
+<td>&lt;output-file-npz&gt; </td><td>optional </td><td>Output NPZ filename for label map matrix (label_map). </td></tr>
+<tr>
+<td>-l, &ndash;log </td><td>optional </td><td>Enable logger. </td></tr>
+</table>
+<p>Example: </p><div class="fragment"><div class="line">$ cd build-directory/reduce</div><div class="line">$ ./run_sourcefind fastimg_oversampling_config.json dirty_image.npz detected_islands.json -l</div></div><!-- fragment --><h2>Run STP using python bindings</h2>
+<p>The C++ imager and source find functions of STP can be independently called from Python code, using the STP Python bindings module. The following procedure shall be used:</p><ul>
+<li>Import stp_python.so (located in the build directory) and other important modules, such as Numpy.</li>
+<li>Setup the variables and load input files required for the wrapper functions.</li>
+<li>Call the STP wrapper functions.</li>
+</ul>
+<p>Example of STP Python bindings that runs the imager and source find functions:</p>
+<div class="fragment"><div class="line">import stp_python</div><div class="line">import numpy as np</div><div class="line"></div><div class="line"># Input simdata file must be located in the current directory</div><div class="line">vis_filepath = &#39;simdata_nstep10.npz&#39;</div><div class="line"></div><div class="line"># This example is not computing residual visibilities. &#39;vis&#39; component is directly used as input to the pipeline</div><div class="line">with open(vis_filepath, &#39;rb&#39;) as f:</div><div class="line">    npz_data_dict = np.load(f)</div><div class="line">    uvw_lambda = npz_data_dict[&#39;uvw_lambda&#39;]</div><div class="line">    vis = npz_data_dict[&#39;vis&#39;]</div><div class="line">    vis_weights = npz_data_dict[&#39;snr_weights&#39;]</div><div class="line"></div><div class="line"># Parameters of image_visibilities function</div><div class="line">image_size = 8192</div><div class="line">cell_size = 0.5</div><div class="line">function = stp_python.KernelFunction.GaussianSinc</div><div class="line">support = 3</div><div class="line">trunc = support</div><div class="line">kernel_exact = False</div><div class="line">oversampling = 9</div><div class="line">generate_beam = False</div><div class="line"># Use stp_python.FFTRoutine.FFTW_ESTIMATE_FFT if wisdom files are not available</div><div class="line">r_fft = stp_python.FFTRoutine.FFTW_WISDOM_FFT</div><div class="line"># The FFTW wisdom files must be located in the current directory</div><div class="line">fft_wisdom_filename = &#39;../wisdomfiles/WisdomFile_rob8192x8192.fftw&#39;</div><div class="line"></div><div class="line"># Call image_visibilities</div><div class="line">cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(vis, </div><div class="line">        vis_weights, uvw_lambda, image_size, cell_size, function, </div><div class="line">        trunc, support, kernel_exact, oversampling, generate_beam, </div><div class="line">        r_fft, fft_wisdom_filename)</div><div class="line"></div><div class="line"># Parameters of source_find function</div><div class="line">detection_n_sigma = 50.0</div><div class="line">analysis_n_sigma = 50.0</div><div class="line">rms_est = 0.0</div><div class="line">find_negative = True</div><div class="line">sigma_clip_iters = 5</div><div class="line">median_method = stp_python.MedianMethod.BINAPPROX  </div><div class="line"># Other options: stp_python.MedianMethod.ZEROMEDIAN, stp_python.MedianMethod.BINMEDIAN, stp_python.MedianMethod.NTHELEMENT</div><div class="line">gaussian_fitting = True</div><div class="line">generate_labelmap = False</div><div class="line">ceres_diffmethod = stp_python.CeresDiffMethod.AnalyticDiff_SingleResBlk </div><div class="line"># Other options: stp_python.CeresDiffMethod.AnalyticDiff, stp_python.CeresDiffMethod.AutoDiff_SingleResBlk, stp_python.CeresDiffMethod.AutoDiff</div><div class="line">ceres_solvertype = stp_python.CeresSolverType.LinearSearch_LBFGS </div><div class="line"># Other options: stp_python.CeresSolverType.LinearSearch_BFGS, stp_python.CeresSolverType.TrustRegion_DenseQR</div><div class="line"></div><div class="line"># Call source_find</div><div class="line">islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, </div><div class="line">            analysis_n_sigma, rms_est, find_negative, </div><div class="line">            sigma_clip_iters, median_method, gaussian_fitting, </div><div class="line">            generate_labelmap, ceres_diffmethod, ceres_solvertype)</div><div class="line"></div><div class="line"># Print result</div><div class="line">for i in islands:</div><div class="line">   print(i)</div><div class="line">   print()</div></div><!-- fragment --><h2>Run source finding module</h2>
+<p>STP library can be used to perform only the source finding stage using either the run_sourcefind executable or the calling the stp_python.source_find_wrapper from the Python code, as previously described. However, the input image must satisfy some requirements, in particular, it must be represented using the Double type and use the Fortran-style array order. When these requirements are not meet, it performs an image conversion, which involves copying the entire image to a new array using double type and Fortran-style, degrading the performance of the algorithm. Thus, for benchmarking purposes, the source finding executable and python bindings must be compiled using the double precision mode and the input image must be represented according to the referred requirements. While using the double type for image representation should not be a problem, since numpy usually uses this type by default, setting the Fortran-style array order may require extra parameters when creating the array. Another solution is to convert the previously created numpy array in C-style to Fortran-style using the np.asfortranarray() function from the Python code.</p>
 <h2>Code profiling</h2>
 <ul>
 <li>Valgrind framework tools can be used to profile STP library: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).</li>
@@ -172,249 +219,7 @@ $(function() {
 <li>When running valgrind with callgrind tool, add &ndash;separate-threads=yes in order to independently profile all threads.</li>
 <li>Results of these tools are written out to a file (default name: &lt;tool&gt;.out.&lt;pid&gt;).</li>
 <li>Callgrind and cachegrind output files can be analyzed using kcachegrind GUI application, while massif output file can be analyzed with massif-visualizer.</li>
-<li>Callgrind usage example: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ cd reduce</div><div class="line">$ valgrind --tool=callgrind --separate-threads=yes ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l</div><div class="line">$ kcachegrind callgrind.out.*</div></div><!-- fragment --> For memory checking purposes, a CMake target for valgrind that executes the test_pipeline_gaussiansinc test is provided: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make valgrind</div></div><!-- fragment --></li>
-</ul>
-<h2>Release Notes</h2>
-<h3>22 September 2017</h3>
-<ul>
-<li>Added option to select median function</li>
-<li>Moved conversion of half-plane visibilities to gridder</li>
-<li>Added fftshift benchmark</li>
-<li>Updated benchmarks to use larger image sizes</li>
-</ul>
-<h3>15 September 2017</h3>
-<ul>
-<li>Implemented method of moments for initial gaussian fitting</li>
-<li>Changed output data for each island</li>
-<li>Removed compute_barycentre option</li>
-<li>Improved documentation</li>
-</ul>
-<h3>29 August 2017</h3>
-<ul>
-<li>Improved doxygen documentation</li>
-<li>Added CMake target to generate FFTW plans</li>
-<li>Fixed bugs</li>
-</ul>
-<h3>25 August 2017</h3>
-<ul>
-<li>Added option to use analytic derivatives for gaussian fitting using ceres-solver</li>
-<li>Improved implementation of gaussian fitting</li>
-<li>Added unit test for gaussian fitting</li>
-<li>Added doxygen documentation</li>
-</ul>
-<h3>4 August 2017</h3>
-<ul>
-<li>Implemented gaussian fitting using ceres-solver</li>
-<li>Fixed bugs</li>
-</ul>
-<h3>28 July 2017</h3>
-<ul>
-<li>Implemented baseline weighting feature</li>
-<li>Changed normalisation of fft output by using weighting information</li>
-<li>Made generation of beam signal an optional step</li>
-<li>Added CMake option to explicitly use fftshift function after the FFT step and perform labeling over shifted matrices</li>
-<li>Fixed issue on derivation of out-of-bound kernels that could result in a non-symmetric gridded matrix</li>
-</ul>
-<h3>14 July 2017</h3>
-<ul>
-<li>Implemented alternative method to compute exact median based on the binmedian algorithm - it is faster than nth_element when run in multiple cores</li>
-<li>Improved/fixed unit tests and benchmarks</li>
-</ul>
-<h3>5 July 2017</h3>
-<ul>
-<li>Implemented generation of model visibilities from input skymodel and UVW baselines</li>
-<li>Updated test data</li>
-<li>Improved/fixed python-bindings</li>
-<li>Improved/fixed unit tests and benchmarks</li>
-</ul>
-<h3>28 June 2017</h3>
-<ul>
-<li>Implemented HalfComplex-to-Real FFT</li>
-<li>Removed matrix shifting steps before and after FFT</li>
-<li>Modified Connected Components Labeling algorithm to process not shifted matrix</li>
-<li>Added new matrix class that uses calloc method</li>
-<li>Implemented parallel algorithm for Connected Components Labeling</li>
-<li>Rewrote some parts of source find step to minimize memory accesses (e.g. merged some functions)</li>
-<li>Improved RMS estimation using incremental standard deviation</li>
-<li>When possible reused computed values of mean, sigma and median among several functions</li>
-<li>Implemented binapprox method to estimate an approximation of median (it is faster)</li>
-<li>Added several improvements (e.g. compare floats using integer operations in RMS estimation function)</li>
-<li>Fixed FFTW to work with 2¹⁶ x 2¹⁶ matrices</li>
-</ul>
-<h3>22 May 2017</h3>
-<ul>
-<li>Added support to FFTW Wisdom files</li>
-<li>Added OpenBlas to in-source third-party libraries</li>
-<li>Enabled sse, avx, avx2 configure options for FFTW</li>
-<li>Implemented real-to-complex FFT for the beam matrix</li>
-<li>Replaced backward FFT by forward FFT by applying the FFT duality property</li>
-<li>Added new options to JSON file</li>
-<li>Added cmake option to use float rather than double type to represent large structures of real/complex numbers</li>
-<li>Implemented shifted-gridder which generates shifted matrices</li>
-<li>Implemented MatStp class which creates a matrix initialized with zeros using calloc (inherits arma::Mat&lt;&gt;)</li>
-<li>Updated data matrices to use shorter primitive types</li>
-<li>Added and improved benchmark tests</li>
-<li>Performed general improvements to STP implementation</li>
-</ul>
-<h3>7 March 2017</h3>
-<ul>
-<li>Some minor improvements and fixes</li>
-<li>Improved benchmark tests</li>
-<li>Added new benchmark tests</li>
-<li>Improve gridder for the case of exact kernel</li>
-</ul>
-<h3>8 February 2017</h3>
-<ul>
-<li>Some minor improvements</li>
-<li>Added RapidJSON, TCLAP and spdlog in-source</li>
-<li>Improved benchmarks</li>
-</ul>
-<h3>7 February 2017</h3>
-<ul>
-<li>Fixed minor bugs</li>
-</ul>
-<h3>3 February 2017</h3>
-<ul>
-<li>Added armadillo to third-party libraries</li>
-<li>Added support for GNU parallel mode of libstdc++ (useful for nth_element function used by arma::median)</li>
-<li>Implemented new benchmark functions</li>
-<li>Added new option in reduce to enable/disable usage of residual visibilities</li>
-<li>Reduced maximum peak of memory usage (based on memory profiling)</li>
-<li>Improved STP performance, code style and comments</li>
-</ul>
-<h3>27 January 2017</h3>
-<ul>
-<li>Added new python binding over source_find_image function</li>
-<li>Improved existing python binding over image_visibilities function</li>
-<li>Removed std::optional for rms_est</li>
-<li>Implemented new unitary tests</li>
-</ul>
-<h3>26 January 2017</h3>
-<ul>
-<li>Improved matrix shift implementation</li>
-<li>Re-implemented reduce target</li>
-<li>Implemented new run_imagevis and run_sourcefind targets</li>
-</ul>
-<h3>24 January 2017</h3>
-<ul>
-<li>Removed visibility and pipeline header files</li>
-<li>Created new tests for pipeline</li>
-<li>Created new benchmarks for source-find, imager, fft</li>
-<li>Moved JSON functions to auxiliary directory</li>
-<li>Added new simulation data for benchmarking and tests</li>
-<li>Removed WITH_ARMAFFT cmake option</li>
-<li>Fixed source find bug: computed bg_level based on median</li>
-<li>Moved fixtures and gaussian 2D to auxiliary folder</li>
-<li>Removed data image from island parameters</li>
-<li>Moved searching of the extremum value index from island constructor to label dectection functions</li>
-<li>Added new vector math functions with TBB parallelization</li>
-<li>Improved implementation of estimate RMS using TBB parallelization</li>
-<li>Improved implementation of islands constructor</li>
-<li>Added separate functions for finding positive and negative sources</li>
-<li>Added several improvements and fixes, mostly for gridder and source find</li>
-<li>Parallelized accumulate, mean, stddev and shift operations</li>
-<li>Disabled Armadillo runtime linking library (now links directly to OpenBLAS)</li>
-<li>Added OpenBLAS function to perform inplace division of a matrix by a constant</li>
-<li>Parallelized several functions of source find and image visibilities</li>
-<li>Added config folder</li>
-<li>Added test-data as git sub-module</li>
-</ul>
-<h3>17 January 2017</h3>
-<ul>
-<li>Created three branchs:<ul>
-<li>master: optimized multithreaded version</li>
-<li>reference-optimized: optimized single-threaded version</li>
-<li>reference-unopt: non-optimized single-threaded version</li>
-</ul>
-</li>
-<li>Fixed bug in kernel bound checking code</li>
-<li>Added new kernel_exact parameter to disable oversampling</li>
-<li>Added new JSON parameters for reduce</li>
-<li>Implemented new benchmarks: populate_kernel_cache, gridder and pipeline</li>
-<li>Added TBB library to third-party</li>
-<li>Parallelized gridder (oversampling case) using TBB</li>
-<li>Enabled multithreaded FFTW</li>
-<li>Disabled armadillo DEBUG flag</li>
-<li>Added gnuplot scripts to generate benchmark speedup plots</li>
-</ul>
-<h3>5 January 2017</h3>
-<ul>
-<li>Renamed libstp to stp</li>
-<li>Added namespace stp</li>
-<li>Removed STP-Runner</li>
-<li>Added Reduce module for simulated run of pipeline</li>
-<li>Implemented visibity module</li>
-<li>Implemented python bindings for the "image_visibilities" function, as per imager.py (fastimgproto/bindings)</li>
-<li>Renamed pipeline.h to <a class="el" href="imager_8h.html" title="Function prototypes of the imager. ">imager.h</a></li>
-<li>Implemented new pipeline module based on simpipe.py (fastimgproto/scripts)</li>
-<li>Implemented sigma_clip function</li>
-<li>Added std::optional to represent oversampling and rms</li>
-<li>Added new tests and improved existing ones</li>
-<li>Defined benchmark functions in new folder (not implemented yet)</li>
-<li>Fixed reading of fortran_order flag in cnpy functions</li>
-<li>Applied several optimizations to stp functions</li>
-</ul>
-<h3>9 December 2016</h3>
-<ul>
-<li>Implemented 1st version of the SourceFindImage (IslandParams and SourceFindImage structs/functions)</li>
-<li>Implemented 1st version of the Fixtures (functions uncorrelated_gaussian_noise_background and evaluate_model_on_pixel_grid)</li>
-<li>Implemented Connected Components Labeling function</li>
-<li>Implemented Gaussian2D class (based on Gaussian2D of the astropy library)</li>
-<li>Created test environment for: SourceFind and Fixtures modules</li>
-<li>Added Google Benchmark functions for all tests except 1D convolution</li>
-<li>Rename some files/variables/functions/structs</li>
-</ul>
-<h3>23 November 2016</h3>
-<ul>
-<li>FFTW3 is now an in-source dependency</li>
-<li>Added rapidjson to the source dependencies</li>
-<li>Implemented 1st version of the pipeline (function: image_visibilities)</li>
-<li>Added tests for pipeline and cnpy</li>
-<li>Completely changed the implementation of the STP Runner</li>
-<li>Added JSON files with configuration values for the STP Runner and tests</li>
-<li>Reduced tolerance value for all tests</li>
-</ul>
-<h3>9 November 2016</h3>
-<ul>
-<li>Google Test is now an in-source dependency</li>
-<li>Added Google Benchmark to the in-source dependencies directory</li>
-<li>CMake scripts were greatly improved</li>
-<li>Added convenience bash script for building the source tree</li>
-<li>Code fixes to the gridder/convolution functions</li>
-<li>Code fixes to the STP Runner</li>
-</ul>
-<h3>3 November 2016</h3>
-<ul>
-<li>Implemented 2nd version of the gridder (functions: populate_kernel_cache and calculate_oversampled_kernel_indices)</li>
-<li>Created test environment for: Triangle convolution [on gridder], StpeppedVsExactconvolution and FractionalCoordToOversampledIndexMath</li>
-</ul>
-<h3>28 October 2016</h3>
-<ul>
-<li>Updated 1D kernel functions: using template classes</li>
-<li>Updated 2D kernel function: use of templates and functors</li>
-<li>Implemented 1st version of the gridder (functions: bounds_check_kernel_centre_locations and convolve_to_grid)</li>
-<li>Created test environment for the Tophat convolution [on gridder]</li>
-<li>Updated test environment for the STP library</li>
-<li><a href="https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8">Removed "using namespaces"</a></li>
-</ul>
-<h3>19 October 2016</h3>
-<ul>
-<li>Revised project structure</li>
-<li>Created first version of the STP-Runner</li>
-<li>Task from <em>Development Plan</em><ul>
-<li><a href="https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/2">Integrate cnpy into build, convert to/from Armadillo arrays, test.</a></li>
-</ul>
-</li>
-</ul>
-<h3>14 October 2016</h3>
-<ul>
-<li>Revised project structure</li>
-<li>Tasks from <em>Development Plan</em><ul>
-<li><a href="https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/3">Basic 1D convolution functions(tophat, triangle, sinc, triangle and gaussiansinc)</a></li>
-<li><a href="https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/6">2-d kernel generation from convolution functions (tophat and triangle)</a></li>
-</ul>
-</li>
-<li>Created a test environment for the STP library functions so far </li>
+<li>Callgrind usage example: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ cd reduce</div><div class="line">$ valgrind --tool=callgrind --separate-threads=yes ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l</div><div class="line">$ kcachegrind callgrind.out.*</div></div><!-- fragment --> For memory checking purposes, a CMake target for valgrind that executes the test_pipeline_gaussiansinc test is provided: <div class="fragment"><div class="line">$ cd path/to/build/directory</div><div class="line">$ make valgrind</div></div><!-- fragment --> </li>
 </ul>
 </div></div><!-- contents -->
 <!-- start footer part -->

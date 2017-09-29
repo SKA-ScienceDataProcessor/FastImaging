@@ -34,7 +34,7 @@ do
 			;;
 		h)
 			echo 
-			echo "Build STP prototype, generate FFTW plans and run tests."
+			echo "Build STP prototype, generate FFTW wisdom files and run tests."
 			echo "Usage: ./build.sh <OPTIONS>"
 			echo
 			echo "Available OPTIONS:"
@@ -43,7 +43,7 @@ do
 			echo " -i    Set BUILDTYPE=RelWithDebInfo"
 			echo " -f    Set USE_FLOAT=ON (default is USE_FLOAT=OFF)"
 			echo " -s    Set USE_FFTSHIFT=ON (default is USE_FFTSHIFT=OFF)"
-			echo " -n    Disable generation of fftw plans (enabled by default)"
+			echo " -n    Do not generate fftw wisdom files"
 			echo
 			exit 1
 			;;
@@ -79,8 +79,8 @@ make all -j $NUMCORES
 # Generate FFTW plans
 if [ $GENFFT == 1 ] ; then
 	echo
-	echo " >> Generate FFTW plans using fftw-wisdom tool"
-	make fftwplans
+	echo " >> Generate FFTW wisdom files using fftw-wisdom tool"
+	make fftwisdom
 fi
 
 echo

@@ -12,7 +12,7 @@
   - third-party: external code, mostly libraries
 - configs: auxiliary configuration files
 - test-data: input test data files
-- scripts: auxiliary scripts to generate FFTW plans and test python bindings
+- scripts: auxiliary scripts to generate FFTW wisdom files and test python bindings
 - vagrant: virtual machine configuration
 
 ## Build & Run
@@ -49,25 +49,25 @@ To build the STP prototype, the following CMake options are available:
 
 OPTION        | Description
 ------------- | -------------
- BUILD_TESTS           | Builds the unit tests (default=ON)
- BUILD_BENCHMARK       | Builds the benchmark tests (default=ON)
- USE_GLIBCXX_PARALLEL  | Uses GLIBCXX parallel mode (default=ON)
- USE_FLOAT             | Builds STP using FLOAT type to represent large structures of real/complex numbers (default=ON)
- WITH_FUNCTION_TIMINGS | Measures function execution times from the reduce executable (default=ON)
- USE_SERIAL_GRIDDER    | Uses serial implementation of gridder (default=OFF)
- USE_FFTSHIFT          | Explicitly shifts the image and beam matrices in memory after FFT - results in slower imager (default=OFF)
+BUILD_TESTS           | Builds the unit tests (default=ON)
+BUILD_BENCHMARK       | Builds the benchmark tests (default=ON)
+USE_GLIBCXX_PARALLEL  | Uses GLIBCXX parallel mode - required for parallel nth_element (default=ON)
+USE_FLOAT             | Builds STP using FLOAT type to represent large arrays of real/complex numbers (default=ON)
+WITH_FUNCTION_TIMINGS | Measures function execution times from the reduce executable (default=ON)
+USE_SERIAL_GRIDDER    | Uses serial implementation of gridder (default=OFF)
+USE_FFTSHIFT          | Explicitly performs FFT shifting of the image matrix (and beam if generated) after the FFT - results in slower imager (default=OFF)
 
-When compiled with USE_FLOAT=ON, most algorithm data structures of real or complex numbers will use single-precision floating-point type instead of double-precision floating-point type. 
+When compiled with USE_FLOAT=ON, the large data arrays of real or complex numbers use the single-precision floating-point representation instead of the double-precision floating-point. 
 In most systems the FLOAT type uses 4 bytes while DOUBLE uses 8 bytes. Thus, using FLOAT allows to reduce the memory usage and consequently the pipeline running time.
-However, it reduces the algorithm floating-point accuracy.
+However, it reduces the algorithm's accuracy.
 
-After building STP the FFTW plans shall be generated using the fftw-wisdom tool. By using these plans, the FFT step executes much faster.
-A CMake target is provided to generate the FFTW plans. This target executes a script located in "project-root/scripts/fftw-wisdom" directory.
-The location and filename of the generated FFTW plans shall be provided in the input JSON configuration file.
+After building STP, the FFTW wisdom files shall be generated using the fftw-wisdom tool. By using these files, the FFT step executes much faster.
+A CMake target is provided to generate the FFTW wisdom files. This target executes a script located in "project-root/scripts/fftw-wisdom" directory.
+The location and filename of the generated FFTW wisdom files shall be provided in the input JSON configuration file.
 
-By default, FFTW plans are generated for the following matrix sizes: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536.
-When executing the STP only the above image sizes can be used as input, since the FFTW plans were generated only for these sizes. 
-If different image sizes are required, the script for plan generation shall be manually executed indicating the required image sizes.
+By default, FFTW wisdom files are generated for the following matrix sizes: 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536.
+When executing the STP only the above image sizes can be used as input, since the FFTW wisdom files were generated only for these sizes. 
+If different image sizes are required, the script for wisdom file generation shall be manually executed indicating the required image sizes.
 
 #### Using a build script (Includes tests execution)
 ```sh
@@ -82,7 +82,7 @@ OPTION | Description
  -i    | Set CMAKE_BUILD_TYPE=RelWithDebInfo
  -f    | Set USE_FLOAT=ON (default is USE_FLOAT=OFF)
  -s    | Set USE_FFTSHIFT=ON (default is USE_FFTSHIFT=OFF)                                                                                                                                     
- -n    | Disable generation of fftw plans (enabled by default) 
+ -n    | Do not generate fftw wisdom files
 
 #### Manually
 ```sh
@@ -91,9 +91,9 @@ $ cd <path/to/build/directory>
 $ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF <path/to/project/src>
 $ make all -j4
 ```
-Then, generate the FFTW plans using the available CMake target:
+Then, generate the FFTW wisdom files using the available CMake target:
 ```sh
-$ make fftwplans
+$ make fftwisdom
 ```
 Alternatively, the generate_wisdom.sh script can be manually executed (see available options using --help):
 ```sh
@@ -104,7 +104,7 @@ For instance, when compiled in Release mode with -DUSE_FLOAT=ON run:
 ```sh
 $ ./generate_wisdom.sh -r -f
 ```
-When executed manually, the plans are written into the wisdomfiles sub-directory created in the working directory.
+When executed manually, the wisdom files are written into the wisdomfiles sub-directory created in the working directory.
 
 ## Tests Execution
 ### Using CMake (after successful build)
@@ -124,17 +124,30 @@ $ run-parts ./tests
 $ cd path/to/build/directory
 $ make benchmarking
 ```
-Note that some benchmarks use the pre-generated FFTW plans by fftw-wisdom tool. 
-Please, be sure to run 'make fftwplans' before the benchmarks.
-If in-place fft configuration needs to benchmarked, additional plans must be generated using 'make ifftwplans'.
+Note that some benchmarks use the pre-generated FFTW wisdom files by fftw-wisdom tool. 
+Please, be sure to run 'make fftwisdom' before the benchmarks.
+If in-place fft configuration needs to benchmarked, additional wisdom files must be generated using 'make ifftwisdom'.
 
-## STP Execution using Reduce module
-The reduce executable is located in build-directory/reduce. It accepts the following arguments:
+## Run STP Executables
+
+STP provides three executables:
+- reduce : Runs the entire pipeline (imager and source find stages);
+- run_imagevis : Runs the imager stage (gridder + FFT + normalisation steps);
+- run_sourcefind : Runs the source find stage (requires an input image).
+
+These executables are located in the build-directory/reduce. 
+
+### Reduce
+
+The pipeline can be executed using:
+```sh
+./reduce [-d] [-l] <input-file-json> <input-file-npz> <output-file-json> <output-file-npz>
+```
 
 Argument | Usage  | Description
 ---------| -------| -------------
-<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json)
-<input-file-npz>   | required | Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz) 
+<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json).
+<input-file-npz>   | required | Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz).
 <output-file-json> | required | Output JSON filename for detected islands.
 <output-file-npz>  | optional | Output NPZ filename for label map matrix (label_map).
 -d, --diff | optional | Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
@@ -142,11 +155,137 @@ Argument | Usage  | Description
 
 Example:
 ```sh
+$ cd build-directory/reduce
 $ ./reduce fastimg_oversampling_config.json simdata_nstep10.npz detected_islands.json -d -l
 ```
-Note that the provided fastimg_oversampling_config.json file assumes that the FFTW wisdom files (with the pre-generated plans) are located in <build-directory>/wisdomfiles.
-This is the default path of the FFTW plans when generated by the 'make fftwplans' command.
+Note that the provided fastimg_oversampling_config.json file assumes that the pre-generated FFTW wisdom files are located in <build-directory>/wisdomfiles.
+This is the default path of the FFTW wisdom files when generated by the 'make fftwisdom' command.
 If a different directory was used, the wisdom file path in the JSON configuration file shall be properly setup.
+
+### Run_imagevis
+
+The imager can be executed using:
+
+```sh
+./run_imagevis [-d] [-l] <input-file-json> <input-file-npz> <output-file-npz>
+```
+
+Argument | Usage  | Description
+---------| -------| -------------
+<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json).
+<input-file-npz>   | required | Input NPZ filename with simulation data: uvw_lambda, vis, skymodel (e.g. simdata_nstep10.npz).
+<output-file-npz>  | optional | Output NPZ filename for image and beam matrices (image, beam).
+-d, --diff | optional | Use residual visibilities - difference between 'input_vis' and 'model' visibilities.
+-l, --log  | optional | Enable logger.
+
+Example:
+```sh
+$ cd build-directory/reduce
+$ ./run_imagevis fastimg_oversampling_config.json simdata_nstep10.npz dirty_image.npz -d -l
+```
+
+### Run_sourcefind
+
+The source find procedure can be executed using:
+
+```sh
+./run_sourcefind  [-l] <input-file-json> <input-file-npz> <output-file-json> <output-file-npz>
+```
+                     
+Argument | Usage  | Description
+---------| -------| -------------
+<input-file-json>  | required | Input JSON filename with configuration parameters (e.g. fastimg_oversampling_config.json).
+<input-file-npz>   | required | Input NPZ filename with simulation data (image).
+<output-file-json> | required | Output JSON filename for detected islands.
+<output-file-npz>  | optional | Output NPZ filename for label map matrix (label_map).
+-l, --log  | optional | Enable logger.
+
+Example:
+```sh
+$ cd build-directory/reduce
+$ ./run_sourcefind fastimg_oversampling_config.json dirty_image.npz detected_islands.json -l
+```
+
+## Run STP using python bindings
+
+The C++ imager and source find functions of STP can be independently called from Python code, using the STP Python bindings module.
+The following procedure shall be used:
+- Import stp_python.so (located in the build directory) and other important modules, such as Numpy.
+- Setup the variables and load input files required for the wrapper functions.
+- Call the STP wrapper functions.
+
+Example of STP Python bindings that runs the imager and source find functions:
+
+```pyhton
+import stp_python
+import numpy as np
+
+# Input simdata file must be located in the current directory
+vis_filepath = 'simdata_nstep10.npz'
+
+# This example is not computing residual visibilities. 'vis' component is directly used as input to the pipeline
+with open(vis_filepath, 'rb') as f:
+    npz_data_dict = np.load(f)
+    uvw_lambda = npz_data_dict['uvw_lambda']
+    vis = npz_data_dict['vis']
+    vis_weights = npz_data_dict['snr_weights']
+
+# Parameters of image_visibilities function
+image_size = 8192
+cell_size = 0.5
+function = stp_python.KernelFunction.GaussianSinc
+support = 3
+trunc = support
+kernel_exact = False
+oversampling = 9
+generate_beam = False
+# Use stp_python.FFTRoutine.FFTW_ESTIMATE_FFT if wisdom files are not available
+r_fft = stp_python.FFTRoutine.FFTW_WISDOM_FFT
+# The FFTW wisdom files must be located in the current directory
+fft_wisdom_filename = '../wisdomfiles/WisdomFile_rob8192x8192.fftw'
+
+# Call image_visibilities
+cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(vis, 
+        vis_weights, uvw_lambda, image_size, cell_size, function, 
+        trunc, support, kernel_exact, oversampling, generate_beam, 
+        r_fft, fft_wisdom_filename)
+
+# Parameters of source_find function
+detection_n_sigma = 50.0
+analysis_n_sigma = 50.0
+rms_est = 0.0
+find_negative = True
+sigma_clip_iters = 5
+median_method = stp_python.MedianMethod.BINAPPROX  
+# Other options: stp_python.MedianMethod.ZEROMEDIAN, stp_python.MedianMethod.BINMEDIAN, stp_python.MedianMethod.NTHELEMENT
+gaussian_fitting = True
+generate_labelmap = False
+ceres_diffmethod = stp_python.CeresDiffMethod.AnalyticDiff_SingleResBlk 
+# Other options: stp_python.CeresDiffMethod.AnalyticDiff, stp_python.CeresDiffMethod.AutoDiff_SingleResBlk, stp_python.CeresDiffMethod.AutoDiff
+ceres_solvertype = stp_python.CeresSolverType.LinearSearch_LBFGS 
+# Other options: stp_python.CeresSolverType.LinearSearch_BFGS, stp_python.CeresSolverType.TrustRegion_DenseQR
+
+# Call source_find
+islands = stp_python.source_find_wrapper(cpp_img, detection_n_sigma, 
+            analysis_n_sigma, rms_est, find_negative, 
+            sigma_clip_iters, median_method, gaussian_fitting, 
+            generate_labelmap, ceres_diffmethod, ceres_solvertype)
+
+# Print result
+for i in islands:
+   print(i)
+   print()
+```
+
+## Run source finding module
+
+STP library can be used to perform only the source finding stage using either the run_sourcefind executable or the calling the stp_python.source_find_wrapper from the Python code, as previously described.
+However, the input image must satisfy some requirements, in particular, it must be represented using the Double type and use the Fortran-style array order.
+When these requirements are not meet, it performs an image conversion, which involves copying the entire image to a new array using double type and Fortran-style, degrading the performance of the algorithm.
+Thus, for benchmarking purposes, the source finding executable and python bindings must be compiled using the double precision mode and the input image must be represented according to the referred requirements.
+While using the double type for image representation should not be a problem, since numpy usually uses this type by default, setting the Fortran-style array order may require extra parameters when creating the array.
+Another solution is to convert the previously created numpy array in C-style to Fortran-style using the np.asfortranarray() function from the Python code.
+
 
 ## Code profiling
  - Valgrind framework tools can be used to profile STP library: callgrind (function call history and instruction profiling), cachegrind (cache and branch prediction profiling) and massif (memory profiling).
@@ -166,213 +305,3 @@ For memory checking purposes, a CMake target for valgrind that executes the test
 $ cd path/to/build/directory
 $ make valgrind
 ```
-
-## Release Notes
-### 22 September 2017
-- Added option to select median function
-- Added option to disable negative source detection from reduce
-- Moved conversion of half-plane visibilities to the gridder
-- Added fftshift benchmark
-- Updated benchmarks to use larger image sizes 
-
-### 15 September 2017
-- Implemented method of moments for initial gaussian fitting
-- Changed output data for each island
-- Removed compute_barycentre option
-- Improved documentation
-
-### 29 August 2017
-- Improved doxygen documentation
-- Added CMake target to generate FFTW plans
-- Fixed bugs
-
-### 25 August 2017
-- Added option to use analytic derivatives for gaussian fitting using ceres-solver
-- Improved implementation of gaussian fitting
-- Added unit test for gaussian fitting
-- Added doxygen documentation 
-
-### 4 August 2017
-- Implemented gaussian fitting using ceres-solver
-- Fixed bugs
-
-### 28 July 2017
-- Implemented baseline weighting feature
-- Changed normalisation of fft output by using weighting information
-- Made generation of beam signal an optional step
-- Added CMake option to explicitly use fftshift function after the FFT step and perform labeling over shifted matrices
-- Fixed issue on derivation of out-of-bound kernels that could result in a non-symmetric gridded matrix
-
-### 14 July 2017
-- Implemented alternative method to compute exact median based on the binmedian algorithm - it is faster than nth_element when run in multiple cores
-- Improved/fixed unit tests and benchmarks
-
-### 5 July 2017
-- Implemented generation of model visibilities from input skymodel and UVW baselines
-- Updated test data 
-- Improved/fixed python-bindings
-- Improved/fixed unit tests and benchmarks
-
-### 28 June 2017
-- Implemented HalfComplex-to-Real FFT
-- Removed matrix shifting steps before and after FFT
-- Modified Connected Components Labeling algorithm to process not shifted matrix
-- Added new matrix class that uses calloc method
-- Implemented parallel algorithm for Connected Components Labeling
-- Rewrote some parts of source find step to minimize memory accesses (e.g. merged some functions)
-- Improved RMS estimation using incremental standard deviation
-- When possible reused computed values of mean, sigma and median among several functions
-- Implemented binapprox method to estimate an approximation of median (it is faster)
-- Added several improvements (e.g. compare floats using integer operations in RMS estimation function)
-- Fixed FFTW to work with 2¹⁶ x 2¹⁶ matrices
-
-### 22 May 2017
-- Added support to FFTW Wisdom files
-- Added OpenBlas to in-source third-party libraries
-- Enabled sse, avx, avx2 configure options for FFTW
-- Implemented real-to-complex FFT for the beam matrix
-- Replaced backward FFT by forward FFT by applying the FFT duality property
-- Added new options to JSON file
-- Added cmake option to use float rather than double type to represent large structures of real/complex numbers
-- Implemented shifted-gridder which generates shifted matrices
-- Implemented MatStp class which creates a matrix initialized with zeros using calloc (inherits arma::Mat<>)
-- Updated data matrices to use shorter primitive types
-- Added and improved benchmark tests
-- Performed general improvements to STP implementation
-
-### 7 March 2017
-- Some minor improvements and fixes
-- Improved benchmark tests
-- Added new benchmark tests
-- Improve gridder for the case of exact kernel
-
-### 8 February 2017
-- Some minor improvements
-- Added RapidJSON, TCLAP and spdlog in-source
-- Improved benchmarks
-
-### 7 February 2017
-- Fixed minor bugs
-
-### 3 February 2017
-- Added armadillo to third-party libraries
-- Added support for GNU parallel mode of libstdc++ (useful for nth_element function used by arma::median)
-- Implemented new benchmark functions
-- Added new option in reduce to enable/disable usage of residual visibilities
-- Reduced maximum peak of memory usage (based on memory profiling)
-- Improved STP performance, code style and comments 
-
-### 27 January 2017
-- Added new python binding over source_find_image function
-- Improved existing python binding over image_visibilities function
-- Removed std::optional for rms_est 
-- Implemented new unitary tests
-
-### 26 January 2017
-- Improved matrix shift implementation
-- Re-implemented reduce target
-- Implemented new run_imagevis and run_sourcefind targets
-
-### 24 January 2017
-- Removed visibility and pipeline header files
-- Created new tests for pipeline
-- Created new benchmarks for source-find, imager, fft
-- Moved JSON functions to auxiliary directory
-- Added new simulation data for benchmarking and tests
-- Removed WITH_ARMAFFT cmake option
-- Fixed source find bug: computed bg_level based on median
-- Moved fixtures and gaussian 2D to auxiliary folder
-- Removed data image from island parameters
-- Moved searching of the extremum value index from island constructor to label dectection functions
-- Added new vector math functions with TBB parallelization
-- Improved implementation of estimate RMS using TBB parallelization
-- Improved implementation of islands constructor
-- Added separate functions for finding positive and negative sources
-- Added several improvements and fixes, mostly for gridder and source find
-- Parallelized accumulate, mean, stddev and shift operations
-- Disabled Armadillo runtime linking library (now links directly to OpenBLAS)
-- Added OpenBLAS function to perform inplace division of a matrix by a constant
-- Parallelized several functions of source find and image visibilities
-- Added config folder
-- Added test-data as git sub-module
-
-### 17 January 2017
-- Created three branchs:
-  - master: optimized multithreaded version
-  - reference-optimized: optimized single-threaded version
-  - reference-unopt: non-optimized single-threaded version
-- Fixed bug in kernel bound checking code
-- Added new kernel_exact parameter to disable oversampling
-- Added new JSON parameters for reduce
-- Implemented new benchmarks: populate_kernel_cache, gridder and pipeline
-- Added TBB library to third-party
-- Parallelized gridder (oversampling case) using TBB
-- Enabled multithreaded FFTW
-- Disabled armadillo DEBUG flag 
-
-### 5 January 2017
-- Renamed libstp to stp
-- Added namespace stp
-- Removed STP-Runner
-- Added Reduce module for simulated run of pipeline
-- Implemented visibity module
-- Implemented python bindings for the "image_visibilities" function, as per imager.py (fastimgproto/bindings)
-- Renamed pipeline.h to imager.h
-- Implemented new pipeline module based on simpipe.py (fastimgproto/scripts)
-- Implemented sigma_clip function
-- Added std::optional to represent oversampling and rms
-- Added new tests and improved existing ones
-- Defined benchmark functions in new folder (not implemented yet)
-- Fixed reading of fortran_order flag in cnpy functions 
-- Applied several optimizations to stp functions
-
-### 9 December 2016
-- Implemented 1st version of the SourceFindImage (IslandParams and SourceFindImage structs/functions)
-- Implemented 1st version of the Fixtures (functions uncorrelated_gaussian_noise_background and evaluate_model_on_pixel_grid)
-- Implemented Connected Components Labeling function 
-- Implemented Gaussian2D class (based on Gaussian2D of the astropy library)
-- Created test environment for: SourceFind and Fixtures modules
-- Added Google Benchmark functions for all tests except 1D convolution
-- Rename some files/variables/functions/structs 
-
-### 23 November 2016
-- FFTW3 is now an in-source dependency
-- Added rapidjson to the source dependencies
-- Implemented 1st version of the pipeline (function: image_visibilities)
-- Added tests for pipeline and cnpy
-- Completely changed the implementation of the STP Runner
-- Added JSON files with configuration values for the STP Runner and tests
-- Reduced tolerance value for all tests
-
-### 9 November 2016
-- Google Test is now an in-source dependency
-- Added Google Benchmark to the in-source dependencies directory
-- CMake scripts were greatly improved
-- Added convenience bash script for building the source tree
-- Code fixes to the gridder/convolution functions
-- Code fixes to the STP Runner
-
-### 3 November 2016
-- Implemented 2nd version of the gridder (functions: populate_kernel_cache and calculate_oversampled_kernel_indices)
-- Created test environment for: Triangle convolution [on gridder], StpeppedVsExactconvolution and FractionalCoordToOversampledIndexMath
-
-### 28 October 2016
-- Updated 1D kernel functions: using template classes
-- Updated 2D kernel function: use of templates and functors
-- Implemented 1st version of the gridder (functions: bounds_check_kernel_centre_locations and convolve_to_grid)
-- Created test environment for the Tophat convolution [on gridder]
-- Updated test environment for the STP library
-- [Removed "using namespaces"](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/8)
-
-### 19 October 2016
-- Revised project structure
-- Created first version of the STP-Runner
-- Task from _Development Plan_
-  - [Integrate cnpy into build, convert to/from Armadillo arrays, test.](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/2)
-
-### 14 October 2016
-- Revised project structure
-- Tasks from _Development Plan_
-  - [Basic 1D convolution functions(tophat, triangle, sinc, triangle and gaussiansinc)](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/3)
-  - [2-d kernel generation from convolution functions (tophat and triangle)](https://github.com/SKA-ScienceDataProcessor/FastImaging/issues/6)
-- Created a test environment for the STP library functions so far

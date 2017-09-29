@@ -25,11 +25,11 @@ endif()
 # Options
 option(BUILD_TESTS "Builds the unit tests" ON)
 option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
-option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode" ON)
-option(USE_FLOAT "Builds STP using 'float' type to represent real numbers" ON)
+option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode - required for parallel nth_element" ON)
+option(USE_FLOAT "Builds STP using FLOAT type to represent large arrays of real/complex numbers" ON)
 option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
 option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
-option(USE_FFTSHIFT "Explicitly shifts the image and beam matrices in memory after FFT (results in slower imager)" OFF)
+option(USE_FFTSHIFT "Explicitly performs FFT shifting of the image matrix (and beam if generated) after the FFT - results in slower imager" OFF)
 
 # Check libstdc++ parallel mode
 # This needs to be done here, otherwise reduce, tests and benchmark fail linking
@@ -179,10 +179,10 @@ if(USE_FLOAT)
 endif()
 # Output directory
 set(FFTWPLAN_OUTPUTDIR "wisdomfiles")
-# Create custom target for out-of-place fft plans (used in STP)
-add_custom_target(fftwplans
+# Create custom target to generate wisdom files for out-of-place fft (used in STP)
+add_custom_target(fftwisdom
     DEPENDS fftw
-    COMMENT "Generated FFTW plans will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
+    COMMENT "Generated FFTW wisdom files will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     # Copy script to build directory
     COMMAND ${CMAKE_COMMAND} -E copy ${FFTWPLAN_PATH}/${FFTWPLAN_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}
@@ -190,11 +190,11 @@ add_custom_target(fftwplans
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_SCRIPT} ${FFTWPLAN_OPTIONS}
 )
 
-# Create custom target for in-place fft plans (just for benchmark)
+# Create custom target to generate wisdom files for in-place fft (just for benchmark)
 set(IFFTWPLAN_OPTIONS ${FFTWPLAN_OPTIONS} -p)
-add_custom_target(ifftwplans
+add_custom_target(ifftwisdom
     DEPENDS fftw
-    COMMENT "Generated FFTW plans will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
+    COMMENT "Generated FFTW wisdom files will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${FFTWPLAN_OUTPUTDIR}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     # Copy script to build directory
     COMMAND ${CMAKE_COMMAND} -E copy ${FFTWPLAN_PATH}/${FFTWPLAN_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}
