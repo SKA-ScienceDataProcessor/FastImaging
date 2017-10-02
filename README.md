@@ -281,11 +281,13 @@ for i in islands:
 
 The STP library can be used to run the source finding module independently using either the run_sourcefind executable or calling the stp_python.source_find_wrapper from the Python code, as previously described.
 However, the input image must satisfy some requirements, in particular, it must be represented using the Double type and use the Fortran-style array order.
-When these requirements are not meet, it performs an image conversion, which involves copying the entire image to a new array using double type and Fortran-style, degrading the performance of the algorithm.
 
-Thus, for benchmarking purposes, the source finding executable and python bindings must be compiled using the double precision mode and the input image must be represented according to the referred requirements.
+When these requirements are not meet, it performs an image conversion, which involves copying the entire image to a new array using double type and Fortran-style, degrading the performance of the algorithm.
 While using the double type for image representation should not be a problem, since numpy usually uses this type by default, setting the Fortran-style array order may require extra parameters when creating the array.
 Another solution is to convert the previously created numpy array in C-style to Fortran-style using the np.asfortranarray() function from the Python code.
+
+Regarding the STP building procedure for source finding execution, it must use the CMake option USE_FLOAT=OFF so that the executable and python bindings are compiled in double precision mode.
+Also, if the input image is properly shifted (after FFT), the CMake option USE_FFTSHIFT must be turned ON during the STP building, so that the source finding works correctly with a shifted input image.
 
 
 ## Code profiling
