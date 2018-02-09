@@ -18,6 +18,7 @@ namespace stp {
 #ifdef FUNCTION_TIMINGS
 std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
 std::vector<std::chrono::high_resolution_clock::time_point> times_sf;
+std::vector<std::chrono::high_resolution_clock::time_point> times_ccl;
 #endif
 
 // The sigma_clip step is combined with estimate_rms in order to save some computational complexity
@@ -49,7 +50,7 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
     // Represents a floation-point number that can be accessed using the integer type.
     FloatTwiddler prev_upper_sigma(std::numeric_limits<real_t>::max());
 
-    // Perform sigma clip for the defined number of iterations
+    // Perform Sigma-Clipping using the defined number of iterations
     for (uint i = 0; i < iters; i++) {
         // Represents a floation-point number that can be accessed using the integer type.
         FloatTwiddler upper_sigma(num_sigma * sigma);
@@ -161,7 +162,9 @@ SourceFindImage::SourceFindImage(
     uint sigma_clip_iters,
     MedianMethod median_method,
     bool gaussian_fitting,
+    bool ccl_4connectivity,
     bool generate_labelmap,
+    int source_min_area,
     CeresDiffMethod ceres_diffmethod,
     CeresSolverType ceres_solvertype)
     : detection_n_sigma(input_detection_n_sigma)
@@ -206,9 +209,9 @@ SourceFindImage::SourceFindImage(
     // Perform label detection (for both positive and negative sources)
     uint numValidLabels = 0;
     if (generate_labelmap) {
-        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, fit_gaussian);
+        numValidLabels = _label_detection_islands<true>(input_data, find_negative_sources, fit_gaussian, ccl_4connectivity);
     } else {
-        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, fit_gaussian);
+        numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, fit_gaussian, ccl_4connectivity);
     }
 
 #ifdef FUNCTION_TIMINGS
@@ -237,12 +240,14 @@ SourceFindImage::SourceFindImage(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            IslandParams island(label_extrema_id_pos[i], label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_numsamples_pos[i],
-                label_extrema_boundingbox_pos[i]);
-            island.estimate_moments_fit(label_extrema_moments_pos.col(i)(0), label_extrema_moments_pos.col(i)(1),
-                label_extrema_moments_pos.col(i)(2), label_extrema_moments_pos.col(i)(3), label_extrema_moments_pos.col(i)(4),
-                rms_est, analysis_n_sigma);
-            islands.push_back(std::move(island));
+            if (label_extrema_numsamples_pos[i] >= source_min_area) {
+                IslandParams island(label_extrema_id_pos[i], label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_numsamples_pos[i],
+                    label_extrema_boundingbox_pos[i]);
+                island.estimate_moments_fit(label_extrema_moments_pos.col(i)(0), label_extrema_moments_pos.col(i)(1),
+                    label_extrema_moments_pos.col(i)(2), label_extrema_moments_pos.col(i)(3), label_extrema_moments_pos.col(i)(4),
+                    rms_est, analysis_n_sigma);
+                islands.push_back(std::move(island));
+            }
         }
     }
 
@@ -258,12 +263,14 @@ SourceFindImage::SourceFindImage(
             int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
             int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
 #endif
-            IslandParams island(label_extrema_id_neg[i], label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_numsamples_neg[i],
-                label_extrema_boundingbox_neg[i]);
-            island.estimate_moments_fit(label_extrema_moments_neg.col(i)(0), label_extrema_moments_neg.col(i)(1),
-                label_extrema_moments_neg.col(i)(2), label_extrema_moments_neg.col(i)(3), label_extrema_moments_neg.col(i)(4),
-                rms_est, analysis_n_sigma);
-            islands.push_back(std::move(island));
+            if (label_extrema_numsamples_neg[i] >= source_min_area) {
+                IslandParams island(label_extrema_id_neg[i], label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_numsamples_neg[i],
+                    label_extrema_boundingbox_neg[i]);
+                island.estimate_moments_fit(label_extrema_moments_neg.col(i)(0), label_extrema_moments_neg.col(i)(1),
+                    label_extrema_moments_neg.col(i)(2), label_extrema_moments_neg.col(i)(3), label_extrema_moments_neg.col(i)(4),
+                    rms_est, analysis_n_sigma);
+                islands.push_back(std::move(island));
+            }
         }
     }
 
@@ -277,7 +284,6 @@ SourceFindImage::SourceFindImage(
             }
         });
     }
-    assert(islands.size() == numValidLabels);
 
 #ifdef FUNCTION_TIMINGS
     times_sf.push_back(std::chrono::high_resolution_clock::now());
@@ -285,7 +291,7 @@ SourceFindImage::SourceFindImage(
 }
 
 template <bool generateLabelMap>
-uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool gaussian_fitting)
+uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources, bool gaussian_fitting, bool ccl_4connectivity)
 {
     // Compute analysis and detection thresholds
     const real_t analysis_thresh_pos = bg_level + analysis_n_sigma * rms_est;
@@ -294,12 +300,29 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     const real_t detection_thresh_neg = bg_level - detection_n_sigma * rms_est;
     std::tuple<MatStp<int>, MatStp<uint>, size_t, size_t> labeling_output;
 
+#ifdef FUNCTION_TIMINGS
+    times_ccl.reserve(NUM_TIME_INST);
+    times_ccl.push_back(std::chrono::high_resolution_clock::now());
+#endif
+
     // Perform connected components labeling algorithm
-    if (find_negative_sources) {
-        labeling_output = labeling<true>(data, analysis_thresh_pos, analysis_thresh_neg);
+    if (ccl_4connectivity) {
+        if (find_negative_sources) {
+            labeling_output = labeling_4con<true>(data, analysis_thresh_pos, analysis_thresh_neg);
+        } else {
+            labeling_output = labeling_4con<false>(data, analysis_thresh_pos, analysis_thresh_neg);
+        }
     } else {
-        labeling_output = labeling<false>(data, analysis_thresh_pos, analysis_thresh_neg);
+        if (find_negative_sources) {
+            labeling_output = labeling_8con<true>(data, analysis_thresh_pos, analysis_thresh_neg);
+        } else {
+            labeling_output = labeling_8con<false>(data, analysis_thresh_pos, analysis_thresh_neg);
+        }
     }
+
+#ifdef FUNCTION_TIMINGS
+    times_ccl.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     // Process output of CCL function
     label_map = std::move(std::get<0>(labeling_output));
@@ -357,6 +380,10 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
             }
         }
     });
+
+#ifdef FUNCTION_TIMINGS
+    times_ccl.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     // Combine maximum values of all threads
     std::pair<arma::Col<real_t>, arma::uvec>& comb_extrema_pos = data_extrema_pos.local();
@@ -637,6 +664,10 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
             }
         });
     }
+
+#ifdef FUNCTION_TIMINGS
+    times_ccl.push_back(std::chrono::high_resolution_clock::now());
+#endif
 
     return numValidLabels;
 }

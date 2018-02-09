@@ -13,8 +13,10 @@
 	"sigma_clip_iters": 5,
 	"median_method": "BINMEDIAN",
 	"gaussian_fitting": false,
+	"ccl_4connectivity": false, 
 	"generate_labelmap": false,
 	"generate_beam": false,
-        "ceres_diffmethod": "AnalyticDiff_SingleResBlk",
-        "ceres_solvertype": "LinearSearch_LBFGS"
+	"source_min_area" : 5,
+	"ceres_diffmethod": "AnalyticDiff_SingleResBlk",
+	"ceres_solvertype": "LinearSearch_LBFGS"
 }

@@ -70,6 +70,8 @@ public:
 
             if (config_document.HasMember("gaussian_fitting"))
                 gaussian_fitting = config_document["gaussian_fitting"].GetBool();
+            if (config_document.HasMember("ccl_4connectivity"))
+                ccl_4connectivity = config_document["ccl_4connectivity"].GetBool();
             if (config_document.HasMember("generate_labelmap"))
                 generate_labelmap = config_document["generate_labelmap"].GetBool();
             if (config_document.HasMember("generate_beam"))
@@ -82,6 +84,9 @@ public:
             if (config_document.HasMember("ceres_solvertype")) {
                 s_ceres_solvertype = config_document["ceres_solvertype"].GetString();
                 ceres_solvertype = parse_ceres_solvertype(s_ceres_solvertype);
+            }
+            if (config_document.HasMember("source_min_area")) {
+                source_min_area = config_document["source_min_area"].GetInt();
             }
         }
     }
@@ -115,12 +120,14 @@ public:
     std::string s_median_method = "BINAPPROX";
     stp::MedianMethod median_method = stp::MedianMethod::BINAPPROX;
     bool gaussian_fitting = true;
+    bool ccl_4connectivity = false;
     bool generate_labelmap = false;
     bool generate_beam = false;
     std::string s_ceres_diffmethod = "AutoDiff_SingleResBlk";
     std::string s_ceres_solvertype = "LinearSearch_BFGS";
     stp::CeresDiffMethod ceres_diffmethod = stp::CeresDiffMethod::AutoDiff_SingleResBlk;
     stp::CeresSolverType ceres_solvertype = stp::CeresSolverType::LinearSearch_BFGS;
+    int source_min_area = 5;
 
 private:
     /**

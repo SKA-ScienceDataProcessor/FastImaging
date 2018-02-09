@@ -1,4 +1,11 @@
 ## Release Notes
+### 9 February 2018
+- Implemented 8-connected component labeling
+- Added option to select between 4- and 8-connected labeling
+- Added option to define minimum area of a source to be considered as valid
+- Added functionality to fix image size when it is not multiple of 4
+- Added new unit tests
+
 ### 30 September 2017
 - Improved parallel scalability of labeling function
 - Fixed computation of bounding box using multiple threads

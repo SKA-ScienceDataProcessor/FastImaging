@@ -65,11 +65,13 @@ int main(int argc, char** argv)
         use_residual = true;
     }
 
-    if (use_logger) {
-        // Creates and initializes the logger
-        initLogger();
-        _logger->info("Loading data");
+    // Creates and initializes the logger
+    initLogger();
+    if (!use_logger) {
+        _logger->set_level(spdlog::level::off);
     }
+
+    _logger->info("Loading data");
 
     //Load simulated data from input_npz
     arma::mat input_uvw = load_npy_double_array(_inNpzFileArg.getValue(), "uvw_lambda");
@@ -80,29 +82,37 @@ int main(int argc, char** argv)
         arma::cx_mat input_model = load_npy_complex_array(_inNpzFileArg.getValue(), "model");
         // Subtract model-generated visibilities from incoming data
         input_vis -= input_model;
-        if (use_logger) {
-            _logger->info("Use residual visibilities - input visibilities subtracted from model visibilities");
-        }
+        _logger->info("Use residual visibilities - input visibilities subtracted from model visibilities");
     }
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(_inJsonFileArg.getValue());
 
-    if (use_logger) {
-        _logger->info("Configuration parameters:");
-        _logger->info(" - image_size={}", cfg.image_size);
-        _logger->info(" - cell_size={}", cfg.cell_size);
-        _logger->info(" - kernel_support={}", cfg.kernel_support);
-        _logger->info(" - kernel_exact={}", cfg.kernel_exact);
-        _logger->info(" - oversampling={}", cfg.oversampling);
-        _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
-        _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
-        _logger->info(" - kernel_function={}", cfg.s_kernel_function);
-        _logger->info(" - fft_routine={}", cfg.s_fft_routine);
-        _logger->info(" - fft_wisdom_file={}", cfg.fft_wisdom_filename);
-        _logger->info(" - generate_beam={}", cfg.generate_beam);
-        _logger->info("Running image visibilities");
+    // Set image size to value multiple of 4
+    if ((cfg.image_size % 4) != 0) {
+        int prev_imagesize = cfg.image_size;
+        while ((cfg.image_size % 4) != 0) {
+            cfg.image_size++;
+        }
+        _logger->warn("!");
+        _logger->warn("Image size must be multiple of 4.");
+        _logger->warn("Changed image size: {} => {}.", prev_imagesize, cfg.image_size);
+        _logger->warn("!");
     }
+
+    _logger->info("Configuration parameters:");
+    _logger->info(" - image_size={}", cfg.image_size);
+    _logger->info(" - cell_size={}", cfg.cell_size);
+    _logger->info(" - kernel_support={}", cfg.kernel_support);
+    _logger->info(" - kernel_exact={}", cfg.kernel_exact);
+    _logger->info(" - oversampling={}", cfg.oversampling);
+    _logger->info(" - detection_n_sigma={}", cfg.detection_n_sigma);
+    _logger->info(" - analysis_n_sigma={}", cfg.analysis_n_sigma);
+    _logger->info(" - kernel_function={}", cfg.s_kernel_function);
+    _logger->info(" - fft_routine={}", cfg.s_fft_routine);
+    _logger->info(" - fft_wisdom_file={}", cfg.fft_wisdom_filename);
+    _logger->info(" - generate_beam={}", cfg.generate_beam);
+    _logger->info("Running image visibilities");
 
     // Create output matrix
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result;
@@ -157,15 +167,11 @@ int main(int argc, char** argv)
     times_red.push_back(std::chrono::high_resolution_clock::now());
 #endif
 
-    if (use_logger) {
-        _logger->info("Finished pipeline execution");
-    }
+    _logger->info("Finished pipeline execution");
 
     // Save image and beam matrices in NPZ file
     if (_outNpzFileArg.isSet()) {
-        if (use_logger) {
-            _logger->info("Saving output data");
-        }
+        _logger->info("Saving output data");
         npz_save(_outNpzFileArg.getValue(), "image", result.first, "w");
         npz_save(_outNpzFileArg.getValue(), "beam", result.second, "a");
     }
@@ -177,6 +183,7 @@ int main(int argc, char** argv)
     std::chrono::duration<double> time_span;
     _logger->info("Running time of each imager step:");
 
+    // Imager
     std::vector<std::string> imager_steps = { "Gridder", "FFT", "Normalise" };
     _logger->info(" Imager:");
     for (uint i = 1; i < stp::times_iv.size(); i++) {
@@ -186,8 +193,9 @@ int main(int argc, char** argv)
     time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv.back() - stp::times_iv.front());
     _logger->info(" - Total       = {:10.5f}", time_span.count());
 
+    // Global
     std::vector<std::string> reduce_steps = { "Read data", "Imager", "Write data" };
-    _logger->info(" Reduce:");
+    _logger->info(" Global:");
     for (uint i = 1; i < times_red.size(); i++) {
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(times_red[i] - times_red[i - 1]);
         _logger->info(" - {:11s} = {:10.5f}", reduce_steps[i - 1], time_span.count());

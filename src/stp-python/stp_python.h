@@ -78,7 +78,9 @@ pybind11::tuple image_visibilities_wrapper(
  * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function. Default = 5.
  * @param[in] median_method (MedianMethod): Method used to compute the median. Default = BINAPPROX.
  * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island. Default = false.
+ * @param[in] ccl_4connectivity (bool): Use 4-connected component labeling for source find (default is 8-connected component labeling).
  * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold. Default = true.
+ * @param[in] source_min_area (int): Minimum number of pixels required for a source. Default is 5.
  * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
  * @param[in] ceres_solvertype (CeresSolverType): Solver type used by ceres library for gaussian fitting.
  *
@@ -87,6 +89,7 @@ pybind11::tuple image_visibilities_wrapper(
  *                             - 'sign' is +1 or -1 (int), representing whether the source is positive or negative;
  *                             - 'val' (double) is the 'extremum_val', i.e. max or min pixel value for the positive or negative source case;
  *                             - 'x_idx,y_idx' (int) are the pixel-index of the extremum value;
+ *                             - 'num_samples' (int) number of samples in the island;
  *                             - 'moments_fit' (Gaussian2dParams) represents initial 2D gaussian fitting estimated from moments method:
  *                                                             'amplitude', 'x_centre', 'y_centre', 'x_stddev', 'y_stddev', 'theta'.
  * The following are valid only if input gaussian_fitting flag is enabled:
@@ -94,7 +97,7 @@ pybind11::tuple image_visibilities_wrapper(
  *                                                              'amplitude', 'x_centre', 'y_centre', 'x_stddev', 'y_stddev', 'theta'.
  *                             - 'ceres_report' (string) is the ceres solver report.
  */
-std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> source_find_wrapper(
     np_real_array image_data, // numpy.ndarray<np.float_>
     double detection_n_sigma,
     double analysis_n_sigma,
@@ -103,7 +106,9 @@ std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussi
     uint sigma_clip_iters,
     stp::MedianMethod median_method,
     bool gaussian_fitting,
+    bool ccl_4connectivity,
     bool generate_labelmap,
+    int source_min_area,
     stp::CeresDiffMethod ceres_diffmethod,
     stp::CeresSolverType ceres_solvertype);
 }

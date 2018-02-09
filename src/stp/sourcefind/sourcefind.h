@@ -114,8 +114,8 @@ struct IslandParams {
      * Fit 2D gaussian to the island using non-linear least-squares optimisation methods implemented by ceres library.
      * Requires image and label map information.
      *
-     * @param[in] data (arma::Mat<real_t>): Image data matrix
-     * @param[in] label_map (arma::Mat<int>): Label map matrix
+     * @param[in] data (arma::Mat<real_t>): Image data matrix.
+     * @param[in] label_map (arma::Mat<int>): Label map matrix.
      * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
      * @param[in] ceres_solvertype (CeresSolverType): Solver type used by ceres library for gaussian fitting.
      */
@@ -180,7 +180,9 @@ public:
      * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function.
      * @param[in] median_method (MedianMethod): Method used to compute the median.
      * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island.
+     * @param[in] ccl_4connectivity (bool): Use 4-connected component labeling for source find (default is 8-connected component labeling).
      * @param[in] generate_labelmap (bool): Update the final label map by removing the sources below the detection threshold.
+     * @param[in] source_min_area (int): Minimum number of pixels required for a source. Default is 5.
      * @param[in] ceres_diffmethod (CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting.
      * @param[in] ceres_solvertype (CeresSolverType): Solver type used by ceres library for gaussian fitting.
      */
@@ -193,7 +195,9 @@ public:
         uint sigma_clip_iters = 5,
         MedianMethod median_method = MedianMethod::BINAPPROX,
         bool gaussian_fitting = false,
+        bool ccl_4connectivity = false,
         bool generate_labelmap = true,
+        int source_min_area = 5,
         CeresDiffMethod ceres_diffmethod = CeresDiffMethod::AnalyticDiff_SingleResBlk,
         CeresSolverType ceres_solvertype = CeresSolverType::LinearSearch_LBFGS);
 
@@ -204,11 +208,12 @@ private:
      * @param[in] data (arma::Mat): Image data.
      * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
      * @param[in] gaussian_fitting (bool): Compute auxiliary structures used for gaussian fitting.
+     * @param[in] ccl_4connectivity (bool): Use 4-connected component labeling (default is 8-connected component labeling).
      *
      * @return (uint) Number of valid labels
      */
     template <bool generateLabelMap>
-    uint _label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources = true, bool gaussian_fitting = true);
+    uint _label_detection_islands(const arma::Mat<real_t>& data, bool find_negative_sources = true, bool gaussian_fitting = true, bool ccl_4connectivity = false);
 };
 }
 

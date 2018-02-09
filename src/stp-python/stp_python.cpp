@@ -133,7 +133,7 @@ pybind11::tuple image_visibilities_wrapper(
     return result;
 }
 
-std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> source_find_wrapper(
+std::vector<std::tuple<int, double, int, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> source_find_wrapper(
     np_real_array image_data,
     double detection_n_sigma,
     double analysis_n_sigma,
@@ -142,7 +142,9 @@ std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussi
     uint sigma_clip_iters,
     stp::MedianMethod median_method,
     bool gaussian_fitting,
+    bool ccl_4connectivity,
     bool generate_labelmap,
+    int source_min_area,
     stp::CeresDiffMethod ceres_diffmethod,
     stp::CeresSolverType ceres_solvertype)
 {
@@ -157,14 +159,14 @@ std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussi
 
     // Call source find function
     stp::SourceFindImage sfimage = stp::SourceFindImage(std::move(image_data_arma), detection_n_sigma, analysis_n_sigma, rms_est,
-        find_negative_sources, sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap,
-        ceres_diffmethod, ceres_solvertype);
+        find_negative_sources, sigma_clip_iters, median_method, gaussian_fitting, ccl_4connectivity, generate_labelmap,
+        source_min_area, ceres_diffmethod, ceres_solvertype);
 
     // Convert 'vector of stp::island' to 'vector of tuples'
-    std::vector<std::tuple<int, double, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> v_islands;
+    std::vector<std::tuple<int, double, int, int, int, stp::Gaussian2dParams, stp::Gaussian2dParams, std::string>> v_islands;
     v_islands.reserve(sfimage.islands.size());
     for (auto&& i : sfimage.islands) {
-        v_islands.push_back(std::move(std::make_tuple(i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx,
+        v_islands.push_back(std::move(std::make_tuple(i.sign, i.extremum_val, i.extremum_x_idx, i.extremum_y_idx, i.num_samples,
             i.moments_fit, i.leastsq_fit, i.ceres_report)));
     }
     return v_islands;
@@ -231,7 +233,8 @@ PYBIND11_PLUGIN(stp_python)
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
         pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("median_method") = stp::MedianMethod::BINAPPROX,
-        pybind11::arg("gaussian_fitting") = false, pybind11::arg("generate_labelmap") = true, pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
+        pybind11::arg("gaussian_fitting") = false, pybind11::arg("ccl_4connectivity") = false, pybind11::arg("generate_labelmap") = true,
+        pybind11::arg("source_min_area") = 5, pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
         pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
 
     return m.ptr();

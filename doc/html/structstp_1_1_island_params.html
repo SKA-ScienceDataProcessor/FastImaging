@@ -341,8 +341,8 @@ Public Attributes</h2></td></tr>
 <p>Fit 2D gaussian to the island using non-linear least-squares optimisation methods implemented by ceres library. Requires image and label map information.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>(arma::Mat&lt;real_t&gt;): Image data matrix </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">label_map</td><td>(arma::Mat&lt;int&gt;): Label map matrix </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>(arma::Mat&lt;real_t&gt;): Image data matrix. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">label_map</td><td>(arma::Mat&lt;int&gt;): Label map matrix. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ceres_diffmethod</td><td>(CeresDiffMethod): Differentiation method used by ceres library for gaussian fitting. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ceres_solvertype</td><td>(CeresSolverType): Solver type used by ceres library for gaussian fitting. </td></tr>
   </table>

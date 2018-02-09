@@ -24,7 +24,9 @@ private:
     uint sigma_clip_iters;
     stp::MedianMethod median_method;
     bool gaussian_fitting;
+    bool ccl_4connectivity;
     bool generate_labelmap;
+    int source_min_area;
     CeresDiffMethod ceres_diffmethod;
     CeresSolverType ceres_solvertype;
 
@@ -52,7 +54,9 @@ public:
         sigma_clip_iters = 5;
         median_method = stp::MedianMethod::BINMEDIAN;
         gaussian_fitting = true;
+        ccl_4connectivity = false;
         generate_labelmap = true;
+        source_min_area = 5;
         ceres_diffmethod = ::testing::get<0>(GetParam());
         ceres_solvertype = ::testing::get<1>(GetParam());
 
@@ -78,8 +82,8 @@ public:
         // Input data needs to be shifted because source_find assumes it is shifted (required when FFTSHIFT option is disabled)
         fftshift(img);
 #endif
-        SourceFindImage sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources,
-            sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap, ceres_diffmethod, ceres_solvertype);
+        SourceFindImage sf(img, detection_n_sigma, analysis_n_sigma, rms_est, find_negative_sources, sigma_clip_iters,
+            median_method, gaussian_fitting, ccl_4connectivity, generate_labelmap, source_min_area, ceres_diffmethod, ceres_solvertype);
 #ifndef FFTSHIFT
         fftshift(img);
 #endif

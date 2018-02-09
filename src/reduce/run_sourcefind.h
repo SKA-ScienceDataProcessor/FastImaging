@@ -29,7 +29,9 @@ TCLAP::UnlabeledValueArg<std::string> _outJsonFileArg("output-file-json", "Outpu
 // Output Npz filename
 TCLAP::UnlabeledValueArg<std::string> _outNpzFileArg("output-file-npz", "(optional)  Output NPZ filename for label map matrix (label_map).", false, "", "output-file-npz");
 // Enable logger
-TCLAP::SwitchArg _enableLoggerArg("l", "log", "Enable logger.", false);
+TCLAP::SwitchArg _enableLoggerArg("l", "log", "Enable logger (write to standard output and file).", false);
+// Print islands
+TCLAP::SwitchArg _enableIslandPrintArg("p", "print", "Print islands found to standard output.", false);
 
 /**
 * @brief Logger initialization function

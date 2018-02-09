@@ -34,6 +34,8 @@ public:
         sigma_clip_iters = cfg.sigma_clip_iters;
         median_method = cfg.median_method;
         gaussian_fitting = cfg.gaussian_fitting;
+        ccl_4connectivity = cfg.ccl_4connectivity;
+        source_min_area = cfg.source_min_area;
         generate_labelmap = cfg.generate_labelmap;
         generate_beam = cfg.generate_beam;
         ceres_diffmethod = cfg.ceres_diffmethod;
@@ -57,6 +59,8 @@ public:
     int sigma_clip_iters;
     stp::MedianMethod median_method;
     bool gaussian_fitting;
+    bool ccl_4connectivity;
+    int source_min_area;
     bool generate_labelmap;
     bool generate_beam;
     stp::CeresDiffMethod ceres_diffmethod;
@@ -84,8 +88,8 @@ stp::SourceFindImage PipelineGaussianSincTest::run_pipeline()
         generate_beam, fft_routine);
 
     return stp::SourceFindImage(result.first, detection_n_sigma, analysis_n_sigma, rms_estimation, find_negative_sources,
-        sigma_clip_iters, median_method, gaussian_fitting, generate_labelmap, ceres_diffmethod,
-        ceres_solvertype);
+        sigma_clip_iters, median_method, gaussian_fitting, ccl_4connectivity, generate_labelmap, source_min_area,
+        ceres_diffmethod, ceres_solvertype);
 }
 
 TEST_F(PipelineGaussianSincTest, test_gaussiansinc_exact)

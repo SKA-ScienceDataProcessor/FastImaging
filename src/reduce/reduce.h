@@ -34,7 +34,9 @@ TCLAP::UnlabeledValueArg<std::string> _outNpzFileArg("output-file-npz", "(option
 // Use residual visibilities - difference between 'input_vis' and 'model' visibilities
 TCLAP::SwitchArg _useDiffArg("d", "diff", "Use residual visibilities - difference between 'input_vis' and 'model' visibilities. Input NPZ must contain 'skymodel' data.", false);
 // Enable logger
-TCLAP::SwitchArg _enableLoggerArg("l", "log", "Enable logger.", false);
+TCLAP::SwitchArg _enableLoggerArg("l", "log", "Enable logger (write to standard output and file).", false);
+// Print islands
+TCLAP::SwitchArg _enableIslandPrintArg("p", "print", "Print islands found to standard output.", false);
 
 /**
 * @brief Logger initialization function

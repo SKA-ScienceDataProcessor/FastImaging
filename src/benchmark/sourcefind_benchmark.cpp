@@ -39,7 +39,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
             cfg.estimate_rms, cfg.find_negative_sources, cfg.sigma_clip_iters, cfg.median_method, cfg.gaussian_fitting,
-            cfg.generate_labelmap, cfg.ceres_diffmethod, cfg.ceres_solvertype));
+            cfg.ccl_4connectivity, cfg.generate_labelmap, cfg.source_min_area, cfg.ceres_diffmethod, cfg.ceres_solvertype));
         benchmark::ClobberMemory();
     }
 }
