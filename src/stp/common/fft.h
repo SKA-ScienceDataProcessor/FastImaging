@@ -13,7 +13,15 @@
 namespace stp {
 
 /**
- * @brief Performs the backward fast fourier transform on a halfplane complex matrix using the FFTW library (complex to real FFT)
+ * @brief Init FFTW threads and import FFTW wisdom file if required.
+ *
+ * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
+ * @param[in] fft_wisdom_filename (string): FFTW wisdom filename for FFT execution.
+ */
+void init_fftw(FFTRoutine r_fft, std::string fft_wisdom_filename);
+
+/**
+ * @brief Performs the backward fast fourier transform of a halfplane complex matrix using the FFTW library (complex to real FFT)
  *
  * Receives the halfplane complex matrix (n_rows = n_cols/2 +1) and performs the backward fast fourier transform returning a real
  * output matrix. Find more details about c2r (complex to real) FFT in the FFTW manual.
@@ -21,12 +29,11 @@ namespace stp {
  * @param[in] input (arma::Mat) : Complex input matrix to be transformed using fft
  * @param[in] output (arma::Mat) : Real output matrix with the fft result
  * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
- * @param[in] wisdom_filename (string) : FFTW wisdom filename (optional)
  */
-void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
+void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT);
 
 /**
- * @brief Performs the forward fast fourier transform on a real matrix using the FFTW library (real to complex FFT)
+ * @brief Performs the forward fast fourier transform of a real matrix using the FFTW library (real to complex FFT)
  *
  * Receives the real matrix (n_rows = n_cols) and performs the forward fast fourier transform returning a complex
  * output matrix. Find more details about r2c (real to complex) FFT in the FFTW manual.
@@ -34,9 +41,33 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
  * @param[in] input (arma::Mat) : Real input matrix to be transformed using fft
  * @param[in] output (arma::Mat) : Complex halfplane output matrix with the fft result
  * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
- * @param[in] wisdom_filename (string) : FFTW wisdom filename (optional)
  */
-void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT, const std::string& wisdom_filename = std::string());
+void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT);
+
+/**
+ * @brief Performs the forward fast fourier transform of a complex matrix using the FFTW library (complex to complex FFT)
+ *
+ * Receives the complex matrix (n_rows = n_cols) and performs the forward fast fourier transform returning a complex
+ * output matrix. Find more details about c2c (complex to complex) FFT in the FFTW manual.
+ *
+ * @param[in] input (arma::Mat) : Complex input matrix to be transformed using fft
+ * @param[in] output (arma::Mat) : Complex halfplane output matrix with the fft result
+ * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
+ */
+void fft_fftw_c2c(arma::Mat<cx_real_t>& input, arma::Mat<cx_real_t>& output, FFTRoutine r_fft, bool forward = true);
+
+/**
+ * @brief Performs the forward fast fourier transform of a real vector (1D) using the FFTW library (real to complex FFT)
+ *
+ * Receives the real vector and performs the forward fast fourier transform returning a complex output vector in halfcomplex
+ * format as specified by FFTW_R2HC transform kind (first all real values and then all imaginary values).
+ * This allows the output and input arrays having the same size. Find more details about r2r (real to real) FFT in the FFTW manual.
+ *
+ * @param[in] input (arma::Mat) : Real input vector to be transformed using fft
+ * @param[in] output (arma::Mat) : Real halfplane output vector with the fft result
+ * @param[in] r_fft (FFTRoutine enum) : FFT routine to be used: defines the FFTW planner flag
+ */
+void fft_fftw_dft_r2r_1d(arma::Col<real_t>& input, arma::Col<real_t>& output, FFTRoutine r_fft);
 
 /**
  * @brief Generates a hermitian matrix from the non-redundant values

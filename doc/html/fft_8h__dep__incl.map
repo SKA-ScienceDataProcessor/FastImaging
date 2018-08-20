@@ -1,6 +1,12 @@
 <map id="/home/lucas/skadev/FastImaging/src/stp/common/fft.h" name="/home/lucas/skadev/FastImaging/src/stp/common/fft.h">
 <area shape="rect" id="node2" href="$fft_8cpp.html" title="Implementation of FFT functions. " alt="" coords="5,109,148,165"/>
-<area shape="rect" id="node3" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="172,109,315,165"/>
-<area shape="rect" id="node4" href="$imager_8cpp.html" title="Implementation of the imager functions. " alt="" coords="80,213,223,269"/>
-<area shape="rect" id="node5" href="$stp_8h.html" title="Includes main headers of STP library. " alt="" coords="247,221,421,262"/>
+<area shape="rect" id="node3" href="$conv__func_8h.html" title="Classes and function prototypes of convolution methods. " alt="" coords="172,109,339,165"/>
+<area shape="rect" id="node5" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="303,213,445,269"/>
+<area shape="rect" id="node7" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="515,317,657,373"/>
+<area shape="rect" id="node10" href="$aw__projection_8cpp.html" title="Implementation of the wplane functions. " alt="" coords="469,213,644,269"/>
+<area shape="rect" id="node11" href="$aw__projection_8h.html" title="Classes and function prototypes of aw_projection. " alt="" coords="414,109,574,165"/>
+<area shape="rect" id="node4" href="$conv__func_8cpp.html" title="Implementation of classes and functions of convolution methods. " alt="" coords="41,213,222,269"/>
+<area shape="rect" id="node9" href="$stp_8h.html" title="Includes main headers of STP library. " alt="" coords="223,429,397,470"/>
+<area shape="rect" id="node6" href="$gridder_8cpp.html" title="Implementation of the gridder functions. " alt="" coords="348,317,491,373"/>
+<area shape="rect" id="node8" href="$imager_8cpp.html" title="Implementation of the imager functions. " alt="" coords="515,421,657,477"/>
 </map>

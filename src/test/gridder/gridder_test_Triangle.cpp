@@ -6,8 +6,8 @@ using namespace stp;
 class GridderTriangle : public ::testing::Test {
 private:
     const double _half_base_width = 2.0;
-    const bool _pad = false;
-    const bool _normalize = true;
+    bool _shift_uv = false;
+    bool _halfplane_gridding = false;
     bool _kernel_exact_GRID = true;
     int _oversampling_GRID = 1;
     int _oversampling_KERNEL = 1;
@@ -26,8 +26,8 @@ public:
         arma::mat uv_offset = uv + subpix_offset;
 
         // The last two parameters (false, false) force the use of the full gridder without uv shifting
-        result = convolve_to_grid<true>(Triangle(_half_base_width), support, image_size, uv_offset, vis, vis_weights, _kernel_exact_GRID, _oversampling_GRID, _pad, _normalize, false, false);
-        kernel = make_kernel_array(Triangle(_half_base_width), support, subpix_offset, _oversampling_KERNEL, _pad, _normalize);
+        result = convolve_to_grid<true>(Triangle(_half_base_width), support, image_size, uv_offset, vis, vis_weights, _kernel_exact_GRID, _oversampling_GRID, _shift_uv, _halfplane_gridding);
+        kernel = make_kernel_array(Triangle(_half_base_width), support, subpix_offset, _oversampling_KERNEL);
     }
 
     const int image_size = 8;

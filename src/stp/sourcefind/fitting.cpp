@@ -26,9 +26,7 @@ double Gaussian2dParams::evaluate_point(const double x, const double y)
     const double xdiff = x - x_centre;
     const double ydiff = y - y_centre;
 
-    return amplitude * exp(-(a * xdiff * xdiff
-                           + b * xdiff * ydiff
-                           + c * ydiff * ydiff));
+    return amplitude * exp(-(a * xdiff * xdiff + b * xdiff * ydiff + c * ydiff * ydiff));
 }
 
 void Gaussian2dParams::convert_to_constrained_parameters()
@@ -145,18 +143,18 @@ bool GaussianAnalyticAllResiduals::Evaluate(double const* const* parameters, dou
     const double a = 0.5 * ((cost2 / xstd2) + (sint2 / ystd2));
     const double b = 0.5 * ((sin2t / xstd2) - (sin2t / ystd2));
     const double c = 0.5 * ((sint2 / xstd2) + (cost2 / ystd2));
-    double cos2t;
-    double xstd3;
-    double ystd3;
-    double da_dtheta;
-    double da_dx_stddev;
-    double da_dy_stddev;
-    double db_dtheta;
-    double db_dx_stddev;
-    double db_dy_stddev;
-    double dc_dtheta;
-    double dc_dx_stddev;
-    double dc_dy_stddev;
+    double cos2t = 0.0;
+    double xstd3 = 0.0;
+    double ystd3 = 0.0;
+    double da_dtheta = 0.0;
+    double da_dx_stddev = 0.0;
+    double da_dy_stddev = 0.0;
+    double db_dtheta = 0.0;
+    double db_dx_stddev = 0.0;
+    double db_dy_stddev = 0.0;
+    double dc_dtheta = 0.0;
+    double dc_dx_stddev = 0.0;
+    double dc_dy_stddev = 0.0;
     double* jacobian = nullptr;
 
     // Auxiliary calculations for computation of jacobian, if required

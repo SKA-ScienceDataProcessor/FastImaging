@@ -1,0 +1,4 @@
+<map id="stp::normalise_image_beam_result_1D" name="stp::normalise_image_beam_result_1D">
+<area shape="rect" id="node2" href="$namespacestp.html#a404fa9ce3a8e0427915ba3ac3aea9a16" title="Computes the image&#45;domain 1D kernel using the forward fast fourier transform or the analytic definiti..." alt="" coords="200,13,335,39"/>
+<area shape="rect" id="node3" href="$namespacestp.html#a52c5be3b41c5afffc90f9667adb9a620" title="Performs the forward fast fourier transform of a real vector (1D) using the FFTW library (real to com..." alt="" coords="383,13,537,39"/>
+</map>

@@ -27,25 +27,41 @@ using np_real_array = pybind11::array_t<real_t, pybind11::array::f_style | pybin
  * @param[in] vis (numpy.ndarray<np.complex_>): Complex visibilities. 1D array, shape: (n_vis,).
  * @param[in] snr_weights (numpy.ndarray<np.float_>): Visibility weights. 1D array, shape: (n_vis,).
  * @param[in] uvw_lambda (numpy.ndarray<np.float_>): UVW-coordinates of visibilities. Units are multiples of wavelength.
- *                                               2D array, shape: (n_vis, 3). Assumed ordering is u,v,w.
+ *                                                   2D array, shape: (n_vis, 3). Assumed ordering is u,v,w.
  * @param[in] image_size (int): Width of the image in pixels. Assumes (image_size/2, image_size/2) corresponds to the origin in UV-space.
  *                              Must be multiple of 4.
  * @param[in] cell_size (double): Angular-width of a synthesized pixel in the image to be created (arcsecond).
  * @param[in] kernel_func (KernelFunction): Choice of kernel function from limited selection (see KernelFunction enum structure).
- *                                      Default = KernelFunction::GaussianSinc.
- * @param[in] kernel_trunc_radius (double): Truncation radius of the kernel to be used.
- *                                      Default = 3.0.
+ *                                          Default = KernelFunction::GaussianSinc.
  * @param[in] kernel_support (int): Defines the 'radius' of the bounding box within which convolution takes place (also known as half-support).
- *                              Box width in pixels = 2*support + 1. The central pixel is the one nearest to the UV co-ordinates.
- *                              Default = 3.
+ *                                  Box width in pixels = 2*support + 1. The central pixel is the one nearest to the UV co-ordinates.
+ *                                  Default = 3.
  * @param[in] kernel_exact (bool): If true, calculates exact kernel values for every UV-sample. Otherwise, oversampling is used.
- *                             Default = true.
- * @param[in] kernel_oversampling (int): Controls kernel-generation if 'kernel_exact == False'. Larger values give a finer-sampled set of pre-cached kernels.
- *                                   Default = 9.
+ *                                 Default = true.
+ * @param[in] oversampling (int): Controls kernel-generation if 'kernel_exact == False'. Larger values give a finer-sampled set of pre-cached kernels.
+ *                                Default = 8.
  * @param[in] generate_beam (bool): Whether or not to compute the beam matrix.
  *                                  Default = false.
+ * @param[in] gridding_correction (bool): Corrects the gridding effect of the anti-aliasing kernel on the dirty image and beam model. Default is true.
+ * @param[in] analytic_gcf (bool): Compute approximation of image-domain kernel from analytic expression of DFT. Default is false.
  * @param[in] r_fft (FFTRoutine): Selects FFT routine to be used.
- * @param[in] fft_wisdom_filename (string): FFTW wisdom filename for the image and beam (c2r fft).
+ * @param[in] fft_wisdom_filename (string): Wisdom filename used by FFTW.
+ * @param[in] num_wplanes (int): Number of planes for W-Projection. Set zero to disable W-projection. Default is 0.
+ * @param[in] wplanes_median (bool): Use median to compute w-planes, otherwise use mean. Default is false.
+ * @param[in] max_wpconv_support (int): Defines the maximum 'radius' of the bounding box within which convolution takes place when W-Projection is used.
+ *                                      Box width in pixels = 2*support+1. Default is 0.
+ * @param[in] hankel_opt (bool): Use Hankel Transform (HT) optimization for quicker execution of W-Projection. Set 0 to disable HT and 1 or 2 to enable HT.
+ *                              The larger non-zero value increases HT accuracy, by using an extended W-kernel workarea size. Default is 0.
+ * @param[in] undersampling_opt (int): Use W-kernel undersampling for faster kernel generation. Set 0 to disable undersampling and 1 to enable maximum
+ *                                     undersampling. Reduce the level of undersampling by increasing the integer value. Default is 1.
+ * @param[in] kernel_trunc_perc (float): Percentual value from maximum value at which w-kernel can be considered = 0. Default is 0 as in (0%).
+ * @param[in] interp_type (std::string): Interpolation type to be used in the interpolation step in the Hankel Transorm.
+ *                                     Available options are: "linear", "cosine" and "cubic".Default = "linear".
+ * @param[in] aproj_numtimesteps (int): Number of time steps used for A-projection. Set zero to disable A-projection. Default is 0.
+ * @param[in] obs_dec (double): Declination of observation pointing centre (in degrees). Default is 0.
+ * @param[in] obs_lat (double): Latitude of observation pointing centre (in degrees). Default is 0.
+ * @param[in] lha (arma::mat): Local hour angle of visibilities. LHA=0 is transit, LHA=-6h is rising, LHA=+6h is setting.
+ * @param[in] mueller_term (arma::mat): Mueller matrix term (defined each image coordinate) used for A-projection.
  *
  * @return (pybind11::tuple): Tuple of numpy.ndarrays representing the image map and beam model (image, beam).
  */
@@ -56,13 +72,26 @@ pybind11::tuple image_visibilities_wrapper(
     int image_size,
     double cell_size,
     stp::KernelFunction kernel_func, // enum
-    double kernel_trunc_radius,
     int kernel_support,
     bool kernel_exact,
-    int kernel_oversampling,
+    int oversampling,
     bool generate_beam,
+    bool gridding_correction,
+    bool analytic_gcf,
     stp::FFTRoutine r_fft, // enum
-    std::string fft_wisdom_filename);
+    std::string fft_wisdom_filename,
+    int num_wplanes,
+    bool wplanes_median,
+    int max_wpconv_support,
+    bool hankel_opt,
+    int undersampling_opt,
+    double kernel_trunc_perc,
+    stp::InterpType interp_type, // enum
+    int aproj_numtimesteps,
+    double obs_dec,
+    double obs_lat,
+    np_double_array lha, // numpy.ndarray<np.float_>
+    np_double_array mueller_term); // numpy.ndarray<np.float_>
 
 /**
  * @brief Convenience wrapper over SourceFindImage function.

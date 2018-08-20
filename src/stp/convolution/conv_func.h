@@ -6,9 +6,13 @@
 #ifndef CONV_FUNC_H
 #define CONV_FUNC_H
 
+#include "../common/fft.h"
+#include "../types.h"
+
 #include <armadillo>
 #include <cassert>
 #include <complex>
+#include <tbb/tbb.h>
 #include <utility>
 
 namespace stp {
@@ -22,7 +26,7 @@ public:
      * @brief TopHat constructor
      * @param[in] half_base_width (double)
      */
-    TopHat(double half_base_width)
+    TopHat(const double half_base_width)
         : _half_base_width(half_base_width)
     {
     }
@@ -33,6 +37,13 @@ public:
      * @return TopHat mat
      */
     arma::vec operator()(const arma::vec& radius_in_pix) const;
+
+    /**
+     * @brief Generates the 1D grid correction function (gcf)
+     * @param[in] radius (arma::vec&)
+     * @return 1D grid correction function (gcf)
+     */
+    arma::vec gcf(const arma::vec& radius) const;
 
 private:
     double _half_base_width;
@@ -50,7 +61,7 @@ public:
      *
      * @param[in] half_base_width (double)
      */
-    Triangle(double half_base_width)
+    Triangle(const double half_base_width)
         : _half_base_width(half_base_width)
     {
     }
@@ -61,6 +72,13 @@ public:
      * @return Triangle mat
      */
     arma::vec operator()(const arma::vec& radius_in_pix) const;
+
+    /**
+     * @brief Generates the 1D grid correction function (gcf)
+     * @param[in] radius (arma::vec&)
+     * @return 1D grid correction function (gcf)
+     */
+    arma::vec gcf(const arma::vec& radius) const;
 
 private:
     const double _half_base_width;
@@ -74,30 +92,17 @@ public:
     /** @brief Default constructor, with no truncation.
      */
     Sinc()
-        : _truncate(false)
-        , _threshold(0.0)
+        : _trunc(0.0)
         , _width_normalization(1.0)
     {
     }
 
     /**
-     * @brief Constructor with no truncation.
-     * @param[in] width_normalization (double)
-     */
-    Sinc(double width_normalization)
-        : _truncate(false)
-        , _threshold(0.0)
-        , _width_normalization(width_normalization)
-    {
-    }
-
-    /**
      * @brief Sinc constructor with truncation threshold.
-     * @param[in] truncation threshold
+     * @param[in] trunc (double) Truncation radius.
      */
-    Sinc(double width_normalization, const double threshold)
-        : _truncate(true)
-        , _threshold(threshold)
+    Sinc(const double trunc, double width_normalization = 1.0)
+        : _trunc(trunc)
         , _width_normalization(width_normalization)
     {
     }
@@ -109,9 +114,15 @@ public:
      */
     arma::vec operator()(const arma::vec& radius_in_pix) const;
 
+    /**
+     * @brief Generates the 1D grid correction function (gcf)
+     * @param[in] radius (arma::vec&)
+     * @return 1D grid correction function (gcf)
+     */
+    arma::vec gcf(const arma::vec& radius) const;
+
 private:
-    bool _truncate;
-    double _threshold;
+    double _trunc;
     double _width_normalization;
 };
 
@@ -124,31 +135,18 @@ public:
      * @brief Default constructor
      */
     Gaussian()
-        : _truncate(false)
-        , _threshold(0.0)
+        : _trunc(0.0)
         , _width_normalization(1.0)
     {
     }
 
     /**
-     * @brief Constructor with no truncation.
-     * @param[in] width_normalization (double)
-     */
-    Gaussian(double width_normalization)
-        : _truncate(false)
-        , _threshold(0.0)
-        , _width_normalization(width_normalization)
-    {
-    }
-
-    /**
      * @brief Constructor with truncation
+     * @param[in] trunc (double) Truncation radius.
      * @param[in] width_normalization (double)
-     * @param[in] threshold (double)
      */
-    Gaussian(const double width_normalization, double threshold)
-        : _truncate(true)
-        , _threshold(threshold)
+    Gaussian(const double trunc, const double width_normalization = 1.0)
+        : _trunc(trunc)
         , _width_normalization(width_normalization)
     {
     }
@@ -160,9 +158,15 @@ public:
      */
     arma::vec operator()(const arma::vec& radius_in_pix) const;
 
+    /**
+     * @brief Generates the 1D grid correction function (gcf)
+     * @param[in] radius (arma::vec&)
+     * @return 1D grid correction function (gcf)
+     */
+    arma::vec gcf(const arma::vec& radius) const;
+
 private:
-    bool _truncate;
-    double _threshold;
+    double _trunc;
     double _width_normalization;
 };
 
@@ -175,49 +179,22 @@ public:
      * @brief Default constructor
      */
     GaussianSinc()
-        : _truncate(false)
-        , _threshold(0.0)
-        , _gaussian(_default_width_normalization_gaussian)
-        , _sinc(_default_width_normalization_sinc)
+        : _trunc(0.0)
+        , _gaussian(0.0, _default_width_normalization_gaussian)
+        , _sinc(0.0, _default_width_normalization_sinc)
     {
     }
 
     /**
      * @brief GaussianSinc Constructor with default parameters and truncation.
-     * @param[in] threshold The truncation threshold.
-     */
-    GaussianSinc(double threshold)
-        : _truncate(true)
-        , _threshold(threshold)
-        , _gaussian(_default_width_normalization_gaussian)
-        , _sinc(_default_width_normalization_sinc)
-    {
-    }
-
-    /**
-     * @brief Constructor with no truncation.
+     * @param[in] trunc (double) Truncation radius.
      * @param[in] width_normalization_gaussian (double)
      * @param[in] width_normalization_sinc (double)
      */
-    GaussianSinc(double width_normalization_gaussian, double width_normalization_sinc)
-        : _truncate(false)
-        , _threshold(0.0)
-        , _gaussian(width_normalization_gaussian)
-        , _sinc(width_normalization_sinc)
-    {
-    }
-
-    /**
-     * @brief Constructor with truncation threshold.
-     * @param[in] width_normalization_gaussian
-     * @param[in] width_normalization_sinc
-     * @param[in] threshold
-     */
-    GaussianSinc(double width_normalization_gaussian, double width_normalization_sinc, double threshold)
-        : _truncate(true)
-        , _threshold(threshold)
-        , _gaussian(width_normalization_gaussian)
-        , _sinc(width_normalization_sinc)
+    GaussianSinc(const double trunc, const double width_normalization_gaussian = _default_width_normalization_gaussian, const double width_normalization_sinc = _default_width_normalization_sinc)
+        : _trunc(trunc)
+        , _gaussian(0.0, width_normalization_gaussian)
+        , _sinc(0.0, width_normalization_sinc)
     {
     }
 
@@ -228,15 +205,60 @@ public:
      */
     arma::vec operator()(const arma::vec& radius_in_pix) const;
 
+    /**
+     * @brief Generates the 1D grid correction function (gcf)
+     * @param[in] radius (arma::vec&)
+     * @return 1D grid correction function (gcf)
+     */
+    arma::vec gcf(const arma::vec& radius) const;
+
 private:
     static constexpr double _default_width_normalization_gaussian = 2.52;
     static constexpr double _default_width_normalization_sinc = 1.55;
-
-    const bool _truncate;
-    const double _threshold;
+    const double _trunc;
 
     Gaussian _gaussian;
     Sinc _sinc;
+};
+
+/**
+ * @brief The Prolate spheroidal wave function (PSWF) functor class
+ */
+class PSWF {
+public:
+    /**
+     * @brief Default constructor
+     */
+    PSWF()
+        : _trunc(0.0)
+    {
+    }
+
+    /**
+     * @brief Constructor with truncation
+     * @param[in] trunc (double) Truncation radius.
+     */
+    PSWF(const double trunc)
+        : _trunc(trunc)
+    {
+    }
+
+    /**
+     * @brief operator ()
+     * @param[in] radius_in_pix (arma::vec&)
+     * @return Convolution kernel
+     */
+    arma::vec operator()(const arma::vec& radius_in_pix) const;
+
+    /**
+     * @brief Generates the 1D grid correction function (gcf)
+     * @param[in] radius (arma::vec&)
+     * @return 1D grid correction function (gcf)
+     */
+    arma::vec gcf(const arma::vec& radius) const;
+
+private:
+    double _trunc;
 };
 
 /** @brief Make 2D Kernel Array
@@ -312,6 +334,81 @@ arma::vec make_1D_kernel(const T& kernel_creator, int support, const double offs
     arma::vec result = kernel_creator(distance_vec - offset);
 
     return (normalize == true) ? (result / arma::accu(result)) : result;
+}
+
+/**
+ * @brief Computes the image-domain 1D kernel using the forward fast fourier transform or the analytic definition
+ *
+ *  Function (template + functor) to create 1D Kernel array with some specs.
+ *
+ * @param[in] kernel_creator: functor used for kernel generation
+ * @param[in] kernel_size (size_t): Defines the array size.
+ * @param[in] normalize (bool): Whether to normalize output or not.
+ * @param[in] analytic_gfc (bool): Use analytic definition if true.
+ * @param[in] r_fft (FFTRoutine): Selects FFT routine to be used.
+ * @return (arma::Col<real_t>): 1D array of the image domain kernel
+ */
+template <typename T>
+arma::Col<real_t> ImgDomKernel(const T& kernel_creator, size_t kernel_size, bool normalize = false, bool analytic_gcf = false, FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT)
+{
+    arma::Col<real_t> aa_kernel_img(kernel_size); // FFT 1D kernel complete array
+
+    size_t centre_idx = kernel_size / 2;
+
+    if (analytic_gcf == true) {
+        /* Create 1D kernel */
+        aa_kernel_img = kernel_creator.gcf((arma::linspace(0, kernel_size - 1, kernel_size) - centre_idx) / centre_idx);
+    } else {
+        arma::Col<real_t> kernel1D_array(kernel_size); //  1D kernel array
+        arma::Col<real_t> fft_kernel1D_array(kernel_size); //  1D kernel array
+
+        /* Create 1D kernel */
+        arma::vec kernel1D = kernel_creator(arma::linspace(0, kernel_size - 1, kernel_size) - centre_idx);
+
+        // normalize
+        double kernel_sum = arma::accu((kernel1D));
+        if (kernel_sum > 0.0)
+            kernel1D = kernel1D / kernel_sum;
+
+        /*** Generate 1D kernel array */
+        // set set kernel array to zeros
+        kernel1D_array.zeros();
+        for (size_t i = 0; i < centre_idx; i++) {
+            kernel1D_array(i) = kernel1D(centre_idx + i);
+            kernel1D_array(kernel_size - centre_idx + i) = kernel1D(i);
+        }
+
+        // dft the kernel 1D array
+        if (r_fft == FFTRoutine::FFTW_WISDOM_FFT || r_fft == FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
+            if (kernel_size < 4) {
+                r_fft = FFTRoutine::FFTW_ESTIMATE_FFT;
+            }
+        }
+        // dft the kernel 1D array
+        fft_fftw_dft_r2r_1d(kernel1D_array, fft_kernel1D_array, r_fft);
+
+        // invert and duplicate array values
+        aa_kernel_img.zeros();
+
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size / 2), [&](const tbb::blocked_range<size_t>& r) {
+            for (size_t i = r.begin(); i < r.end(); ++i) {
+                aa_kernel_img[kernel_size / 2 + i] = fft_kernel1D_array[i];
+            }
+        });
+        tbb::parallel_for(tbb::blocked_range<size_t>(1, kernel_size / 2 + 1), [&](const tbb::blocked_range<size_t>& r) {
+            for (size_t i = r.begin(); i < r.end(); ++i) {
+                aa_kernel_img[kernel_size / 2 - i] = fft_kernel1D_array[i];
+            }
+        });
+    }
+
+    if (normalize == true) {
+        double kernel_sum = arma::accu((aa_kernel_img));
+        if (kernel_sum > 0.0)
+            aa_kernel_img = aa_kernel_img / kernel_sum;
+    }
+
+    return std::move(aa_kernel_img);
 }
 }
 

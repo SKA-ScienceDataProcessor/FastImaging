@@ -1,16 +1,20 @@
 #!/bin/bash
 
-# Generate fftw wisdom files for various image sizes
+# Generate fftw wisdom files for power-of-two image sizes
 
 # Do not use system executables of FFTW-Wisdom
 # Use instead the STP compiled FFTW-Wisdom executable
 
-SIZES="128 256 512 1024 2048 4096 8192 16384 32768 65536"
-TYPEFFT="rob"
+MAX_SIZE="16384"
+TYPE_1D_FFT="kof"
+TYPE_R2C_2D_FFT="rob"
+TYPE_CX_2D_FFT="cof"
 BUILDTYPE="Debug"
+EXEC_PATH="third-party/fftw/bin/"
 EXEC="fftw-wisdom"
 OUTDIR="wisdomfiles"
-EXEC_PATH=
+OUTFILE="WisdomFile_STP.fftw"
+NPROC=`nproc`
 
 while getopts "e:s:drifph" OPTION
 do
@@ -19,22 +23,30 @@ do
 			EXEC_PATH="$OPTARG"
 			;;
 		s)
-			SIZES="$OPTARG"
+			MAX_SIZE="$OPTARG"
 			;;
 		d)
 			BUILDTYPE="Debug"
+			# This is the default build folder created by the build.sh script. Change it if you built STP into a different directory.
+			EXEC_PATH="../../build/$BUILDTYPE/third-party/fftw/bin/"
 			;;
 		r)
 			BUILDTYPE="Release"
+			# This is the default build folder created by the build.sh script. Change it if you built STP into a different directory.
+			EXEC_PATH="../../build/$BUILDTYPE/third-party/fftw/bin/"
 			;;
 		i)
 			BUILDTYPE="RelWithDebInfo"
+			# This is the default build folder created by the build.sh script. Change it if you built STP into a different directory.
+			EXEC_PATH="../../build/$BUILDTYPE/third-party/fftw/bin/"
 			;;
 		f)
 			EXEC="fftwf-wisdom"
 			;;
 		p)
-			TYPEFFT="rib"
+			TYPE_1D_FFT="kif"
+			TYPE_R2C_2D_FFT="rib"
+			TYPE_CX_2D_FFT="cif"
 			;;
 		h)
 			echo 
@@ -48,13 +60,13 @@ do
 			echo " -i    Use RelWithDebInfo wisdom executable"
 			echo " -f    Use fftwf-wisdom (single-precision) executable (default is double-precision fftw-wisdom)"
 			echo " -p    Use in-place FFT rather than out-of-place FFT (default is out-of-place FFT)"
-			echo " -s <sizes> Specify alternative image sizes (separated by white spaces). E.g.: -s \"1024 2048 4096\""
+			echo " -s <max_size> Specify maximum image size. E.g.: -s \"4096\""
 			echo 
 			echo "Notes:"
 			echo " To indicate the location of the executable use only one of the following: -e, -d, -r, -i"
 			echo " If FFTW is compiled in Float mode add the -f option."
-			echo " Use -s only if the needed image sizes are not in this list:"
-			echo " 128 256 512 1024 2048 4096 8192 16384 32768 65536"
+			echo " Possible values for -s option:"
+			echo " 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536"
 			echo
 			exit 1
 			;;
@@ -62,12 +74,8 @@ do
 done
 
 
-if [ ! -z $EXEC_PATH ] ; then
-	EXECUTABLE=$EXEC_PATH/$EXEC
-else
-	# This is the default build folder created by the build.sh script. Change it if you built STP into a different directory.
-	EXECUTABLE=../../build/$BUILDTYPE/third-party/fftw/bin/$EXEC
-fi
+# Set full path
+EXECUTABLE=$EXEC_PATH/$EXEC
 
 if [ ! -f $EXECUTABLE ] ; then
 	echo "ERROR! Executable not found: $EXECUTABLE"
@@ -79,14 +87,20 @@ if [ -d ${OUTDIR} ] ; then
 fi
 mkdir $OUTDIR
 
+SIZES="2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536"
+FFTWSTR1=
+FFTWSTR2=
+FFTWSTR3=
+
 for IMGSIZE in $SIZES ; do
-
-NPROC=`nproc`
-FFTWSTR1="${TYPEFFT}${IMGSIZE}x${IMGSIZE}"
-OUTFILE1="WisdomFile_${FFTWSTR1}.fftw"
-echo "${EXECUTABLE} -n -m -T ${NPROC} -o ${OUTDIR}/${OUTFILE1} ${FFTWSTR1}"
-${EXECUTABLE} -n -m -T ${NPROC} -o ${OUTDIR}/${OUTFILE1} ${FFTWSTR1}
-
+	if [ $IMGSIZE -le $MAX_SIZE ] ; then
+		FFTWSTR1="${FFTWSTR1} ${TYPE_1D_FFT}${IMGSIZE}"
+		FFTWSTR2="${FFTWSTR2} ${TYPE_R2C_2D_FFT}${IMGSIZE}x${IMGSIZE}"
+		FFTWSTR3="${FFTWSTR3} ${TYPE_CX_2D_FFT}${IMGSIZE}x${IMGSIZE}"
+	fi
 done
+
+echo "${EXECUTABLE} -n -m -T ${NPROC} -o ${OUTDIR}/${OUTFILE} ${FFTWSTR1} ${FFTWSTR2} ${FFTWSTR3}"
+${EXECUTABLE} -n -m -T ${NPROC} -o ${OUTDIR}/${OUTFILE} ${FFTWSTR1} ${FFTWSTR2} ${FFTWSTR3}
 
 exit 0

@@ -11,7 +11,7 @@ static void kernel_test_benchmark(benchmark::State& state)
     int support = state.range(0);
     int oversampling = 1;
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
         // Use GaussianSinc kernel
         stp::GaussianSinc kernel_creator(support);
         benchmark::DoNotOptimize(make_kernel_array(kernel_creator, support, offset_index, oversampling));
@@ -23,4 +23,5 @@ BENCHMARK(kernel_test_benchmark)
     ->Args({ 3 })
     ->Args({ 5 })
     ->Args({ 7 });
-BENCHMARK_MAIN()
+
+BENCHMARK_MAIN();

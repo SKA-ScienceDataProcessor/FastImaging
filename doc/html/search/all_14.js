@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['zeromedian',['ZEROMEDIAN',['../namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72a635eba164a6760bf0f3779cbc7cb66ad',1,'stp']]],
-  ['zeromemalloc',['ZeroMemAlloc',['../classstp_1_1_zero_mem_alloc.html',1,'stp::ZeroMemAlloc&lt; T &gt;'],['../classstp_1_1_zero_mem_alloc.html#a389cc16107e00373afd61816fb47b8d0',1,'stp::ZeroMemAlloc::ZeroMemAlloc()'],['../classstp_1_1_zero_mem_alloc.html#a97711f014548b09904e75c72e72c3bab',1,'stp::ZeroMemAlloc::ZeroMemAlloc(size_t length)'],['../classstp_1_1_zero_mem_alloc.html#a9ca3843c43567d724a2b0f4315967067',1,'stp::ZeroMemAlloc::ZeroMemAlloc(ZeroMemAlloc const &amp;)=delete'],['../classstp_1_1_zero_mem_alloc.html#adefae82bf070d5db51d11e4e2a8afd54',1,'stp::ZeroMemAlloc::ZeroMemAlloc(ZeroMemAlloc &amp;&amp;other)']]],
-  ['zeromemalloc_3c_20cx_5freal_5ft_20_3e',['ZeroMemAlloc&lt; cx_real_t &gt;',['../classstp_1_1_zero_mem_alloc.html',1,'stp']]],
-  ['zeromemalloc_3c_20int_20_3e',['ZeroMemAlloc&lt; int &gt;',['../classstp_1_1_zero_mem_alloc.html',1,'stp']]]
+  ['vis_5fgrid',['vis_grid',['../classstp_1_1_gridder_output.html#a49a6dc4b250eff5150ec560daf3c33f5',1,'stp::GridderOutput::vis_grid()'],['../classstp_1_1_image_visibilities.html#a64db3dd38eb6d24da3c0f3f0986b3611',1,'stp::ImageVisibilities::vis_grid()']]],
+  ['visibilities_5ffor_5fpoint_5fsource',['visibilities_for_point_source',['../namespacestp.html#a4ff833f501186b663177e7761a61405e',1,'stp']]],
+  ['visibility_2ecpp',['visibility.cpp',['../visibility_8cpp.html',1,'']]],
+  ['visibility_2eh',['visibility.h',['../visibility_8h.html',1,'']]]
 ];

@@ -15,13 +15,13 @@ std::string config_file_oversampling("fastimg_oversampling_config.json");
 
 static void sourcefind_test_benchmark(benchmark::State& state)
 {
-    int image_size = pow(2, state.range(0));
+    int image_size = state.range(0);
 
     //Load simulated data from input_npz
-    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
-    arma::mat input_snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
-    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
+    arma::mat input_uvw = load_npy_double_array<double>(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_vis = load_npy_complex_array<double>(data_path + input_npz, "vis");
+    arma::mat input_snr_weights = load_npy_double_array<double>(data_path + input_npz, "snr_weights");
+    arma::mat skymodel = load_npy_double_array<double>(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
     arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
@@ -31,12 +31,14 @@ static void sourcefind_test_benchmark(benchmark::State& state)
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_oversampling);
+    cfg.img_pars.image_size = image_size;
 
-    stp::GaussianSinc kernel_func(cfg.kernel_support);
+    stp::GaussianSinc kernel_func(cfg.img_pars.kernel_support);
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_snr_weights,
-        input_uvw, image_size, cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling);
+        input_uvw, cfg.img_pars);
+    result.second.reset();
 
-    while (state.KeepRunning()) {
+    for (auto _ : state) {
         benchmark::DoNotOptimize(stp::SourceFindImage(std::move(result.first), cfg.detection_n_sigma, cfg.analysis_n_sigma,
             cfg.estimate_rms, cfg.find_negative_sources, cfg.sigma_clip_iters, cfg.median_method, cfg.gaussian_fitting,
             cfg.ccl_4connectivity, cfg.generate_labelmap, cfg.source_min_area, cfg.ceres_diffmethod, cfg.ceres_solvertype));
@@ -45,6 +47,8 @@ static void sourcefind_test_benchmark(benchmark::State& state)
 }
 
 BENCHMARK(sourcefind_test_benchmark)
-    ->DenseRange(10, 16)
+    ->RangeMultiplier(2)
+    ->Range(1 << 10, 1 << 16)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_MAIN()
+
+BENCHMARK_MAIN();

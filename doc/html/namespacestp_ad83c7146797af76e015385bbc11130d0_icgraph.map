@@ -1,0 +1,4 @@
+<map id="stp::fft_fftw_c2c" name="stp::fft_fftw_c2c">
+<area shape="rect" id="node2" href="$classstp_1_1_wide_field_imaging.html#a99e16ca0726a77ff2a43692b79372ab0" title="Generate convolution kernel at oversampled&#45;pixel offsets for A&#45;Projection. " alt="" coords="171,5,324,61"/>
+<area shape="rect" id="node3" href="$classstp_1_1_wide_field_imaging.html#a9a8453c69c2a794052f6cb991d959e66" title="Generate convolution kernel at oversampled&#45;pixel offsets for W&#45;Projection. " alt="" coords="171,85,324,141"/>
+</map>

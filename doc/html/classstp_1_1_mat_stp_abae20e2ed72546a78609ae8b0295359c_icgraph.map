@@ -1,0 +1,5 @@
+<map id="stp::MatStp::reset" name="stp::MatStp::reset">
+<area shape="rect" id="node2" href="$classstp_1_1_wide_field_imaging.html#a9a8453c69c2a794052f6cb991d959e66" title="Generate convolution kernel at oversampled&#45;pixel offsets for W&#45;Projection. " alt="" coords="180,5,333,61"/>
+<area shape="rect" id="node3" href="$namespacestp.html#a3f3931422fe088eed5e60da339a8ddab" title="Generates image and beam data from input visibilities. " alt="" coords="183,85,330,112"/>
+<area shape="rect" id="node4" href="$classstp_1_1_image_visibilities.html#aa1e9b6dff9caa156aff9293d9e92d3b6" title="ImageVisibilities constructor. " alt="" coords="381,78,524,119"/>
+</map>

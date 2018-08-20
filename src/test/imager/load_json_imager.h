@@ -20,7 +20,7 @@
 class ImagerHandler {
 public:
     rapidjson::Value val;
-    std::pair<arma::cx_mat, arma::cx_mat> expected_result;
+    std::pair<arma::mat, arma::mat> expected_result;
     std::pair<arma::mat, arma::mat> result;
 
     double image_size;
@@ -28,9 +28,9 @@ public:
     bool kernel_exact;
     int oversampling;
     int support;
-    bool pad;
-    bool normalize;
     bool gen_beam;
+    bool gridding_correction;
+    bool analytic_gcf;
 
     ImagerHandler() = default;
     ImagerHandler(const std::string& typeConvolution, const std::string& typeTest)
@@ -40,9 +40,9 @@ public:
         , support(val["support"].GetInt())
         , kernel_exact(val["kernel_exact"].GetBool())
         , oversampling(val["oversampling"].GetInt())
-        , pad(val["pad"].GetBool())
-        , normalize(val["normalize"].GetBool())
         , gen_beam(true)
+        , gridding_correction(val["gridding_correction"].GetBool())
+        , analytic_gcf(val["analytic_gcf"].GetBool())
     {
     }
 

@@ -11,8 +11,8 @@ private:
     double half_base_width;
     bool kernel_exact;
     int oversampling;
-    bool pad;
-    bool normalize;
+    bool shift_uv;
+    bool halfplane_gridding;
 
 public:
     void
@@ -23,8 +23,8 @@ public:
         half_base_width = 1.1;
         kernel_exact = true;
         oversampling = 1;
-        pad = false;
-        normalize = true;
+        shift_uv = false;
+        halfplane_gridding = false;
         vis = arma::ones<arma::cx_mat>(uv.n_rows);
         vis_weights = arma::ones<arma::mat>(uv.n_rows);
     }
@@ -32,7 +32,7 @@ public:
     void run()
     {
         // The last two parameters (false, false) force the use of the full gridder without uv shifting
-        GridderOutput res = convolve_to_grid<true>(TopHat(half_base_width), support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, pad, normalize, false, false);
+        GridderOutput res = convolve_to_grid<true>(TopHat(half_base_width), support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, shift_uv, halfplane_gridding);
         result = std::make_pair(static_cast<arma::Mat<cx_real_t>>(res.vis_grid), static_cast<arma::Mat<cx_real_t>>(res.sampling_grid));
     }
 

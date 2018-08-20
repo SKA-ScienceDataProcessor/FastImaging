@@ -4,6 +4,8 @@
 */
 
 #include "matrix_math.h"
+#include "spline.h"
+#include <algorithm>
 #include <cassert>
 #include <cblas.h>
 #include <math.h>
@@ -11,12 +13,13 @@
 
 #define BINMEDIAN_MIN_RANGE 0.0001
 #define MIN_MEDSIZE 100
+#define NUMERIC_TOLERANCE 10e-8
 
 namespace stp {
 
 double mat_median_exact(const arma::Mat<real_t>& data)
 {
-    double median = arma::datum::nan;
+    double median = 0.0;
     size_t num_elems = data.n_elem;
     arma::Mat<real_t> auxdata = data;
     size_t k = (num_elems / 2); // half position
@@ -46,7 +49,7 @@ double mat_median_exact(const arma::Mat<real_t>& data)
 
 DataStats mat_binmedian(const arma::Mat<real_t>& data)
 {
-    double median = arma::datum::nan;
+    double median = 0.0;
     size_t num_elems = data.n_elem;
     const int N = 1000;
 
@@ -330,7 +333,8 @@ DataStats mat_binmedian(const arma::Mat<real_t>& data)
 
 DataStats mat_median_binapprox(const arma::Mat<real_t>& data)
 {
-    double median = arma::datum::nan;
+    double median = 0.0;
+    bool bsucess = false;
     size_t num_elems = data.n_elem;
     const int N = 1000;
 
@@ -410,6 +414,7 @@ DataStats mat_median_binapprox(const arma::Mat<real_t>& data)
 
             if (count >= k) {
                 median = double(i + 0.5) / scalefactor + leftend;
+                bsucess = true;
                 break;
             }
         }
@@ -436,12 +441,13 @@ DataStats mat_median_binapprox(const arma::Mat<real_t>& data)
                 }
                 // Compute median from two samples
                 median = double(i + j + 1) / (2 * scalefactor) + leftend;
+                bsucess = true;
                 break;
             }
         }
     }
     // If the binapprox fails to find an approximate median, it falls back to the exact nth_element function
-    if (!arma::is_finite(median)) {
+    if (!bsucess) {
         median = mat_median_exact(data);
     }
 
@@ -455,7 +461,7 @@ DataStats mat_mean_and_stddev(const arma::Mat<real_t>& data)
     size_t num_elems = data.n_elem;
 
     if (num_elems < 1) {
-        return DataStats(arma::datum::nan, arma::datum::nan);
+        return DataStats();
     }
 
     DoublePair total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, num_elems, 8), DoublePair(0.0, 0.0),
@@ -553,13 +559,13 @@ double mat_mean_parallel(arma::Mat<real_t>& data)
     return mean;
 }
 
-double mat_stddev_parallel(arma::Mat<real_t>& data, double mean)
+double mat_stddev_parallel(arma::Mat<real_t>& data, bool compute_mean, double mean)
 {
     double std = 0.0;
     arma::uword num_elems = data.n_elem;
 
     if (num_elems > 1) {
-        if (!arma::is_finite(mean)) {
+        if (compute_mean) {
             mean = mat_mean_parallel(data);
         }
         DoublePair total = tbb::parallel_reduce(tbb::blocked_range<size_t>(0, num_elems), DoublePair(0.0, 0.0), [&](const tbb::blocked_range<size_t>& r, DoublePair sum) {
@@ -576,5 +582,111 @@ double mat_stddev_parallel(arma::Mat<real_t>& data, double mean)
     }
 
     return std;
+}
+
+// Performs bilinear interpolation
+inline double bilinear_interpolation(int top, int bottom, int left, int right,
+    double horizontal_position, double vertical_position, const arma::mat& in_m)
+{
+    // Determine the values of the corners.
+    double top_left = in_m(top, left);
+    double top_right = in_m(top, right);
+    double bottom_left = in_m(bottom, left);
+    double bottom_right = in_m(bottom, right);
+
+    // Distance to the integer position
+    double horizontal_dist = horizontal_position - double(left);
+    double vertical_dist = vertical_position - double(top);
+
+    // Combine top_left and top_right
+    double top_block = top_left + horizontal_dist * (top_right - top_left);
+
+    // Combine bottom_left and bottom_right
+    double bottom_block = bottom_left + horizontal_dist * (bottom_right - bottom_left);
+    // Combine the top_block and bottom_block using vertical interpolation
+    return top_block + vertical_dist * (bottom_block - top_block);
+}
+
+arma::Mat<real_t> rotate_matrix(const arma::mat& in_m, double angle, double cval, int out_size)
+{
+    double cosa = cos(angle);
+    double sina = sin(angle);
+
+    int in_size = in_m.n_cols;
+    if (out_size == 0)
+        out_size = in_size;
+
+    // Apply resize transformation to rotation matrix parameters
+    double resize_factor = double(in_size) / double(out_size);
+    cosa *= resize_factor;
+    sina *= resize_factor;
+
+    arma::Mat<real_t> out_m(out_size, out_size);
+
+    // Define the image center
+    double in_center = double(in_size) / 2 - 0.5;
+    double out_center = double(out_size) / 2 - 0.5;
+
+    // Compute interpolation positions
+    arma::vec sina_array(out_size), cosa_array(out_size);
+    for (int i = 0; i < out_size; ++i) {
+        sina_array(i) = sina * (double(i) - out_center);
+        cosa_array(i) = cosa * (double(i) - out_center);
+    }
+
+    // Loop through each pixel of the output image, select the vertical and horizontal positions and interpolate the image.
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, out_size), [&](const tbb::blocked_range<size_t>& r) {
+        int begin = r.begin();
+        int end = r.end();
+        for (int i = begin; i < end; ++i) {
+            for (int j = 0; j < out_size; ++j) {
+                // Rotation and resize
+                double vertical_position = cosa_array(j) + sina_array(i) + in_center;
+                double horizontal_position = -sina_array(j) + cosa_array(i) + in_center;
+
+                // Four locations used for interpolation from the original image.
+                int top = (int)vertical_position;
+                int bottom = top + 1;
+                int left = (int)horizontal_position;
+                int right = left + 1;
+
+                if (vertical_position < -NUMERIC_TOLERANCE) {
+                    // Exclude this sample
+                    top -= 1;
+                } else {
+                    // Check if position is larger than matriz size.
+                    // Accept larger values within a tolerance due to numeric errors.
+                    int rver_position = round(vertical_position);
+                    if (rver_position == (in_size - 1) && ((vertical_position - double(rver_position)) < NUMERIC_TOLERANCE)) {
+                        top = rver_position;
+                        bottom = top;
+                    }
+                }
+
+                if (horizontal_position < -NUMERIC_TOLERANCE) {
+                    // Exclude this sample
+                    left -= 1;
+                } else {
+                    // Check if position is larger than matriz size.
+                    // Accept larger values within a tolerance due to numeric errors.
+                    int rhor_position = round(horizontal_position);
+                    if (rhor_position == (in_size - 1) && ((horizontal_position - double(rhor_position)) < NUMERIC_TOLERANCE)) {
+                        left = rhor_position;
+                        right = left;
+                    }
+                }
+
+                // Check if any of the four locations are invalid. If they are set cval on output image.
+                if (top >= 0 && bottom < in_size && left >= 0 && right < in_size) {
+                    out_m(j, i) = stp::bilinear_interpolation(top, bottom, left, right,
+                        horizontal_position, vertical_position, in_m);
+                } else {
+                    out_m(j, i) = cval;
+                }
+            }
+        }
+    });
+
+    return std::move(out_m);
 }
 }

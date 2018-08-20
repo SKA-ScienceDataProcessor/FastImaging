@@ -29,6 +29,8 @@ stp::KernelFunction ConfigurationFile::parse_kernel_function(const std::string& 
         k_func = stp::KernelFunction::Gaussian;
     } else if (kernel == "GaussianSinc") {
         k_func = stp::KernelFunction::GaussianSinc;
+    } else if (kernel == "PSWF") {
+        k_func = stp::KernelFunction::PSWF;
     } else {
         assert(0);
     }
@@ -55,6 +57,25 @@ stp::FFTRoutine ConfigurationFile::parse_fft_routine(const std::string& fft)
     }
 
     return r_fft;
+}
+
+stp::InterpType ConfigurationFile::parse_interp_type(const std::string& it)
+{
+    // Convert string to InterpType enum
+    stp::InterpType r_it = stp::InterpType::LINEAR;
+    if (it == "linear") {
+        r_it = stp::InterpType::LINEAR;
+    } else if (it == "cosine") {
+        r_it = stp::InterpType::COSINE;
+    } else if (it == "cubic") {
+        r_it = stp::InterpType::CUBIC;
+        //    } else if (it == "cubic_smooth") {
+        //        r_it = stp::InterpType::CUBIC_SMOOTH;
+    } else {
+        assert(0);
+    }
+
+    return r_it;
 }
 
 stp::MedianMethod ConfigurationFile::parse_median_method(const std::string& medianmethod)

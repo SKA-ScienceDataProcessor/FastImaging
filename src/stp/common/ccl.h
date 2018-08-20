@@ -6,6 +6,7 @@
 #ifndef CCL_H
 #define CCL_H
 
+#include "../global_macros.h"
 #include "../types.h"
 #include "matstp.h"
 #include <armadillo>
@@ -14,12 +15,9 @@
 
 namespace stp {
 
-#ifdef FUNCTION_TIMINGS
-extern std::vector<std::chrono::high_resolution_clock::time_point> times_ccl;
-#endif
-
 // Find the root of the tree of node i.
-inline static uint find_root(const uint* P, uint i)
+inline static uint
+find_root(const uint* P, uint i)
 {
     uint root = i;
     while (P[root] < root) {
@@ -106,7 +104,7 @@ struct LabelDataThread {
  * @return (std::tuple) Tuple object containing the label map matrix (arma::Mat), the array of decision tree (arma::Mat),
  *                      the mumber of positive labels (uint) and the number of negative labels (uint)
  */
-template <bool findNegative>
+template <bool findNegative = false>
 std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_8con(const arma::Mat<real_t>& I, const real_t analysis_thresh_pos, const real_t analysis_thresh_neg)
 {
     const size_t cols = I.n_cols;
@@ -162,7 +160,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_8con(const arma::Mat<
 
         // Loop over columns
         for (uint c_i = col_start; c_i < col_end; ++c_i) {
-        // Set current and previous column indexes
+            // Set current and previous column indexes
 #ifdef FFTSHIFT
             const uint m_c_i = c_i;
             uint m_c_i_prev = (m_c_i == 0) ? m_c_i : m_c_i - 1;
@@ -347,9 +345,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_8con(const arma::Mat<
     },
         tbb::static_partitioner());
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Sort label_data_per_thread
     std::sort(label_data_per_thread.begin(), label_data_per_thread.end(), [&](const LabelDataThread& a, const LabelDataThread& b) {
@@ -451,9 +447,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_8con(const arma::Mat<
         }
     }
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Analysis: positive sources
     uint k = 1;
@@ -564,7 +558,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_4con(const arma::Mat<
 
         // Loop over cols
         for (uint c_i = col_start; c_i < col_end; ++c_i) {
-        // Set current and previous column indexes
+            // Set current and previous column indexes
 #ifdef FFTSHIFT
             const uint m_c_i = c_i;
             uint m_c_i_prev = (m_c_i == 0) ? m_c_i : m_c_i - 1;
@@ -692,9 +686,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_4con(const arma::Mat<
     },
         tbb::static_partitioner());
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Sort label_data_per_thread
     std::sort(label_data_per_thread.begin(), label_data_per_thread.end(), [&](const LabelDataThread& a, const LabelDataThread& b) {
@@ -744,9 +736,7 @@ std::tuple<MatStp<int>, MatStp<uint>, uint, uint> labeling_4con(const arma::Mat<
         }
     }
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Analysis: positive sources
     uint k = 1;

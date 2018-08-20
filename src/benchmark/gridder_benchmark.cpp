@@ -10,17 +10,14 @@
 
 std::string data_path(_PIPELINE_DATAPATH);
 std::string input_npz("simdata_nstep10.npz");
-std::string config_path(_PIPELINE_CONFIGPATH);
-std::string config_file_exact("fastimg_exact_config.json");
-std::string config_file_oversampling("fastimg_oversampling_config.json");
 
 void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& snr_weights, int image_size, double cell_size)
 {
     //Load simulated data from input_npz
-    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
-    snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
-    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
+    arma::mat input_uvw = load_npy_double_array<double>(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_vis = load_npy_complex_array<double>(data_path + input_npz, "vis");
+    snr_weights = load_npy_double_array<double>(data_path + input_npz, "snr_weights");
+    arma::mat skymodel = load_npy_double_array<double>(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
     arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
@@ -31,7 +28,6 @@ void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& s
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
     double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cell_size) * double(image_size)));
     uv_in_pixels = (input_uvw / grid_pixel_width_lambda);
-
     // Remove W column
     uv_in_pixels.shed_col(2);
 }
@@ -39,86 +35,60 @@ void load_data(arma::mat& uv_in_pixels, arma::cx_mat& residual_vis, arma::mat& s
 static void gridder_exact_benchmark(benchmark::State& state)
 {
     int image_size = pow(2, state.range(0));
-
-    // Load all configurations from json configuration file
-    ConfigurationFile cfg(config_path + config_file_exact);
+    double cell_size = 0.5;
+    bool kernel_exact = true;
+    int oversampling = 1;
+    bool shift_uv = true;
+    bool halfplane_gridding = true;
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
     arma::mat snr_weights;
-    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size);
+    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cell_size);
 
-    stp::GaussianSinc kernel_func(state.range(1));
+    stp::PSWF kernel_func(state.range(1));
 
-    while (state.KeepRunning())
-        benchmark::DoNotOptimize(stp::convolve_to_grid<false>(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, snr_weights, cfg.kernel_exact, 1));
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(stp::convolve_to_grid<true>(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, snr_weights, kernel_exact,
+            oversampling, shift_uv, halfplane_gridding));
+    }
 }
 
 static void gridder_oversampling_benchmark(benchmark::State& state)
 {
-    int image_size = pow(2, state.range(0));
-
-    // Load all configurations from json configuration file
-    ConfigurationFile cfg(config_path + config_file_oversampling);
+    int image_size = state.range(0);
+    int kernel_support = state.range(1);
+    double cell_size = 0.5;
+    bool kernel_exact = false;
+    int oversampling = 8;
+    bool shift_uv = true;
+    bool halfplane_gridding = true;
 
     arma::mat uv_in_pixels;
     arma::cx_mat residual_vis;
     arma::mat snr_weights;
-    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cfg.cell_size);
+    load_data(uv_in_pixels, residual_vis, snr_weights, image_size, cell_size);
 
-    stp::GaussianSinc kernel_func(state.range(1));
+    stp::PSWF kernel_func(kernel_support);
 
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::convolve_to_grid<false>(kernel_func, state.range(1), image_size, uv_in_pixels, residual_vis, snr_weights, cfg.kernel_exact, cfg.oversampling));
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(stp::convolve_to_grid<true>(kernel_func, kernel_support, image_size, uv_in_pixels, residual_vis, snr_weights, kernel_exact,
+            oversampling, shift_uv, halfplane_gridding));
     }
 }
 
 BENCHMARK(gridder_oversampling_benchmark)
-    ->Args({ 10, 3 })
-    ->Args({ 11, 3 })
-    ->Args({ 12, 3 })
-    ->Args({ 13, 3 })
-    ->Args({ 14, 3 })
-    ->Args({ 15, 3 })
-    ->Args({ 16, 3 })
-    ->Args({ 10, 5 })
-    ->Args({ 11, 5 })
-    ->Args({ 12, 5 })
-    ->Args({ 13, 5 })
-    ->Args({ 14, 5 })
-    ->Args({ 15, 5 })
-    ->Args({ 16, 5 })
-    ->Args({ 10, 7 })
-    ->Args({ 11, 7 })
-    ->Args({ 12, 7 })
-    ->Args({ 13, 7 })
-    ->Args({ 14, 7 })
-    ->Args({ 15, 7 })
-    ->Args({ 16, 7 })
+    ->RangeMultiplier(2)
+    ->Ranges({ { 1 << 10, 1 << 16 }, { 3, 3 } })
+    ->Ranges({ { 1 << 10, 1 << 16 }, { 5, 5 } })
+    ->Ranges({ { 1 << 10, 1 << 16 }, { 7, 7 } })
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(gridder_exact_benchmark)
-    ->Args({ 10, 3 })
-    ->Args({ 11, 3 })
-    ->Args({ 12, 3 })
-    ->Args({ 13, 3 })
-    ->Args({ 14, 3 })
-    ->Args({ 15, 3 })
-    ->Args({ 16, 3 })
-    ->Args({ 10, 5 })
-    ->Args({ 11, 5 })
-    ->Args({ 12, 5 })
-    ->Args({ 13, 5 })
-    ->Args({ 14, 5 })
-    ->Args({ 15, 5 })
-    ->Args({ 16, 5 })
-    ->Args({ 10, 7 })
-    ->Args({ 11, 7 })
-    ->Args({ 12, 7 })
-    ->Args({ 13, 7 })
-    ->Args({ 14, 7 })
-    ->Args({ 15, 7 })
-    ->Args({ 16, 7 })
+    ->RangeMultiplier(2)
+    ->Ranges({ { 1 << 10, 1 << 16 }, { 3, 3 } })
+    ->Ranges({ { 1 << 10, 1 << 16 }, { 5, 5 } })
+    ->Ranges({ { 1 << 10, 1 << 16 }, { 7, 7 } })
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

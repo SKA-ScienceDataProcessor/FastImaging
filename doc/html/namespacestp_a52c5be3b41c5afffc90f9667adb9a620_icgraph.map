@@ -1,0 +1,6 @@
+<map id="stp::fft_fftw_dft_r2r_1d" name="stp::fft_fftw_dft_r2r_1d">
+<area shape="rect" id="node2" href="$namespacestp.html#a404fa9ce3a8e0427915ba3ac3aea9a16" title="Computes the image&#45;domain 1D kernel using the forward fast fourier transform or the analytic definiti..." alt="" coords="208,13,343,39"/>
+<area shape="rect" id="node3" href="$namespacestp.html#a674d910ef471f5f234894a92057a0a47" title="Normalizes the result image and beam. " alt="" coords="391,5,537,47"/>
+<area shape="rect" id="node4" href="$namespacestp.html#a3f3931422fe088eed5e60da339a8ddab" title="Generates image and beam data from input visibilities. " alt="" coords="585,13,732,39"/>
+<area shape="rect" id="node5" href="$classstp_1_1_image_visibilities.html#aa1e9b6dff9caa156aff9293d9e92d3b6" title="ImageVisibilities constructor. " alt="" coords="780,5,923,47"/>
+</map>

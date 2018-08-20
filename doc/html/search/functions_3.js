@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['estimate_5fmoments_5ffit',['estimate_moments_fit',['../structstp_1_1_island_params.html#a0d4cecb4ef7d17b1aeb3e9e4d6fac379',1,'stp::IslandParams']]],
-  ['estimate_5frms',['estimate_rms',['../namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d',1,'stp']]],
-  ['evaluate',['Evaluate',['../classstp_1_1_gaussian_analytic.html#aa7c0d6cc2384fd6ec613b1fa320059b9',1,'stp::GaussianAnalytic::Evaluate()'],['../classstp_1_1_gaussian_analytic_all_residuals.html#ab605113e4302ce09c27ad3f323e0376b',1,'stp::GaussianAnalyticAllResiduals::Evaluate()']]],
-  ['evaluate_5fpoint',['evaluate_point',['../structstp_1_1_gaussian2d_params.html#a4b79ea113d30a6d558133d92ddde6c99',1,'stp::Gaussian2dParams']]]
+  ['calculate_5foversampled_5fkernel_5findices',['calculate_oversampled_kernel_indices',['../namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca',1,'stp']]],
+  ['convert_5fto_5fconstrained_5fparameters',['convert_to_constrained_parameters',['../structstp_1_1_gaussian2d_params.html#aafc490771377c94fd7e50f06f21f9063',1,'stp::Gaussian2dParams']]],
+  ['convert_5fto_5fhalfplane_5fvisibilities',['convert_to_halfplane_visibilities',['../namespacestp.html#ad75e5145b07b51b813ec9eaa95e5ac93',1,'stp::convert_to_halfplane_visibilities(arma::mat &amp;uv_lambda, arma::cx_mat &amp;vis, int kernel_support, arma::uvec &amp;good_vis)'],['../namespacestp.html#a56aca5a8c2d0cff6cae946edbf7659d2',1,'stp::convert_to_halfplane_visibilities(arma::mat &amp;uv_lambda, arma::vec &amp;w_lambda, arma::cx_mat &amp;vis, int kernel_support, arma::uvec &amp;good_vis)']]],
+  ['convolve_5fto_5fgrid',['convolve_to_grid',['../namespacestp.html#a8135d9e95f2df8f47c170daa507a5a7a',1,'stp']]]
 ];

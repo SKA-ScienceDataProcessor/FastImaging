@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['medianmethod',['MedianMethod',['../namespacestp.html#a6c175a4ce85e7fec4cfe1906e85c5e72',1,'stp']]]
+  ['interptype',['InterpType',['../namespacestp.html#a7ae9fed509d30e48b2a6b5c0bbcb99fe',1,'stp']]]
 ];

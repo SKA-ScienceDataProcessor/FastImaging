@@ -1,13 +1,16 @@
 <map id="/home/lucas/skadev/FastImaging/src/stp/stp.h" name="/home/lucas/skadev/FastImaging/src/stp/stp.h">
-<area shape="rect" id="node2" href="$conv__func_8h.html" title="Classes and function prototypes of convolution methods. " alt="" coords="1354,244,1517,271"/>
-<area shape="rect" id="node7" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="1111,169,1226,196"/>
-<area shape="rect" id="node13" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="347,319,425,345"/>
-<area shape="rect" id="node15" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="567,95,682,121"/>
-<area shape="rect" id="node18" href="$sourcefind_8h.html" title="Classes and funtion prototypes of source find. " alt="" coords="746,95,903,121"/>
-<area shape="rect" id="node23" href="$visibility_8h.html" title="Function prototypes of visibility. " alt="" coords="15,244,146,271"/>
-<area shape="rect" id="node12" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="877,244,1015,271"/>
-<area shape="rect" id="node16" href="$fft_8h.html" title="Function prototypes of FFT. " alt="" coords="529,169,640,196"/>
-<area shape="rect" id="node17" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="616,244,721,271"/>
-<area shape="rect" id="node19" href="$ccl_8h.html" title="Function prototypes of the connected component labeling. " alt="" coords="767,169,883,196"/>
-<area shape="rect" id="node20" href="$fitting_8h.html" title="Classes and function prototypes of gaussian fitting. " alt="" coords="475,244,540,271"/>
+<area shape="rect" id="node2" href="$conv__func_8h.html" title="Classes and function prototypes of convolution methods. " alt="" coords="876,244,1038,271"/>
+<area shape="rect" id="node4" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="1162,468,1240,495"/>
+<area shape="rect" id="node11" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="1022,169,1137,196"/>
+<area shape="rect" id="node22" href="$imager_8h.html" title="Function prototypes of the imager. " alt="" coords="1410,95,1525,121"/>
+<area shape="rect" id="node25" href="$sourcefind_8h.html" title="Classes and funtion prototypes of source find. " alt="" coords="314,244,472,271"/>
+<area shape="rect" id="node30" href="$visibility_8h.html" title="Function prototypes of visibility. " alt="" coords="1830,468,1961,495"/>
+<area shape="rect" id="node3" href="$fft_8h.html" title="Function prototypes of FFT. " alt="" coords="1116,319,1227,345"/>
+<area shape="rect" id="node7" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="919,393,1024,420"/>
+<area shape="rect" id="node14" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="412,393,550,420"/>
+<area shape="rect" id="node16" href="$global__macros_8h.html" title="../global_macros.h" alt="" coords="1663,393,1792,420"/>
+<area shape="rect" id="node19" href="$aw__projection_8h.html" title="Classes and function prototypes of aw_projection. " alt="" coords="1215,244,1328,271"/>
+<area shape="rect" id="node20" href="$spline_8h.html" title="../common/spline.h" alt="" coords="1454,393,1588,420"/>
+<area shape="rect" id="node26" href="$ccl_8h.html" title="Function prototypes of the connected component labeling. " alt="" coords="671,319,787,345"/>
+<area shape="rect" id="node27" href="$fitting_8h.html" title="Classes and function prototypes of gaussian fitting. " alt="" coords="238,393,303,420"/>
 </map>

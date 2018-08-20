@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['fftw_5festimate_5ffft',['FFTW_ESTIMATE_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98a1551a8f00e3ff5f46b18636fb963ad8c',1,'stp']]],
-  ['fftw_5fmeasure_5ffft',['FFTW_MEASURE_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98a5b1699ed6ddd9a9360937797edfe3873',1,'stp']]],
-  ['fftw_5fpatient_5ffft',['FFTW_PATIENT_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98af7b85ceb556fa3fccee760843b070ceb',1,'stp']]],
-  ['fftw_5fwisdom_5ffft',['FFTW_WISDOM_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98ab6cc625b02ae42496e8baea63abf1243',1,'stp']]],
-  ['fftw_5fwisdom_5finplace_5ffft',['FFTW_WISDOM_INPLACE_FFT',['../namespacestp.html#a464d541245c3d8f9ea82f5d2d5484c98ac68eed57a11ce9105b7e0355d5b2e84d',1,'stp']]]
+  ['cosine',['COSINE',['../namespacestp.html#a7ae9fed509d30e48b2a6b5c0bbcb99feae66ba018ef96aa5c78c8fba787f43717',1,'stp']]],
+  ['cubic',['CUBIC',['../namespacestp.html#a7ae9fed509d30e48b2a6b5c0bbcb99feaccd681e34e5e40fbce74618c3ccffcff',1,'stp']]]
 ];

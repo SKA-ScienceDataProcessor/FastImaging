@@ -1,4 +1,10 @@
 ## Release Notes
+### 20 August 2018
+- Implemented support for W-projection which is used for wide-field imaging
+- Implemented initial support for A-projection (work in progress)
+- Performed several improvements and fixes
+- Added ffast-math gcc option
+
 ### 9 February 2018
 - Implemented 8-connected component labeling
 - Added option to select between 4- and 8-connected labeling

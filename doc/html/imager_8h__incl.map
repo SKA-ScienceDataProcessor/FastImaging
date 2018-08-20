@@ -1,8 +1,11 @@
 <map id="/home/lucas/skadev/FastImaging/src/stp/imager/imager.h" name="/home/lucas/skadev/FastImaging/src/stp/imager/imager.h">
-<area shape="rect" id="node2" href="$fft_8h.html" title="Function prototypes of FFT. " alt="" coords="242,109,352,136"/>
-<area shape="rect" id="node3" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="10,273,88,300"/>
-<area shape="rect" id="node8" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="440,109,567,136"/>
-<area shape="rect" id="node5" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="244,191,350,218"/>
-<area shape="rect" id="node13" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="81,191,220,218"/>
-<area shape="rect" id="node15" href="$conv__func_8h.html" title="Classes and function prototypes of convolution methods. " alt="" coords="555,184,687,225"/>
+<area shape="rect" id="node2" href="$fft_8h.html" title="Function prototypes of FFT. " alt="" coords="265,273,375,300"/>
+<area shape="rect" id="node3" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="681,423,759,449"/>
+<area shape="rect" id="node8" href="$global__macros_8h.html" title="../global_macros.h" alt="" coords="1086,191,1215,218"/>
+<area shape="rect" id="node11" href="$gridder_8h.html" title="Classes and function prototypes of the gridder. " alt="" coords="574,109,701,136"/>
+<area shape="rect" id="node6" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="366,348,471,375"/>
+<area shape="rect" id="node15" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="501,273,640,300"/>
+<area shape="rect" id="node17" href="$conv__func_8h.html" title="Classes and function prototypes of convolution methods. " alt="" coords="675,184,807,225"/>
+<area shape="rect" id="node19" href="$aw__projection_8h.html" title="Classes and function prototypes of aw_projection. " alt="" coords="486,191,599,218"/>
+<area shape="rect" id="node20" href="$spline_8h.html" title="../common/spline.h" alt="" coords="5,348,139,375"/>
 </map>

@@ -1,9 +1,0 @@
-<map id="stp::convolve_to_grid" name="stp::convolve_to_grid">
-<area shape="rect" id="node2" href="$namespacestp.html#a095277dc88e800af18a5e1e9e803792e" title="Convert the input visibilities to an array of half&#45;plane visibilities. " alt="" coords="413,5,581,47"/>
-<area shape="rect" id="node3" href="$namespacestp.html#a64e9b2a4405d8f3ded5155a4c9cdf844" title="bounds_check_kernel_centre_locations function " alt="" coords="410,71,585,112"/>
-<area shape="rect" id="node4" href="$namespacestp.html#a9d34b3ed2504bd5c0fc106e3299a5d62" title="populate_kernel_cache function " alt="" coords="210,129,349,171"/>
-<area shape="rect" id="node6" href="$namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca" title="calculate_oversampled_kernel_indices function " alt="" coords="407,188,588,229"/>
-<area shape="rect" id="node7" href="$namespacestp.html#a1dec62be138cc7a88f2fb0eebae6c63e" title="Make 2D Kernel Array. " alt="" coords="200,246,359,273"/>
-<area shape="rect" id="node8" href="$classstp_1_1_gridder_output.html#a875fc3decf005dff279ed0d43195942b" title="stp::GridderOutput\l::GridderOutput" alt="" coords="215,297,344,339"/>
-<area shape="rect" id="node5" href="$namespacestp.html#aae328999b307d32ea32e65caa64eac0b" title="Make 1D Kernel Array. " alt="" coords="424,137,571,163"/>
-</map>

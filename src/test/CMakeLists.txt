@@ -1,7 +1,15 @@
 # --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Library Unit Tests
 
-set(CMAKE_CXX_STANDARD 14)
+# Minimum language standard is C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CXX_STANDARD_REQUIRED ON)
+
+# Turn on useful compiler flags
+add_compile_options(-march=native)
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-ffast-math -O3)
+endif()
 
 # Dependency: Threads (required by google test)
 find_package(Threads REQUIRED)
@@ -11,7 +19,7 @@ set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
 
 # For convenience all link libraries required by
 # the tests are put in one variable
-set(TEST_LINK_LIBRARIES stp cnpy-static gtest gtest_main Threads::Threads armadillo)
+set(TEST_LINK_LIBRARIES stp cnpy-stp gtest gtest_main Threads::Threads armadillo)
 
 # Copy configuration files to the binary directory
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../configs/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
@@ -33,8 +41,9 @@ add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 # Helper function for test target specification
 function(add_unit_test unit_test_name unit_test_source)
     add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/fixtures.h ../auxiliary/gaussian2d.cpp
-        ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp imager/load_json_imager.cpp)
-    add_dependencies(${unit_test_name} stp cnpy-static gtest gtest_main benchmark armadillo)
+        ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp imager/load_json_imager.cpp
+        ../auxiliary/linear_interpolation.cpp)
+    add_dependencies(${unit_test_name} stp cnpy-stp gtest gtest_main benchmark armadillo)
     target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary
         ${RAPIDJSON_INCLUDE_PATH})
     target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
@@ -54,6 +63,9 @@ add_unit_test(test_matrixmath_fftshift matrixmath/matrixmath_test_fftshift.cpp)
 # In-place matrix division
 add_unit_test(test_matrixmath_inplacediv matrixmath/matrixmath_test_inplacediv.cpp)
 
+# Matrix rotation
+add_unit_test(test_matrixmath_rotate matrixmath/matrixmath_test_rotate.cpp)
+
 # Test Cases: Convolution Functions ------------------------------------------------------------------------------------
 
 # Triangle
@@ -70,6 +82,9 @@ add_unit_test(test_conv_gaussian conv/conv_test_gaussian.cpp)
 
 # Gaussian Sinc
 add_unit_test(test_conv_gaussian_sinc conv/conv_test_gaussiansinc.cpp)
+
+# PSWF
+add_unit_test(test_conv_pswf conv/conv_test_pswf.cpp)
 
 # Test Cases: Kernel Functions -----------------------------------------------------------------------------------------
 
@@ -126,6 +141,7 @@ add_unit_test(test_gridder_halfplane_shifted_gridding gridder/gridder_test_HalfP
 # Sample Weighting
 add_unit_test(test_gridder_sample_weighting gridder/gridder_test_SampleWeighting.cpp)
 
+
 # Test Cases: Imager Functions -----------------------------------------------------------------------------------------
 
 # Triangle
@@ -142,6 +158,15 @@ add_unit_test(test_imager_gaussian imager/imager_test_Gaussian.cpp)
 
 # GaussianSinc
 add_unit_test(test_imager_gaussiansinc imager/imager_test_GaussianSinc.cpp)
+
+# PSWF
+add_unit_test(test_imager_pswf imager/imager_test_PSWF.cpp)
+
+
+# Test Cases: Interpolation Functions --------------------------------------------------------------------------------------
+
+add_unit_test(test_linear_interpolation interpolation/linear_interpolation_test.cpp)
+
 
 # Test Cases: Visibility Functions -----------------------------------------------------------------------------------------
 
@@ -178,7 +203,9 @@ add_unit_test(test_sourcefind_labeling sourcefind/sourcefind_test_Labeling.cpp)
 add_unit_test(test_sourcefind_fitting sourcefind/sourcefind_test_Fitting.cpp)
 
 # Test Cases: Pipeline Functions ---------------------------------------------------------------------------------------
-add_unit_test(test_pipeline_gaussiansinc pipeline/pipeline_test_gaussiansinc.cpp)
+add_unit_test(test_pipeline_simple pipeline/pipeline_simple_test.cpp)
+add_unit_test(test_pipeline_wprojection pipeline/pipeline_wprojection_test.cpp)
+
 
 # Pass the test cases to CTest
 # Note: for practicality each unit test has its own executable.
@@ -188,6 +215,7 @@ add_test(NAME MatrixMathStatFuncs COMMAND test_matrixmath_stat_funcs)
 add_test(NAME MatrixMathMedianFuncs COMMAND test_matrixmath_median_funcs)
 add_test(NAME MatrixMathFFTShift COMMAND test_matrixmath_fftshift)
 add_test(NAME MatrixMathInplaceDiv COMMAND test_matrixmath_inplacediv)
+add_test(NAME MatrixMathRotate COMMAND test_matrixmath_rotate)
 
 # Convolution
 add_test(NAME ConvTriangleFunc COMMAND test_conv_triangle)
@@ -195,6 +223,7 @@ add_test(NAME ConvTopHatFunc COMMAND test_conv_tophat)
 add_test(NAME ConvSincFunc COMMAND test_conv_sinc)
 add_test(NAME ConvGaussianFunc COMMAND test_conv_gaussian)
 add_test(NAME ConvGaussianSincFunc COMMAND test_conv_gaussian_sinc)
+add_test(NAME ConvPswfFunc COMMAND test_conv_pswf)
 
 # Kernel
 add_test(NAME KernelGenerationOversampledPillbox COMMAND test_kernel_generation_oversampled_pillbox)
@@ -223,6 +252,10 @@ add_test(NAME ImagerTriangle COMMAND test_imager_triangle)
 add_test(NAME ImagerSinc COMMAND test_imager_sinc)
 add_test(NAME ImagerGaussian COMMAND test_imager_gaussian)
 add_test(NAME ImagerGaussianSinc COMMAND test_imager_gaussiansinc)
+add_test(NAME ImagerPSWF COMMAND test_imager_pswf)
+
+# Interpolation
+add_test(NAME LinearInterpolation COMMAND test_linear_interpolation)
 
 # Visibility
 add_test(NAME VisibilityModelGeneration COMMAND test_visibility_model_generation)
@@ -242,4 +275,6 @@ add_test(NAME SourceFindLabeling COMMAND test_sourcefind_labeling)
 add_test(NAME SourceFindFitting COMMAND test_sourcefind_fitting)
 
 # Pipeline Functions
-add_test(NAME PipelineGaussianSincFunc COMMAND test_pipeline_gaussiansinc)
+add_test(NAME SlowTransientsPipelineSimple COMMAND test_pipeline_simple)
+add_test(NAME SlowTransientsPipelineWprojection COMMAND test_pipeline_wprojection)
+

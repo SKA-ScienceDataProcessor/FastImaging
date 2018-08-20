@@ -1,3 +1,36 @@
 [submodule "test-data"]
 	path = test-data
 	url = https://github.com/SKA-ScienceDataProcessor/FastImaging-testdata.git
+[submodule "src/third-party/openblas"]
+	path = src/third-party/openblas
+	url = https://github.com/xianyi/OpenBLAS.git
+[submodule "src/third-party/armadillo"]
+	path = src/third-party/armadillo
+	url = https://github.com/conradsnicta/armadillo-code.git
+[submodule "src/third-party/benchmark"]
+	path = src/third-party/benchmark
+	url = https://github.com/google/benchmark.git
+[submodule "src/third-party/googletest"]
+	path = src/third-party/googletest
+	url = https://github.com/google/googletest.git
+[submodule "src/third-party/ceres"]
+	path = src/third-party/ceres
+	url = https://github.com/ceres-solver/ceres-solver.git
+[submodule "src/third-party/eigen"]
+	path = src/third-party/eigen
+	url = https://github.com/eigenteam/eigen-git-mirror.git
+[submodule "src/third-party/pybind11"]
+	path = src/third-party/pybind11
+	url = https://github.com/pybind/pybind11.git
+[submodule "src/third-party/rapidjson"]
+	path = src/third-party/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
+[submodule "src/third-party/spdlog"]
+	path = src/third-party/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "src/third-party/tbb"]
+	path = src/third-party/tbb
+	url = https://github.com/01org/tbb.git
+[submodule "src/third-party/cnpy"]
+	path = src/third-party/cnpy
+	url = https://github.com/rogersce/cnpy.git

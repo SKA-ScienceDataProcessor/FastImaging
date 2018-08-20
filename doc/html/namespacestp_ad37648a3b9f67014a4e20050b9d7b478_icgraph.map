@@ -1,4 +1,5 @@
 <map id="stp::matrix_shift" name="stp::matrix_shift">
-<area shape="rect" id="node2" href="$namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="169,5,255,32"/>
-<area shape="rect" id="node3" href="$namespacestp.html#a7e61918609243705d9649a09c4efd1ba" title="Generates image and beam data from input visibilities. " alt="" coords="303,5,449,32"/>
+<area shape="rect" id="node2" href="$namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="169,13,255,39"/>
+<area shape="rect" id="node3" href="$namespacestp.html#a3f3931422fe088eed5e60da339a8ddab" title="Generates image and beam data from input visibilities. " alt="" coords="303,13,449,39"/>
+<area shape="rect" id="node4" href="$classstp_1_1_image_visibilities.html#aa1e9b6dff9caa156aff9293d9e92d3b6" title="ImageVisibilities constructor. " alt="" coords="497,5,640,47"/>
 </map>

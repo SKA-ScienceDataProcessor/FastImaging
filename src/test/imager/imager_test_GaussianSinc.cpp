@@ -26,14 +26,15 @@ public:
         trunc = val["trunc"].GetDouble();
         std::string expected_results_path = val["expected_results"].GetString();
 
-        arma::cx_mat vis(load_npy_complex_array(val["input_file"].GetString(), "vis"));
-        arma::mat uvw_lambda(load_npy_double_array(val["input_file"].GetString(), "uvw"));
+        arma::cx_mat vis(load_npy_complex_array<double>(val["input_file"].GetString(), "vis"));
+        arma::mat uvw_lambda(load_npy_double_array<double>(val["input_file"].GetString(), "uvw"));
         arma::mat vis_weights = arma::ones<arma::mat>(arma::size(vis));
 
         // Loads the expected results to a arma::Mat pair
-        expected_result = std::make_pair(std::move(load_npy_complex_array(expected_results_path, "image")), std::move(load_npy_complex_array(expected_results_path, "beam")));
+        expected_result = std::make_pair(std::move(load_npy_double_array<double>(expected_results_path, "image")), std::move(load_npy_double_array<double>(expected_results_path, "beam")));
 
-        std::pair<arma::Mat<real_t>, arma::Mat<real_t>> orig_result = image_visibilities(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc), vis, vis_weights, uvw_lambda, image_size, cell_size, support, kernel_exact, oversampling, gen_beam);
+        ImagerPars imgpars(image_size, cell_size, stp::KernelFunction::GaussianSinc, support, kernel_exact, oversampling, gen_beam, gridding_correction, analytic_gcf);
+        std::pair<arma::Mat<real_t>, arma::Mat<real_t>> orig_result = image_visibilities(GaussianSinc(trunc, width_normalization_gaussian, width_normalization_sinc), vis, vis_weights, uvw_lambda, imgpars);
 
 #ifndef FFTSHIFT
         // Output matrices need to be shifted because image_visibilities does not shift them

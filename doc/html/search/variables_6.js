@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['i',['i',['../unionstp_1_1_float_twiddler.html#af69e4244dc868957da13af58a53fcf9f',1,'stp::FloatTwiddler']]],
-  ['islands',['islands',['../classstp_1_1_source_find_image.html#aebe879d6f1675cd6aa471a310ace8cd1',1,'stp::SourceFindImage']]]
+  ['generate_5fbeam',['generate_beam',['../structstp_1_1_imager_pars.html#a481ea0e09b333a4a8ad3c6f70b392623',1,'stp::ImagerPars']]],
+  ['gridding_5fcorrection',['gridding_correction',['../structstp_1_1_imager_pars.html#a6758e0b11972e2930ca406dfd4a6ea2b',1,'stp::ImagerPars']]]
 ];

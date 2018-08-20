@@ -12,18 +12,16 @@ std::string input_npz("simdata_nstep10.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
-std::string wisdom_path(_WISDOM_FILEPATH);
 
 static void imager_test_benchmark(benchmark::State& state)
 {
-    int image_size = pow(2, state.range(0));
-    std::string wisdom_filename = wisdom_path + "WisdomFile_rob" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
+    int image_size = state.range(0);
 
     //Load simulated data from input_npz
-    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
-    arma::mat input_snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
-    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
+    arma::mat input_uvw = load_npy_double_array<double>(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_vis = load_npy_complex_array<double>(data_path + input_npz, "vis");
+    arma::mat input_snr_weights = load_npy_double_array<double>(data_path + input_npz, "snr_weights");
+    arma::mat skymodel = load_npy_double_array<double>(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
     arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
@@ -33,16 +31,18 @@ static void imager_test_benchmark(benchmark::State& state)
 
     // Load all configurations from json configuration file
     ConfigurationFile cfg(config_path + config_file_oversampling);
+    cfg.img_pars.image_size = image_size;
 
-    stp::GaussianSinc kernel_func(cfg.kernel_support);
+    stp::PSWF kernel_func(cfg.img_pars.kernel_support);
 
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, image_size,
-            cfg.cell_size, cfg.kernel_support, cfg.kernel_exact, cfg.oversampling, false, stp::FFTRoutine::FFTW_WISDOM_FFT, wisdom_filename));
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(stp::image_visibilities(kernel_func, residual_vis, input_snr_weights, input_uvw, cfg.img_pars));
     }
 }
 
 BENCHMARK(imager_test_benchmark)
-    ->DenseRange(10, 16) // 10,11,12,13,14,15,16
+    ->RangeMultiplier(2)
+    ->Range(1 << 10, 1 << 16)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK_MAIN()
+
+BENCHMARK_MAIN();

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['num_5ftime_5finst',['NUM_TIME_INST',['../imager_8h.html#aff561d3c5356a07f3f43855a3e955de8',1,'NUM_TIME_INST():&#160;imager.h'],['../sourcefind_8cpp.html#aff561d3c5356a07f3f43855a3e955de8',1,'NUM_TIME_INST():&#160;sourcefind.cpp']]]
+  ['min_5felems_5ffor_5fparshift',['MIN_ELEMS_FOR_PARSHIFT',['../matrix__math_8h.html#a37a9fea883d821f7feeaa40d6909437f',1,'matrix_math.h']]],
+  ['min_5fmedsize',['MIN_MEDSIZE',['../matrix__math_8cpp.html#af2922a59794a4a160df02579ff9817e4',1,'matrix_math.cpp']]]
 ];

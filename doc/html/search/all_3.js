@@ -1,10 +1,20 @@
 var searchData=
 [
-  ['d1',['d1',['../structstp_1_1_double_pair.html#ad423242884b23eb0cf442e4ed2ea8af9',1,'stp::DoublePair']]],
-  ['d2',['d2',['../structstp_1_1_double_pair.html#af6c8f026f2b1cbc3ead002a2abef3a30',1,'stp::DoublePair']]],
-  ['datastats',['DataStats',['../structstp_1_1_data_stats.html',1,'stp::DataStats'],['../structstp_1_1_data_stats.html#ae797f7cd2025b6ca1ae563b591357bca',1,'stp::DataStats::DataStats()'],['../structstp_1_1_data_stats.html#a30ab91435b34b3bcced6f036e1ee2e82',1,'stp::DataStats::DataStats(real_t u)'],['../structstp_1_1_data_stats.html#a703ec6abcf34a53495e806d4891f150e',1,'stp::DataStats::DataStats(real_t u, real_t s)'],['../structstp_1_1_data_stats.html#a235f8b33cdf1602c3dc3309073e0bd2a',1,'stp::DataStats::DataStats(real_t u, real_t s, real_t m)']]],
-  ['degree_5fto_5frad',['degree_to_rad',['../namespacestp.html#ab4376d9dfa3b7a21f1ca69629c347d99',1,'stp']]],
-  ['delete_5fmatrix_5fbuffer',['delete_matrix_buffer',['../classstp_1_1_mat_stp.html#a647f2e90b61e3e2a43c9f3baa8b3c248',1,'stp::MatStp']]],
-  ['detection_5fn_5fsigma',['detection_n_sigma',['../classstp_1_1_source_find_image.html#a53321dbc35a15d84c71a47cc1e990504',1,'stp::SourceFindImage']]],
-  ['doublepair',['DoublePair',['../structstp_1_1_double_pair.html',1,'stp::DoublePair'],['../structstp_1_1_double_pair.html#a92d35013e92a975d6e735c51c1bdec25',1,'stp::DoublePair::DoublePair()'],['../structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e',1,'stp::DoublePair::DoublePair(double a1, double a2)']]]
+  ['cache_5fline_5fsize',['CACHE_LINE_SIZE',['../matstp_8h.html#af89f60b07247176687889ade776c8e10',1,'matstp.h']]],
+  ['calculate_5foversampled_5fkernel_5findices',['calculate_oversampled_kernel_indices',['../namespacestp.html#ad2191add2b4abbc6ff7cb8c4102097ca',1,'stp']]],
+  ['ccl_2ecpp',['ccl.cpp',['../ccl_8cpp.html',1,'']]],
+  ['ccl_2eh',['ccl.h',['../ccl_8h.html',1,'']]],
+  ['cell_5fsize',['cell_size',['../structstp_1_1_imager_pars.html#a86b65133c736f4c80bcda30bda8707dd',1,'stp::ImagerPars']]],
+  ['ceres_5freport',['ceres_report',['../structstp_1_1_island_params.html#a20761c06ee518918ff90583e981ad0a4',1,'stp::IslandParams']]],
+  ['ceresdiffmethod',['CeresDiffMethod',['../namespacestp.html#a30ea75fc2a28e18b48e3a9939e3760a9',1,'stp']]],
+  ['ceressolvertype',['CeresSolverType',['../namespacestp.html#ae604b01190a3a3414720a85c806fd7d6',1,'stp']]],
+  ['col_5fstart',['col_start',['../structstp_1_1_label_data_thread.html#af036d19b43cbc62e34b9c29c2f328c46',1,'stp::LabelDataThread']]],
+  ['conv_5ffunc_2ecpp',['conv_func.cpp',['../conv__func_8cpp.html',1,'']]],
+  ['conv_5ffunc_2eh',['conv_func.h',['../conv__func_8h.html',1,'']]],
+  ['convert_5fto_5fconstrained_5fparameters',['convert_to_constrained_parameters',['../structstp_1_1_gaussian2d_params.html#aafc490771377c94fd7e50f06f21f9063',1,'stp::Gaussian2dParams']]],
+  ['convert_5fto_5fhalfplane_5fvisibilities',['convert_to_halfplane_visibilities',['../namespacestp.html#ad75e5145b07b51b813ec9eaa95e5ac93',1,'stp::convert_to_halfplane_visibilities(arma::mat &amp;uv_lambda, arma::cx_mat &amp;vis, int kernel_support, arma::uvec &amp;good_vis)'],['../namespacestp.html#a56aca5a8c2d0cff6cae946edbf7659d2',1,'stp::convert_to_halfplane_visibilities(arma::mat &amp;uv_lambda, arma::vec &amp;w_lambda, arma::cx_mat &amp;vis, int kernel_support, arma::uvec &amp;good_vis)']]],
+  ['convolve_5fto_5fgrid',['convolve_to_grid',['../namespacestp.html#a8135d9e95f2df8f47c170daa507a5a7a',1,'stp']]],
+  ['cosine',['COSINE',['../namespacestp.html#a7ae9fed509d30e48b2a6b5c0bbcb99feae66ba018ef96aa5c78c8fba787f43717',1,'stp']]],
+  ['cubic',['CUBIC',['../namespacestp.html#a7ae9fed509d30e48b2a6b5c0bbcb99feaccd681e34e5e40fbce74618c3ccffcff',1,'stp']]],
+  ['cx_5freal_5ft',['cx_real_t',['../types_8h.html#a1d2a57e59f061705d305d324a80d4ca1',1,'types.h']]]
 ];

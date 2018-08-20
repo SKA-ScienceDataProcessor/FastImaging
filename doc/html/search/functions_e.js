@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['zeromemalloc',['ZeroMemAlloc',['../classstp_1_1_zero_mem_alloc.html#a389cc16107e00373afd61816fb47b8d0',1,'stp::ZeroMemAlloc::ZeroMemAlloc()'],['../classstp_1_1_zero_mem_alloc.html#a97711f014548b09904e75c72e72c3bab',1,'stp::ZeroMemAlloc::ZeroMemAlloc(size_t length)'],['../classstp_1_1_zero_mem_alloc.html#a9ca3843c43567d724a2b0f4315967067',1,'stp::ZeroMemAlloc::ZeroMemAlloc(ZeroMemAlloc const &amp;)=delete'],['../classstp_1_1_zero_mem_alloc.html#adefae82bf070d5db51d11e4e2a8afd54',1,'stp::ZeroMemAlloc::ZeroMemAlloc(ZeroMemAlloc &amp;&amp;other)']]]
+  ['r_5fsolve',['r_solve',['../classtk_1_1band__matrix.html#a0c7d6395a84db25a968952e23fa30bab',1,'tk::band_matrix']]],
+  ['reset',['reset',['../classstp_1_1_mat_stp.html#abae20e2ed72546a78609ae8b0295359c',1,'stp::MatStp']]],
+  ['rotate_5fmatrix',['rotate_matrix',['../namespacestp.html#acd1a18f626d11eebaae47da542f454d1',1,'stp']]]
 ];

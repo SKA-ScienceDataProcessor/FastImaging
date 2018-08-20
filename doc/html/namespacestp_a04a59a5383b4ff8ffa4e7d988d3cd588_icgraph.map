@@ -1,5 +1,4 @@
 <map id="stp::mat_accumulate_parallel" name="stp::mat_accumulate_parallel">
-<area shape="rect" id="node2" href="$namespacestp.html#a6fb8607c7d28f9d5378ec98cfe8c2e85" title="Compute matrix mean (parallel). " alt="" coords="197,56,355,83"/>
-<area shape="rect" id="node4" href="$structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="615,56,799,83"/>
-<area shape="rect" id="node3" href="$namespacestp.html#a482026f966a8261e7146bc429a03c2e0" title="Compute matrix standard deviation (parallel). " alt="" coords="403,5,567,32"/>
+<area shape="rect" id="node2" href="$namespacestp.html#a6fb8607c7d28f9d5378ec98cfe8c2e85" title="Compute matrix mean (parallel). " alt="" coords="197,13,355,39"/>
+<area shape="rect" id="node3" href="$namespacestp.html#acbf241d4fab47b856bbf90c229101ec8" title="Compute matrix standard deviation (parallel). " alt="" coords="403,13,567,39"/>
 </map>

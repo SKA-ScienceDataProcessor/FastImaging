@@ -6,20 +6,16 @@
 #include "sourcefind.h"
 #include "../common/matrix_math.h"
 #include "../common/matstp.h"
+#include "../global_macros.h"
 #include "fitting.h"
 #include <cassert>
 #include <tbb/tbb.h>
 #include <thread>
 
-#define NUM_TIME_INST 10
-
 namespace stp {
 
-#ifdef FUNCTION_TIMINGS
-std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
 std::vector<std::chrono::high_resolution_clock::time_point> times_sf;
 std::vector<std::chrono::high_resolution_clock::time_point> times_ccl;
-#endif
 
 // The sigma_clip step is combined with estimate_rms in order to save some computational complexity
 // This is because we do not need the clipped vector data returned by sigma_clip
@@ -28,20 +24,24 @@ double estimate_rms(const arma::Mat<real_t>& data, double num_sigma, uint iters,
     assert(arma::is_finite(data)); // input data must have only finite values
 
     // Compute mean, sigma and median if it was not received as input
-    if (!arma::is_finite(stats.median)) {
+    if (!stats.median_valid) {
         stats = mat_binmedian(data);
     } else {
-        if ((!arma::is_finite(stats.mean)) || (!arma::is_finite(stats.sigma))) {
+        if ((!stats.mean_valid) || (!stats.sigma_valid)) {
             DataStats tmp_stats = mat_mean_and_stddev(data);
             stats.mean = tmp_stats.mean;
+            stats.mean_valid = true;
             stats.sigma = tmp_stats.sigma;
+            stats.sigma_valid = true;
         }
     }
 
     arma::uword n_elem = data.n_elem;
-    real_t sigma = stats.sigma;
     const real_t median = stats.median;
+    // Subbtract median from mean
     real_t mean = stats.mean - median;
+    // Sigma does not change when median is subtracted from data
+    real_t sigma = stats.sigma;
 
     // Auxiliary variables storing the sum, squared sum and number of elements in the valid data
     DoublePair total_accu(double(mean) * double(n_elem), (double(sigma) * double(sigma) + double(mean) * double(mean)) * double(n_elem));
@@ -173,14 +173,16 @@ SourceFindImage::SourceFindImage(
 {
 #ifdef FUNCTION_TIMINGS
     times_sf.reserve(NUM_TIME_INST);
-    times_sf.push_back(std::chrono::high_resolution_clock::now());
+    times_ccl.reserve(NUM_TIME_INST);
 #endif
+    TIMESTAMP_SOURCEFIND
 
     // Compute statistics: mean, sigma, median
-    DataStats data_stats(arma::datum::nan, arma::datum::nan, arma::datum::nan);
+    DataStats data_stats;
     switch (median_method) {
     case MedianMethod::ZEROMEDIAN:
         data_stats.median = 0.0;
+        data_stats.median_valid = true;
         break;
     case MedianMethod::BINAPPROX:
         data_stats = mat_median_binapprox(input_data);
@@ -190,21 +192,22 @@ SourceFindImage::SourceFindImage(
         break;
     case MedianMethod::NTHELEMENT:
         data_stats.median = mat_median_exact(input_data);
+        data_stats.median_valid = true;
         break;
     }
     // Set background level
     bg_level = data_stats.median;
 
-#ifdef FUNCTION_TIMINGS
-    times_sf.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    STPLIB_DEBUG(spdlog::get("stplib"), "Sourcefind: Background level = {}", bg_level);
+
+    TIMESTAMP_SOURCEFIND
 
     // Estimate RMS value, if rms_est is less or equal to 0.0
     rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(input_data, 3, sigma_clip_iters, data_stats);
 
-#ifdef FUNCTION_TIMINGS
-    times_sf.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    STPLIB_DEBUG(spdlog::get("stplib"), "Sourcefind: Estimated RMS value = {}", rms_est);
+
+    TIMESTAMP_SOURCEFIND
 
     // Perform label detection (for both positive and negative sources)
     uint numValidLabels = 0;
@@ -214,9 +217,9 @@ SourceFindImage::SourceFindImage(
         numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, fit_gaussian, ccl_4connectivity);
     }
 
-#ifdef FUNCTION_TIMINGS
-    times_sf.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    STPLIB_DEBUG(spdlog::get("stplib"), "Sourcefind: Number of valid labels = {}", numValidLabels);
+
+    TIMESTAMP_SOURCEFIND
 
     assert(label_extrema_val_pos.n_elem == label_extrema_id_pos.n_elem);
 
@@ -285,9 +288,7 @@ SourceFindImage::SourceFindImage(
         });
     }
 
-#ifdef FUNCTION_TIMINGS
-    times_sf.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_SOURCEFIND
 }
 
 template <bool generateLabelMap>
@@ -300,10 +301,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     const real_t detection_thresh_neg = bg_level - detection_n_sigma * rms_est;
     std::tuple<MatStp<int>, MatStp<uint>, size_t, size_t> labeling_output;
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.reserve(NUM_TIME_INST);
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Perform connected components labeling algorithm
     if (ccl_4connectivity) {
@@ -320,9 +318,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
         }
     }
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Process output of CCL function
     label_map = std::move(std::get<0>(labeling_output));
@@ -381,9 +377,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
         }
     });
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     // Combine maximum values of all threads
     std::pair<arma::Col<real_t>, arma::uvec>& comb_extrema_pos = data_extrema_pos.local();
@@ -665,9 +659,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
         });
     }
 
-#ifdef FUNCTION_TIMINGS
-    times_ccl.push_back(std::chrono::high_resolution_clock::now());
-#endif
+    TIMESTAMP_CCL
 
     return numValidLabels;
 }

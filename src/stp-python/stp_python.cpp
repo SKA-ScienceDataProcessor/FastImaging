@@ -20,16 +20,37 @@ pybind11::tuple image_visibilities_wrapper(
     int image_size,
     double cell_size,
     stp::KernelFunction kernel_func,
-    double kernel_trunc_radius,
     int kernel_support,
     bool kernel_exact,
-    int kernel_oversampling,
+    int oversampling,
     bool generate_beam,
+    bool gridding_correction,
+    bool analytic_gcf,
     stp::FFTRoutine r_fft,
-    std::string fft_wisdom_filename)
+    std::string fft_wisdom_filename,
+    int num_wplanes,
+    bool wplanes_median,
+    int max_wpconv_support,
+    bool hankel_opt,
+    int undersampling_opt,
+    double kernel_trunc_perc,
+    stp::InterpType interp_type,
+    int aproj_numtimesteps,
+    double obs_dec,
+    double obs_lat,
+    np_double_array lha,
+    np_double_array mueller_term)
 {
     assert(vis.request().ndim == 1); // vis is a 1D array
     assert(uvw_lambda.request().ndim == 2); // uv_pixels is a 2D array
+
+    // Set imager parameters
+    stp::ImagerPars img_pars(image_size, cell_size, kernel_func, kernel_support, kernel_exact, oversampling,
+        generate_beam, gridding_correction, analytic_gcf, r_fft, fft_wisdom_filename);
+
+    // Set W-Projection parameters
+    stp::W_ProjectionPars wproj_pars(num_wplanes, max_wpconv_support, undersampling_opt, kernel_trunc_perc,
+        hankel_opt, interp_type, wplanes_median);
 
     arma::cx_mat vis_arma(
         static_cast<ptr_complex_double>(vis.request().ptr),
@@ -52,80 +73,55 @@ pybind11::tuple image_visibilities_wrapper(
         false,
         true);
 
-    // (image, beam) tuple
-    std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_and_beam;
+    arma::mat lha_arma(
+        static_cast<ptr_double>(lha.request().ptr),
+        lha.request().shape[0], // n_rows
+        1, // n_cols
+        false,
+        true);
 
-    // Since "image_visibilities" is a function template, there's no way to prevent the use of the following switch statement.
-    // Inheritance could be used instead, but virtual function calls would impose an unnecessary performance penalty.
-    switch (kernel_func) {
-    case stp::KernelFunction::TopHat: {
-        stp::TopHat kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
-            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
-            generate_beam, r_fft, fft_wisdom_filename);
-    };
-        break;
-    case stp::KernelFunction::Triangle: {
-        stp::Triangle kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
-            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
-            generate_beam, r_fft, fft_wisdom_filename);
-    };
-        break;
-    case stp::KernelFunction::Sinc: {
-        stp::Sinc kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
-            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
-            generate_beam, r_fft, fft_wisdom_filename);
-    };
-        break;
-    case stp::KernelFunction::Gaussian: {
-        stp::Gaussian kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
-            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
-            generate_beam, r_fft, fft_wisdom_filename);
-    };
-        break;
-    case stp::KernelFunction::GaussianSinc: {
-        stp::GaussianSinc kernel(kernel_trunc_radius);
-        image_and_beam = stp::image_visibilities(kernel, std::move(vis_arma), std::move(snr_weights_arma),
-            std::move(uvw_lambda_arma), image_size, cell_size, kernel_support, kernel_exact, kernel_oversampling,
-            generate_beam, r_fft, fft_wisdom_filename);
-    };
-        break;
-    default:
-        assert(0);
-        break;
-    }
+    arma::mat muellerterm_arma(
+        static_cast<ptr_double>(mueller_term.request().ptr),
+        mueller_term.request().shape[0], // n_rows
+        mueller_term.request().shape[1], // n_cols
+        false,
+        true);
+
+    // Set A-Projection parameters
+    stp::A_ProjectionPars aproj_pars(aproj_numtimesteps, obs_dec, obs_lat, lha_arma, muellerterm_arma);
+
+    // Run imager
+    stp::ImageVisibilities imager(std::move(vis_arma), std::move(snr_weights_arma),
+        std::move(uvw_lambda_arma), img_pars, wproj_pars, aproj_pars);
 
     // The function will output a tuple with two np_complex_array
     pybind11::tuple result(2);
 
     // Image at index 0
-    arma::Mat<real_t>& image = image_and_beam.first;
-    size_t data_size = sizeof(real_t);
+    arma::Mat<real_t>& image = imager.vis_grid;
+    ssize_t data_size = sizeof(real_t);
     pybind11::buffer_info image_buffer(
         static_cast<void*>(image.memptr()), // void *ptr
         data_size, // size_t itemsize
         pybind11::format_descriptor<real_t>::format(), // const std::string &format
         2, // size_t ndim
-        { image.n_rows, image.n_cols }, // const std::vector<size_t> &shape
-        { data_size, image.n_cols * data_size }); // const std::vector<size_t> &strides
+        { ssize_t(image.n_rows), ssize_t(image.n_cols) }, // const std::vector<ssize_t> &shape
+        { data_size, ssize_t(image.n_cols) * data_size }); // const std::vector<ssize_t> &strides
 
     // The memory is copied when initializing the np_real_array
     result[0] = np_real_array(image_buffer);
     // Delete unnecessary matrix
-    image_and_beam.first.reset();
+    imager.vis_grid.reset();
 
     // Beam at index 1
-    arma::Mat<real_t>& beam = image_and_beam.second;
+    arma::Mat<real_t>& beam = imager.sampling_grid;
     pybind11::buffer_info beam_buffer(
         static_cast<void*>(beam.memptr()), // void *ptr
         data_size, // size_t itemsize
         pybind11::format_descriptor<real_t>::format(), // const std::string &format
         2, // size_t ndim
-        { beam.n_rows, beam.n_cols }, // const std::vector<size_t> &shape
-        { data_size, beam.n_cols * data_size }); // const std::vector<size_t> &strides
+        { ssize_t(beam.n_rows), ssize_t(beam.n_cols) }, // const std::vector<ssize_t> &shape
+        { data_size, ssize_t(beam.n_cols) * data_size }); // const std::vector<ssize_t> &strides
 
     // The memory is copied when initializing the np_real_array
     result[1] = np_real_array(beam_buffer);
@@ -172,9 +168,9 @@ std::vector<std::tuple<int, double, int, int, int, stp::Gaussian2dParams, stp::G
     return v_islands;
 }
 
-PYBIND11_PLUGIN(stp_python)
+PYBIND11_MODULE(stp_python, m)
 {
-    pybind11::module m("stp_python", "The Slow Transients Pipeline");
+    m.doc() = "The Slow Transients Pipeline";
 
     // Enum bindings
     pybind11::enum_<stp::KernelFunction>(m, "KernelFunction")
@@ -182,7 +178,8 @@ PYBIND11_PLUGIN(stp_python)
         .value("Triangle", stp::KernelFunction::Triangle)
         .value("Sinc", stp::KernelFunction::Sinc)
         .value("Gaussian", stp::KernelFunction::Gaussian)
-        .value("GaussianSinc", stp::KernelFunction::GaussianSinc);
+        .value("GaussianSinc", stp::KernelFunction::GaussianSinc)
+        .value("PSWF", stp::KernelFunction::PSWF);
 
     pybind11::enum_<stp::FFTRoutine>(m, "FFTRoutine")
         .value("FFTW_ESTIMATE_FFT", stp::FFTRoutine::FFTW_ESTIMATE_FFT)
@@ -190,6 +187,11 @@ PYBIND11_PLUGIN(stp_python)
         .value("FFTW_PATIENT_FFT", stp::FFTRoutine::FFTW_PATIENT_FFT)
         .value("FFTW_WISDOM_FFT", stp::FFTRoutine::FFTW_WISDOM_FFT)
         .value("FFTW_WISDOM_INPLACE_FFT", stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT);
+
+    pybind11::enum_<stp::InterpType>(m, "InterpType")
+        .value("LINEAR", stp::InterpType::LINEAR)
+        .value("COSINE", stp::InterpType::COSINE)
+        .value("CUBIC", stp::InterpType::CUBIC); //.value("CUBIC_SMOOTH", stp::InterpType::CUBIC_SMOOTH);
 
     pybind11::enum_<stp::MedianMethod>(m, "MedianMethod")
         .value("ZEROMEDIAN", stp::MedianMethod::ZEROMEDIAN)
@@ -225,10 +227,13 @@ PYBIND11_PLUGIN(stp_python)
     // Function bindings
     m.def("image_visibilities_wrapper", &image_visibilities_wrapper, "Compute image visibilities (gridding + ifft).",
         pybind11::arg("vis"), pybind11::arg("snr_weights"), pybind11::arg("uvw_lambda"), pybind11::arg("image_size"), pybind11::arg("cell_size"),
-        pybind11::arg("kernel_func") = stp::KernelFunction::GaussianSinc, pybind11::arg("kernel_trunc_radius") = 3.0,
-        pybind11::arg("kernel_support") = 3, pybind11::arg("kernel_exact") = true, pybind11::arg("kernel_oversampling") = 9,
-        pybind11::arg("generate_beam") = false, pybind11::arg("r_fft") = stp::FFTRoutine::FFTW_ESTIMATE_FFT,
-        pybind11::arg("fft_wisdom_filename") = std::string());
+        pybind11::arg("kernel_func") = stp::KernelFunction::PSWF, pybind11::arg("kernel_support") = 3, pybind11::arg("kernel_exact") = true,
+        pybind11::arg("kernel_oversampling") = 8, pybind11::arg("generate_beam") = false, pybind11::arg("gridding_correction") = true,
+        pybind11::arg("analytic_gcf") = false, pybind11::arg("r_fft") = stp::FFTRoutine::FFTW_ESTIMATE_FFT, pybind11::arg("fft_wisdom_filename") = std::string(),
+        pybind11::arg("num_wplanes") = 0, pybind11::arg("wplanes_median") = false, pybind11::arg("max_wpconv_support") = 0, pybind11::arg("hankel_opt") = false,
+        pybind11::arg("undersampling_opt") = 1, pybind11::arg("kernel_trunc_perc") = 0.0, pybind11::arg("interp_type") = stp::InterpType::LINEAR,
+        pybind11::arg("aproj_numtimesteps") = 0, pybind11::arg("obs_dec") = 0.0, pybind11::arg("obs_lat") = 0.0,
+        pybind11::arg("lha") = np_double_array(), pybind11::arg("mueller_term") = np_double_array());
 
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
         pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
@@ -236,7 +241,5 @@ PYBIND11_PLUGIN(stp_python)
         pybind11::arg("gaussian_fitting") = false, pybind11::arg("ccl_4connectivity") = false, pybind11::arg("generate_labelmap") = true,
         pybind11::arg("source_min_area") = 5, pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
         pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
-
-    return m.ptr();
 }
 }

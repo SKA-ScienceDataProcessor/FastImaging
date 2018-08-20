@@ -30,53 +30,73 @@ struct DataStats {
         : mean(0.0)
         , sigma(0.0)
         , median(0.0)
+        , mean_valid(false)
+        , sigma_valid(false)
+        , median_valid(false)
     {
     }
 
     /**
      * @brief DataStats constructor that sets given mean value. Sigma and median set to zero.
+     *
+     * @param[in] u (real_t): Mean value
      */
     DataStats(real_t u)
         : mean(u)
         , sigma(0.0)
         , median(0.0)
+        , mean_valid(true)
+        , sigma_valid(false)
+        , median_valid(false)
     {
     }
 
     /**
      * @brief DataStats constructor that sets given mean and sigma values. Median set to zero.
+     *
+     * @param[in] u (real_t): Mean value
+     * @param[in] s (real_t): Sigma value
      */
     DataStats(real_t u, real_t s)
         : mean(u)
         , sigma(s)
         , median(0.0)
+        , mean_valid(true)
+        , sigma_valid(true)
+        , median_valid(false)
     {
     }
 
     /**
      * @brief DataStats constructor that sets given mean, sigma and median values.
+     *
+     * @param[in] u (real_t): Mean value
+     * @param[in] s (real_t): Sigma value
+     * @param[in] m (real_t): Median value
      */
     DataStats(real_t u, real_t s, real_t m)
         : mean(u)
         , sigma(s)
         , median(m)
+        , mean_valid(true)
+        , sigma_valid(true)
+        , median_valid(true)
     {
     }
 
-    /**
-     * Mean value
-     */
+    // Mean value
     real_t mean;
 
-    /**
-     * Sigma value
-     */
+    // Sigma value
     real_t sigma;
 
-    /**
-     * Median value
-     */
+    // Median value
     real_t median;
+
+    // Validity bits
+    bool mean_valid;
+    bool sigma_valid;
+    bool median_valid;
 };
 
 /**
@@ -99,6 +119,9 @@ struct DoublePair {
 
     /**
      * @brief DoublePair constructor that sets two double numbers.
+     *
+     * @param[in] a1 (double): First double value
+     * @param[in] a2 (double): Second double value
      */
     DoublePair(double a1, double a2)
         : d1(a1)
@@ -207,11 +230,12 @@ double mat_mean_parallel(arma::Mat<real_t>& data);
  * If a pre-computed mean value is received, mean calculation is bypassed.
  *
  * @param[in] data (arma::Mat): Input matrix.
- * @param[in] double (mean): Pre-computed mean value (optional).
+ * @param[in] bool (compute_mean): Indicate if the mean value is an input or if it must be computed (default = true).
+ * @param[in] double (mean): Pre-computed mean value (required only when compute_mean is false).
  *
  * @return (double): Standard deviation of input matrix.
  */
-double mat_stddev_parallel(arma::Mat<real_t>& data, double mean = arma::datum::nan);
+double mat_stddev_parallel(arma::Mat<real_t>& data, bool compute_mean = true, double mean = 0.0);
 
 /**
  * @brief Shift elements of the input matrix in a circular manner.
@@ -219,7 +243,7 @@ double mat_stddev_parallel(arma::Mat<real_t>& data, double mean = arma::datum::n
  * Provides matrix shift operation based on armadillo implementation, but it uses TBB for parallel processing.
  * Template function allows to shift diferent matrix types, e.g. arma::mat, arma::cx_mat
  *
- * @param[in] m (arma::Mat<T>): Matrix to be shifted.
+ * @param[in] in (arma::Mat<T>): Matrix to be shifted.
  * @param[in] lenght (int): Number of positions to shifted (can be positive or negative).
  * @param[in] dim(int): If dim=0, shift each column by "lenght". If dim=1, shift each row by "lenght". Default is 0.
  *
@@ -307,6 +331,8 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
     }
     return out;
 }
+
+arma::Mat<real_t> rotate_matrix(const arma::mat& in_m, double angle, double cval, int out_size = 0);
 }
 
 #endif /* MATRIX_MATH_H */

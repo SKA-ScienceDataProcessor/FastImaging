@@ -15,27 +15,17 @@ std::string input_npz("simdata_nstep10.npz");
 std::string config_path(_PIPELINE_CONFIGPATH);
 std::string config_file_exact("fastimg_exact_config.json");
 std::string config_file_oversampling("fastimg_oversampling_config.json");
-std::string wisdom_path(_WISDOM_FILEPATH);
 int normalize = true;
 
-static void fft_c2r_test_benchmark(benchmark::State& state)
+static void fft_c2r_test_benchmark(benchmark::State& state, stp::FFTRoutine r_fft)
 {
-    stp::FFTRoutine r_fft = (stp::FFTRoutine)state.range(0);
-
-    int image_size = pow(2, double(state.range(1)));
-
-    std::string wisdom_filename;
-    if (r_fft == stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
-        wisdom_filename = wisdom_path + "WisdomFile_rib" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
-    } else {
-        wisdom_filename = wisdom_path + "WisdomFile_rob" + std::to_string(image_size) + "x" + std::to_string(image_size) + ".fftw";
-    }
+    int image_size = state.range(0);
 
     //Load simulated data from input_npz
-    arma::mat input_uvw = load_npy_double_array(data_path + input_npz, "uvw_lambda");
-    arma::cx_mat input_vis = load_npy_complex_array(data_path + input_npz, "vis");
-    arma::mat input_snr_weights = load_npy_double_array(data_path + input_npz, "snr_weights");
-    arma::mat skymodel = load_npy_double_array(data_path + input_npz, "skymodel");
+    arma::mat input_uvw = load_npy_double_array<double>(data_path + input_npz, "uvw_lambda");
+    arma::cx_mat input_vis = load_npy_complex_array<double>(data_path + input_npz, "vis");
+    arma::mat input_snr_weights = load_npy_double_array<double>(data_path + input_npz, "snr_weights");
+    arma::mat skymodel = load_npy_double_array<double>(data_path + input_npz, "skymodel");
 
     // Generate model visibilities from the skymodel and UVW-baselines
     arma::cx_mat input_model = stp::generate_visibilities_from_local_skymodel(skymodel, input_uvw);
@@ -47,45 +37,49 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
     ConfigurationFile cfg(config_path + config_file_oversampling);
 
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
-    double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cfg.cell_size) * double(image_size)));
+    double grid_pixel_width_lambda = (1.0 / (arc_sec_to_rad(cfg.img_pars.cell_size) * double(image_size)));
     arma::mat uv_in_pixels = input_uvw / grid_pixel_width_lambda;
 
     // Remove W column
     uv_in_pixels.shed_col(2);
 
-    stp::GaussianSinc kernel_func(cfg.kernel_support);
-    stp::GridderOutput gridded_data = stp::convolve_to_grid<false>(kernel_func, cfg.kernel_support, image_size, uv_in_pixels, residual_vis, input_snr_weights, cfg.kernel_exact, cfg.oversampling);
+    stp::PSWF kernel_func(cfg.img_pars.kernel_support);
+    stp::GridderOutput gridded_data = stp::convolve_to_grid<false>(kernel_func, cfg.img_pars.kernel_support, image_size, uv_in_pixels, residual_vis,
+        input_snr_weights, cfg.img_pars.kernel_exact, cfg.img_pars.oversampling);
 
     // Compute FFT of first matrix (beam)
     arma::Mat<real_t> fft_result_image;
     // Reuse gridded_data buffer if FFT is INPLACE
     if (r_fft == stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT) {
-        fft_result_image = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.vis_grid.memptr()), (gridded_data.vis_grid.n_rows) * 2, gridded_data.vis_grid.n_cols, false, false));
+        fft_result_image = std::move(arma::Mat<real_t>(reinterpret_cast<real_t*>(gridded_data.vis_grid.memptr()), (gridded_data.vis_grid.n_rows) * 2,
+            gridded_data.vis_grid.n_cols, false, false));
     }
     unsigned int fftw_flag = FFTW_ESTIMATE;
+
+    init_fftw(r_fft, cfg.img_pars.fft_wisdom_filename);
 
     switch (r_fft) {
     case stp::FFTRoutine::FFTW_ESTIMATE_FFT:
         // FFTW implementation using FFTW_ESTIMATE
-        while (state.KeepRunning()) {
-            benchmark::DoNotOptimize(fft_result_image);
+        for (auto _ : state) {
+            benchmark::DoNotOptimize(fft_result_image.memptr());
             stp::fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft);
             benchmark::ClobberMemory();
         }
         break;
     case stp::FFTRoutine::FFTW_WISDOM_FFT:
         // FFTW implementation using FFTW_WISDOM
-        while (state.KeepRunning()) {
-            benchmark::DoNotOptimize(fft_result_image);
-            stp::fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft, wisdom_filename);
+        for (auto _ : state) {
+            benchmark::DoNotOptimize(fft_result_image.memptr());
+            stp::fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft);
             benchmark::ClobberMemory();
         }
         break;
     case stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT:
         // FFTW implementation using FFTW_WISDOM_INPLACE
-        while (state.KeepRunning()) {
-            benchmark::DoNotOptimize(fft_result_image);
-            stp::fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft, wisdom_filename);
+        for (auto _ : state) {
+            benchmark::DoNotOptimize(fft_result_image.memptr());
+            stp::fft_fftw_c2r(gridded_data.vis_grid, fft_result_image, r_fft);
             benchmark::ClobberMemory();
         }
         break;
@@ -105,9 +99,6 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
         arma::Mat<real_t> output((input.n_rows % 2 == 0) ? (input.n_rows * 2) : (input.n_rows - 1) * 2, input.n_cols);
 
 #ifdef USE_FLOAT
-        fftwf_init_threads();
-        fftwf_plan_with_nthreads(std::thread::hardware_concurrency());
-
         fftwf_plan plan = fftwf_plan_dft_c2r_2d(
             input.n_cols, // FFTW uses row-major order, requiring the plan
             input.n_rows, // to be passed the dimensions in reverse.
@@ -117,17 +108,13 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 
         input = gridded_data.vis_grid;
 
-        while (state.KeepRunning()) {
-            benchmark::DoNotOptimize(output);
+        for (auto _ : state) {
+            benchmark::DoNotOptimize(output.memptr());
             fftwf_execute(plan);
             benchmark::ClobberMemory();
         }
         fftwf_destroy_plan(plan);
-        fftwf_cleanup_threads();
 #else
-        fftw_init_threads();
-        fftw_plan_with_nthreads(std::thread::hardware_concurrency());
-
         fftw_plan plan = fftw_plan_dft_c2r_2d(
             input.n_cols, // FFTW uses row-major order, requiring the plan
             input.n_rows, // to be passed the dimensions in reverse.
@@ -137,53 +124,37 @@ static void fft_c2r_test_benchmark(benchmark::State& state)
 
         input = gridded_data.vis_grid;
 
-        while (state.KeepRunning()) {
-            benchmark::DoNotOptimize(output);
+        for (auto _ : state) {
+            benchmark::DoNotOptimize(output.memptr());
             fftw_execute(plan);
             benchmark::ClobberMemory();
         }
         fftw_destroy_plan(plan);
-        fftw_cleanup_threads();
 #endif
     }
+
+#ifdef USE_FLOAT
+    fftwf_cleanup_threads();
+#else
+    fftw_cleanup_threads();
+#endif
 }
 
-BENCHMARK(fft_c2r_test_benchmark)
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 10 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 11 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 12 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 13 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 14 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 15 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_ESTIMATE_FFT, 16 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 10 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 11 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 12 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 13 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 14 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 15 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_MEASURE_FFT, 16 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 10 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 11 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 12 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 13 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 14 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 15 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_PATIENT_FFT, 16 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 10 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 11 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 12 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 13 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 14 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 15 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_FFT, 16 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 10 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 11 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 12 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 13 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 14 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 15 })
-    ->Args({ (int)stp::FFTRoutine::FFTW_WISDOM_INPLACE_FFT, 16 })
+BENCHMARK_CAPTURE(fft_c2r_test_benchmark, FFTW_ESTIMATE_FFT, stp::FFTRoutine::FFTW_ESTIMATE_FFT)
+    ->RangeMultiplier(2)
+    ->Range(1 << 10, 1 << 16)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(fft_c2r_test_benchmark, FFTW_MEASURE_FFT, stp::FFTRoutine::FFTW_MEASURE_FFT)
+    ->RangeMultiplier(2)
+    ->Range(1 << 10, 1 << 16)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(fft_c2r_test_benchmark, FFTW_PATIENT_FFT, stp::FFTRoutine::FFTW_PATIENT_FFT)
+    ->RangeMultiplier(2)
+    ->Range(1 << 10, 1 << 16)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(fft_c2r_test_benchmark, FFTW_WISDOM_FFT, stp::FFTRoutine::FFTW_WISDOM_FFT)
+    ->RangeMultiplier(2)
+    ->Range(1 << 10, 1 << 16)
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

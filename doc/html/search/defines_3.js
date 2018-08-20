@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['min_5felems_5ffor_5fparshift',['MIN_ELEMS_FOR_PARSHIFT',['../matrix__math_8h.html#a37a9fea883d821f7feeaa40d6909437f',1,'matrix_math.h']]],
-  ['min_5fmedsize',['MIN_MEDSIZE',['../matrix__math_8cpp.html#af2922a59794a4a160df02579ff9817e4',1,'matrix_math.cpp']]]
+  ['interp_5ftrunc',['INTERP_TRUNC',['../aw__projection_8cpp.html#a0cfe848a25e2c53273cb644361f657f0',1,'aw_projection.cpp']]],
+  ['ispowerof2',['ispowerof2',['../global__macros_8h.html#a257cb2dccab6acdddb621896a3288866',1,'global_macros.h']]]
 ];

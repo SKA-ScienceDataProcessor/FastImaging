@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['mean',['mean',['../structstp_1_1_data_stats.html#a3edd0760b3a027b367095d6ab3191cb9',1,'stp::DataStats']]],
-  ['median',['median',['../structstp_1_1_data_stats.html#a75d60fefe7d8a506c3c7925e13acc9e0',1,'stp::DataStats']]],
-  ['mem_5fptr',['mem_ptr',['../classstp_1_1_zero_mem_alloc.html#ac7325dbaf6d7992612a4a3b38e81c7f8',1,'stp::ZeroMemAlloc']]],
-  ['moments_5ffit',['moments_fit',['../structstp_1_1_island_params.html#ae3da157a13f449fd7137e667b43c94f8',1,'stp::IslandParams']]]
+  ['i',['i',['../unionstp_1_1_float_twiddler.html#af69e4244dc868957da13af58a53fcf9f',1,'stp::FloatTwiddler']]],
+  ['image_5fsize',['image_size',['../structstp_1_1_imager_pars.html#afcd0a739d68e98decc2a46c3cf1dff92',1,'stp::ImagerPars']]],
+  ['interp_5ftype',['interp_type',['../structstp_1_1_w___projection_pars.html#a562a636aa687131352230f8ff19133ca',1,'stp::W_ProjectionPars']]],
+  ['islands',['islands',['../classstp_1_1_source_find_image.html#aebe879d6f1675cd6aa471a310ace8cd1',1,'stp::SourceFindImage']]]
 ];

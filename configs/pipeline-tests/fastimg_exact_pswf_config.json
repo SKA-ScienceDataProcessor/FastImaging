@@ -1,0 +1,28 @@
+{
+    "imager_settings": {
+        "image_size_pix": 1024,
+        "cell_size_arcsec": 0.5,
+        "kernel_function": "PSWF",
+        "kernel_support" : 3,
+        "kernel_exact": true,
+        "oversampling": 1,
+        "generate_beam": true,
+        "gridding_correction": true,
+        "analytic_gcf": true,
+        "fft_routine": "FFTW_ESTIMATE_FFT"
+    },
+	"sourcefind_settings": {
+        "sourcefind_detection": 50.0,
+        "sourcefind_analysis": 50.0,
+        "find_negative_sources": true,
+        "rms_estimation": 0.0,
+        "sigma_clip_iters": 5,
+        "median_method": "BINMEDIAN",
+        "gaussian_fitting": false,
+        "ccl_4connectivity": false, 
+        "generate_labelmap": false,
+        "source_min_area" : 5,
+        "ceres_diffmethod": "AnalyticDiff_SingleResBlk",
+        "ceres_solvertype": "LinearSearch_LBFGS"
+    }
+}

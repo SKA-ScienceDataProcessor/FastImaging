@@ -43,10 +43,7 @@ TEST(GridderOversampledGridding, equal)
     arma::Mat<cx_real_t> result_image_exact = matrix_shift(shifted_res_exact.sampling_grid, image_size / 2, 1);
     arma::Mat<cx_real_t> result_beam_exact = matrix_shift(shifted_res_exact.vis_grid, image_size / 2, 1);
 
-    // Get halfplane vis: needed for testing
-    convert_to_halfplane_visibilities(uv, vis, vis_weights, support);
-
-    EXPECT_TRUE(arma::accu(arma::real(result_image)) - arma::accu(arma::real(vis)) < fptolerance);
+    EXPECT_TRUE(arma::accu(arma::real(result_image)) - arma::accu(arma::real(vis)) * 2 < fptolerance);
     EXPECT_NEAR(arma::accu(arma::real(result_image) - arma::real(result_image_exact)), 0.0, fptolerance);
     EXPECT_NEAR(arma::accu(arma::real(result_beam) - arma::real(result_beam_exact)), 0.0, fptolerance);
     EXPECT_NEAR(arma::accu(arma::real(result_beam) - expected_result), 0.0, fptolerance);

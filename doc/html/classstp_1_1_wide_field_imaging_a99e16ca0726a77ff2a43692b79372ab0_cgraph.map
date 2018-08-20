@@ -1,0 +1,3 @@
+<map id="stp::WideFieldImaging::generate_convolution_kernel_aproj" name="stp::WideFieldImaging::generate_convolution_kernel_aproj">
+<area shape="rect" id="node2" href="$namespacestp.html#ad83c7146797af76e015385bbc11130d0" title="Performs the forward fast fourier transform of a complex matrix using the FFTW library (complex to co..." alt="" coords="207,20,324,47"/>
+</map>

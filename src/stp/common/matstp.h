@@ -33,6 +33,8 @@ public:
 
     /**
      * @brief ZeroMemAlloc constructor using given length
+     *
+     * @param[in] length (size_t): Length of memory buffer to allocate.
      */
     ZeroMemAlloc(size_t length)
         : mem_ptr(std::unique_ptr<T, std::function<void(T*)>>((T*)std::calloc(length, sizeof(T)), [](T* ptr) {
@@ -98,6 +100,9 @@ public:
 
     /**
      * @brief MatStp constructor that receives matrix dimensions
+     *
+     * @param[in] n_rows (arma::uword): Number of rows.
+     * @param[in] n_cols (arma::uword): Number of columns.
      */
     MatStp(arma::uword n_rows, arma::uword n_cols)
         : ZeroMemAlloc<T>(n_rows * n_cols + CACHE_LINE_SIZE)
@@ -140,7 +145,7 @@ public:
     /**
      * @brief Delete matrix buffer
      */
-    void delete_matrix_buffer()
+    void reset()
     {
         ZeroMemAlloc<T>::mem_ptr.reset();
     }
@@ -153,9 +158,9 @@ private:
     {
         size_t length = ZeroMemAlloc<T>::num_elems;
         void* p = ZeroMemAlloc<T>::mem_ptr.get();
-        std::align(CACHE_LINE_SIZE, sizeof(T), p, length);
+        void* ap = std::align(CACHE_LINE_SIZE, sizeof(T), p, length);
 
-        return (T*)p;
+        return (T*)ap;
     }
 };
 }

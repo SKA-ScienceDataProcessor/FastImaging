@@ -24,5 +24,5 @@ TEST(ConvSincFunc, conv_funcs_sinc)
         0.0
     };
 
-    EXPECT_TRUE(arma::approx_equal(Sinc(1.0, 3.0)(input), output, "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(Sinc(3.0, 1.0)(input), output, "absdiff", fptolerance));
 }

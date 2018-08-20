@@ -1,6 +1,15 @@
 # --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Prototype Dependencies (in-tree)
 
+include(ExternalProject)
+
+################################
+# Dependency: pybind11 (2.2.2) #
+################################
+set(PYBIND11_PYTHON_VERSION 3)
+add_subdirectory(pybind11)
+
+
 ###########################
 # Dependency: Google Test #
 ###########################
@@ -19,71 +28,68 @@ add_subdirectory(benchmark)
 ####################
 # Dependency: Cnpy #
 ####################
-# ZLIB is a dependency of cnpy which is missing in cnpy's CMakefile
+# ZLIB is a dependency of cnpy and must be added to its interface
 find_package(ZLIB)
 if(NOT ZLIB_FOUND)
     message(FATAL_ERROR "ZLIB library was not found")
 endif()
 # Add cnpy subdirectory
 add_subdirectory(cnpy)
-# The cnpy CMake script does not export the interface include directory, so
-# it must be explicitly specified here.
-set_target_properties(cnpy-static PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/cnpy)
-
-
-################################
-# Dependency: pybind11 (1.8.1) #
-################################
-add_subdirectory(pybind11)
+# Create a new cnpy target which adds zlib library to its interface (this is done here to avoid changing the cnpy CMakeLists file)
+add_library(cnpy-stp INTERFACE)
+add_dependencies(cnpy-stp cnpy-static)
+target_include_directories(cnpy-stp SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/cnpy)
+target_link_libraries(cnpy-stp INTERFACE cnpy-static ${ZLIB_LIBRARIES})
 
 
 #############################
 # Dependency: Eigen (3.3.4) #
 #############################
-set(EIGEN_TARGET_NAME eigen)
 set(EIGEN_PROJECT_NAME eigen_project)
-set(EIGEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${EIGEN_TARGET_NAME})
-set(EIGEN_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${EIGEN_TARGET_NAME})
-# Build from source using cmake.
-include(ExternalProject)
+set(EIGEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/eigen)
+set(EIGEN_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/eigen)
+# Build from source using cmake
 ExternalProject_Add(
     ${EIGEN_PROJECT_NAME}
     URL ${EIGEN_SOURCE_DIR}
     BUILD_IN_SOURCE 0
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EIGEN_INSTALL_DIR}
-    INSTALL_COMMAND make install
 )
-add_library(${EIGEN_TARGET_NAME} INTERFACE)
-target_include_directories(${EIGEN_TARGET_NAME} SYSTEM INTERFACE ${EIGEN_INSTALL_DIR}/include/eigen3)
-add_dependencies(${EIGEN_TARGET_NAME} ${EIGEN_PROJECT_NAME})
-# add_subdirectory(eigen) is not used because ceres library needs the eigen include directories
-
 
 ########################################
-# Dependency: Ceres Solver (1.13.0rc1) #
+# Dependency: Ceres Solver (1.14.0)    #
 ########################################
-set(BUILD_EXAMPLES OFF CACHE BOOL "Build examples.")
-set(BUILD_TESTING OFF CACHE BOOL "Enable tests.")
-set(CXX11 ON CACHE BOOL "Enable use of C++11 headers if available (requires client code use C++11).")
-set(MINIGLOG ON CACHE BOOL "Use a stripped down version of glog.")
-set(EXPORT_BUILD_DIR ON CACHE BOOL "Export build directory using CMake (enables external use without install).")
-# These variables tell that EIGEN is available (in-source third-party), its version and include directories
-set(EIGEN_FOUND ON CACHE INTERNAL "")
-set(EIGEN_VERSION "3.3.4" CACHE INTERNAL "")
-set(EIGENSPARSE OFF CACHE INTERNAL "")
-set(EIGEN_INCLUDE_DIRS ${EIGEN_INSTALL_DIR}/include/eigen3 CACHE INTERNAL "")
-# LAPACK must be off.
-# In systems where Lapack is present, ceres tries to link with the system installed BLAS library, and consequently breaks some Armadillo functions.
-set(LAPACK OFF CACHE INTERNAL "")
 # Suppress logs written by ceres minilog if not in debug mode
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(MINIGLOG_MAX_LOG_LEVEL -1 CACHE STRING "The maximum message severity level to be logged")
+    set(MINIGLOG_LEVEL "-1")
+else()
+    set(MINIGLOG_LEVEL "2")
 endif()
-add_subdirectory(ceres)
-add_dependencies(ceres eigen)
-# The ceres CMake script does not export the interface include directory, so it must be explicitly specified here.
-target_include_directories(ceres SYSTEM INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ceres/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ceres/config> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ceres/internal/ceres/miniglog/>)
+
+set(CERES_TARGET_NAME ceres)
+set(CERES_PROJECT_NAME ${CERES_TARGET_NAME}_project)
+set(CERES_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${CERES_TARGET_NAME})
+set(CERES_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CERES_TARGET_NAME})
+
+# LAPACK must be off.
+# In systems where Lapack is present, ceres tries to link with the system installed BLAS library, and consequently breaks some Armadillo functions.
+ExternalProject_Add(
+    ${CERES_PROJECT_NAME}
+    URL ${CERES_SOURCE_DIR}
+    DEPENDS ${EIGEN_PROJECT_NAME}
+    BUILD_IN_SOURCE 1
+    CMAKE_ARGS -DEigen3_DIR:PATH=${EIGEN_INSTALL_DIR}/share/eigen3/cmake -DEIGEN_INCLUDE_DIR:PATH=${EIGEN_INSTALL_DIR}/include/eigen3
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CERES_INSTALL_DIR} -DLIB_SUFFIX= -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DCXX11=ON
+    CMAKE_ARGS -DCXSPARSE=OFF -DMINIGLOG=ON -DEXPORT_BUILD_DIR=OFF -DLAPACK=OFF
+    CMAKE_CACHE_ARGS -DMINIGLOG_MAX_LOG_LEVEL:STRING=${MINIGLOG_LEVEL}
+)
+
+# Specify the target for the external library
+add_library(${CERES_TARGET_NAME} INTERFACE)
+add_dependencies(${CERES_TARGET_NAME} ${CERES_PROJECT_NAME})
+target_link_libraries(${CERES_TARGET_NAME} INTERFACE ${CERES_INSTALL_DIR}/lib/libceres.a)
+target_include_directories(${CERES_TARGET_NAME} SYSTEM INTERFACE ${CERES_INSTALL_DIR}/include ${CERES_INSTALL_DIR}/ceres/config
+    ${CERES_INSTALL_DIR}/include/ceres/internal/miniglog ${EIGEN_INSTALL_DIR}/include/eigen3)
 
 
 #############################
@@ -97,7 +103,6 @@ set(FFTW_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${FFTW_TARGET_NAME})
 # Build from source using the classical approach of configure & make.
 # Note: generation of position independent code (PIC) is explicitly requested
 #       so that shared libraries (e.g. STP Python) can link agains the library.
-include(ExternalProject)
 
 # Set FFTW configure flags
 if(USE_FLOAT)
@@ -135,7 +140,7 @@ add_dependencies(${FFTW_TARGET_NAME} ${FFTW_PROJECT_NAME})
 
 
 ##################################
-# Dependency: TBB (2017 Update3) #
+# Dependency: TBB (2018 Update5) #
 ##################################
 set(TBB_TARGET_NAME tbb)
 set(TBB_PROJECT_NAME ${TBB_TARGET_NAME}_project)
@@ -148,7 +153,6 @@ else()
 endif()
 
 # Build from source using the classical approach of make.
-include(ExternalProject)
 ExternalProject_Add(
     ${TBB_PROJECT_NAME}
     URL ${TBB_SOURCE_DIR}
@@ -172,7 +176,7 @@ add_dependencies(${TBB_TARGET_NAME} ${TBB_PROJECT_NAME})
 
 
 #################################
-# Dependency: OpenBLAS (0.2.19) #
+# Dependency: OpenBLAS (0.2.20) #
 #################################
 set(OPENBLAS_TARGET_NAME openblas)
 set(OPENBLAS_PROJECT_NAME ${OPENBLAS_TARGET_NAME}_project)
@@ -180,7 +184,6 @@ set(OPENBLAS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${OPENBLAS_TARGET_NAME})
 set(OPENBLAS_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${OPENBLAS_TARGET_NAME})
 
 # Build from source using the classical approach of make.
-include(ExternalProject)
 ExternalProject_Add(
     ${OPENBLAS_PROJECT_NAME}
     URL ${OPENBLAS_SOURCE_DIR}
@@ -188,7 +191,7 @@ ExternalProject_Add(
     BUILD_IN_SOURCE 1
     # INTERFACE64 enables 64-bit integers (long).
     # This is required when the number of matrix elements is 2^32 or larger.
-    BUILD_COMMAND make INTERFACE64=1 NO_LAPACK=1
+    BUILD_COMMAND make INTERFACE64=1 NO_LAPACK=1 USE_THREAD=0
     INSTALL_COMMAND make install PREFIX=${OPENBLAS_INSTALL_DIR}
 )
 
@@ -200,7 +203,7 @@ add_dependencies(${OPENBLAS_TARGET_NAME} ${OPENBLAS_PROJECT_NAME})
 
 
 ###################################
-# Dependency: Armadillo (7.950.1) #
+# Dependency: Armadillo (8.400.0) #
 ###################################
 set(ARMADILLO_TARGET_NAME armadillo)
 set(ARMADILLO_PROJECT_NAME ${ARMADILLO_TARGET_NAME}_project)
@@ -208,11 +211,9 @@ set(ARMADILLO_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${ARMADILLO_TARGET_NAME})
 set(ARMADILLO_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ARMADILLO_TARGET_NAME})
 
 # Build from source using cmake.
-include(ExternalProject)
 ExternalProject_Add(
     ${ARMADILLO_PROJECT_NAME}
     URL ${ARMADILLO_SOURCE_DIR}
-    PATCH_COMMAND patch -N -s -p0 -i ${CMAKE_CURRENT_SOURCE_DIR}/patches/armadillo_change_align.patch || :
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF -Dopenblas_LIBRARY=${OPENBLAS_INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${ARMADILLO_INSTALL_DIR}
 )
@@ -223,7 +224,8 @@ target_include_directories(${ARMADILLO_TARGET_NAME} SYSTEM INTERFACE ${ARMADILLO
 # Armadillo is used as a pure template library (-DARMA_DONT_USE_WRAPPER) so the following line is commented:
 #target_link_libraries(${ARMADILLO_TARGET_NAME} INTERFACE ${ARMADILLO_INSTALL_DIR}/lib/libarmadillo.a)
 # Use DARMA_BLAS_LONG_LONG because openblas is compiled with INTERFACE64=1
-set(ARMADILLO_DEFINITIONS -DARMA_DONT_USE_WRAPPER -DARMA_BLAS_LONG_LONG -DARMA_DONT_USE_LAPACK -DARMA_USE_CXX11 -DARMA_64BIT_WORD) #-DARMA_USE_TBB_ALLOC
+set(ARMADILLO_DEFINITIONS -DARMA_DONT_USE_WRAPPER -DARMA_BLAS_LONG_LONG -DARMA_DONT_USE_LAPACK -DARMA_USE_CXX11
+    -DARMA_64BIT_WORD) # -DARMA_DONT_USE_OPENMP -DARMA_DONT_USE_BLAS) #-DARMA_USE_TBB_ALLOC
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(ARMADILLO_DEFINITIONS ${ARMADILLO_DEFINITIONS} -DARMA_NO_DEBUG)
 endif()

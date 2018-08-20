@@ -16,6 +16,8 @@ TEST(GridderOversampledGridding, equal)
     int support = 2;
     int oversampling = 9;
     bool kernel_exact = false;
+    bool shift_uv = false;
+    bool halfplane_gridding = false;
 
     arma::mat uv = {
         { 1.0, 0.0 },
@@ -30,7 +32,7 @@ TEST(GridderOversampledGridding, equal)
 
     // Let's grid a triangle function
     Triangle triangle(2.0);
-    GridderOutput result = convolve_to_grid<true>(triangle, support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, false, true, false, false);
+    GridderOutput result = convolve_to_grid<true>(triangle, support, image_size, uv, vis, vis_weights, kernel_exact, oversampling, shift_uv, halfplane_gridding);
 
     EXPECT_TRUE(arma::accu(arma::real(static_cast<arma::Mat<cx_real_t>>(result.sampling_grid))) - arma::accu(arma::real(vis)) < fptolerance);
 }

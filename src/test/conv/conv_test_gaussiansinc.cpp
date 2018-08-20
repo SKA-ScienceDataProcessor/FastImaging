@@ -37,5 +37,5 @@ TEST(ConvGaussianSincFunc, test_conv_funcs_test_gaussian_sinc)
         0.0
     };
 
-    EXPECT_TRUE(arma::approx_equal(GaussianSinc(width_normalization_gaussian, width_normalization_sinc, trunc)(input), output, "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(GaussianSinc(trunc, width_normalization_gaussian, width_normalization_sinc)(input), output, "absdiff", fptolerance));
 }

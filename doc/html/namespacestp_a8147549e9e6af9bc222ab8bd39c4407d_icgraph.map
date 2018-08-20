@@ -1,3 +1,4 @@
 <map id="stp::fftshift" name="stp::fftshift">
-<area shape="rect" id="node2" href="$namespacestp.html#a7e61918609243705d9649a09c4efd1ba" title="Generates image and beam data from input visibilities. " alt="" coords="139,5,285,32"/>
+<area shape="rect" id="node2" href="$namespacestp.html#a3f3931422fe088eed5e60da339a8ddab" title="Generates image and beam data from input visibilities. " alt="" coords="139,13,285,39"/>
+<area shape="rect" id="node3" href="$classstp_1_1_image_visibilities.html#aa1e9b6dff9caa156aff9293d9e92d3b6" title="ImageVisibilities constructor. " alt="" coords="333,5,476,47"/>
 </map>

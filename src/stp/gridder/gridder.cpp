@@ -7,75 +7,147 @@
 
 namespace stp {
 
-void convert_to_halfplane_visibilities(arma::mat& uv_in_pixels, arma::cx_mat& vis, arma::mat& vis_weights, int kernel_support)
+void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, int kernel_support, arma::uvec& good_vis)
 {
     // Assume:  x = u = col 0
     //          y = v = col 1
+    size_t n_rows = uv_lambda.n_rows;
 
-    // Auxiliary arrays
-    arma::mat uv_in_pixels_aux(arma::size(uv_in_pixels));
-    arma::cx_mat vis_aux(arma::size(vis));
-    arma::mat vis_weights_aux(arma::size(vis_weights));
-
-    size_t i = 0;
-    size_t j = 0;
-    for (; i < uv_in_pixels.n_rows; ++i) {
+    for (size_t i = 0; i < n_rows; ++i) {
         // Check if y value of the visibility point is negative (i.e. belongs to the top half-plane) and compute conjugate if true
-        if (uv_in_pixels.at(i, 1) < 0.0) {
+        if (uv_lambda.at(i, 1) < 0.0) {
             // If the visibity point is close to the 0-frequency (within kernel_support distance)
             // also keep the visibility point in the top half-plane (use an auxiliary array)
-            if (uv_in_pixels.at(i, 1) > -(kernel_support + 1)) {
-                uv_in_pixels_aux.row(j) = uv_in_pixels.row(i);
-                vis_aux.at(j) = vis.at(i);
-                vis_weights_aux.at(j) = vis_weights.at(i);
-                j++;
+            if (uv_lambda.at(i, 1) > -(kernel_support + 1)) {
+                good_vis.at(i) = 2;
             }
             // Invert coordinates of the visibility point (change halfplane position)
-            uv_in_pixels.row(i) *= (-1);
+            uv_lambda.row(i) *= (-1);
             // Also compute the conjugate of the visibility
             vis.at(i) = std::conj(vis.at(i));
         } else {
             // If the visibity point in the bottom halfplane is close to the 0-frequency (within kernel_support distance)
             // add the conjugate visibility point to the top half-plane (use an auxiliary array)
-            if (uv_in_pixels.at(i, 1) < (kernel_support + 1)) {
-                uv_in_pixels_aux.row(j) = uv_in_pixels.row(i) * (-1);
-                vis_aux.at(j) = std::conj(vis.at(i));
-                vis_weights_aux.at(j) = vis_weights.at(i);
-                j++;
+            if (uv_lambda.at(i, 1) < (kernel_support + 1)) {
+                good_vis.at(i) = 2;
             }
         }
     }
-    // Join the two arrays of visibilities and uv coordinates
-    if (j) {
-        uv_in_pixels = arma::join_cols(uv_in_pixels, uv_in_pixels_aux.rows(0, j - 1));
-        vis = arma::join_cols(vis, vis_aux.rows(0, j - 1));
-        vis_weights = arma::join_cols(vis_weights, vis_weights_aux.rows(0, j - 1));
-    }
-    assert(uv_in_pixels.n_rows == vis.n_rows);
-    assert(uv_in_pixels.n_rows == vis_weights.n_rows);
-    assert(uv_in_pixels.n_rows == (i + j));
 }
 
-arma::uvec bounds_check_kernel_centre_locations(arma::imat& kernel_centre_indices, int support, int image_size)
+void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda, arma::cx_mat& vis, int kernel_support, arma::uvec& good_vis)
 {
-    arma::uvec good_vis(kernel_centre_indices.n_rows);
+    // Assume:  x = u = col 0
+    //          y = v = col 1
+    size_t n_rows = uv_lambda.n_rows;
 
+    for (size_t i = 0; i < n_rows; ++i) {
+        // Check if y value of the visibility point is negative (i.e. belongs to the top half-plane) and compute conjugate if true
+        if (uv_lambda.at(i, 1) < 0.0) {
+            // If the visibity point is close to the 0-frequency (within kernel_support distance)
+            // also keep the visibility point in the top half-plane (use an auxiliary array)
+            if (uv_lambda.at(i, 1) > -(kernel_support + 1)) {
+                good_vis.at(i) = 2;
+            }
+            // Invert coordinates of the visibility point (change halfplane position)
+            uv_lambda.row(i) *= (-1);
+            w_lambda(i) *= (-1);
+            // Also compute the conjugate of the visibility
+            vis.at(i) = std::conj(vis.at(i));
+        } else {
+            // If the visibity point in the bottom halfplane is close to the 0-frequency (within kernel_support distance)
+            // add the conjugate visibility point to the top half-plane (use an auxiliary array)
+            if (uv_lambda.at(i, 1) < (kernel_support + 1)) {
+                good_vis.at(i) = 2;
+            }
+        }
+    }
+}
+
+void average_w_planes(arma::mat w_lambda, const arma::uvec& good_vis, int num_wplanes, arma::vec& w_avg_values, arma::ivec& w_planes_firstidx, bool median)
+{
+    int num_elems = good_vis.n_elem;
+    int num_gvis = 0;
+    // Count good visibilities
+    for (size_t i = 0; i < good_vis.n_elem; ++i) {
+        if (good_vis[i] != 0) {
+            num_gvis++;
+        }
+    }
+    int plane_size = std::ceil(double(num_gvis) / num_wplanes);
+    assert(plane_size >= 1);
+
+    if (median) {
+
+        int begin = 0;
+        for (int idx = 0; idx < num_wplanes; idx++) {
+
+            int idx_mid = 0;
+            int middle = plane_size / 2;
+            if ((begin + plane_size) > num_gvis) {
+                middle = (num_gvis - begin) / 2;
+            }
+
+            // average w-plane components
+            int k;
+            int counter = 0;
+            for (k = begin; (counter < plane_size) && (k < num_elems); k++) {
+                if (good_vis(k) != 0) {
+                    if (counter == middle) {
+                        idx_mid = k;
+                    }
+                    counter++;
+                }
+            }
+            if ((plane_size % 2) == 0) {
+                // Even number
+                w_avg_values[idx] = (w_lambda(idx_mid - 1) + w_lambda(idx_mid)) / 2.0;
+            } else {
+                // Odd number
+                w_avg_values[idx] = w_lambda(idx_mid);
+            }
+
+            w_planes_firstidx[idx] = begin;
+            begin = k;
+        }
+
+    } else {
+        int begin = 0;
+        for (int idx = 0; idx < num_wplanes; idx++) {
+
+            // average w-plane components
+            double sum = 0;
+            int k;
+            int counter = 0;
+            for (k = begin; (counter < plane_size) && (k < num_elems); k++) {
+                if (good_vis(k) != 0) {
+                    sum += w_lambda(k);
+                    counter++;
+                }
+            }
+            w_planes_firstidx[idx] = begin;
+            begin = k;
+            if (counter > 0)
+                w_avg_values[idx] = sum / counter;
+        }
+    }
+}
+
+void bounds_check_kernel_centre_locations(arma::uvec& good_vis, const arma::imat& kernel_centre_on_grid, int image_size, int support)
+{
+    // Check bounds
     int col = 0;
-    kernel_centre_indices.each_row([&](arma::imat& r) {
-        const int kc_x = r[0];
-        const int kc_y = r[1];
+    kernel_centre_on_grid.each_row([&](const arma::imat& r) {
+        const auto& kc_x = r[0];
+        const auto& kc_y = r[1];
 
         // Note that in-bound kernels that touch the left and top margins are also considered as being out-of-bounds (see comparison: <= 0).
         // This is to fix the non-symmetric issue on the complex gridded matrix caused by the even matrix size.
         if ((kc_x - support) <= 0 || (kc_y - support) <= 0 || (kc_x + support) >= image_size || (kc_y + support) >= image_size) {
             good_vis[col] = 0;
-        } else {
-            good_vis[col] = 1;
         }
         col++;
     });
-
-    return std::move(good_vis);
 }
 
 arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling)

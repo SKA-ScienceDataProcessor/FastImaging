@@ -1,10 +1,15 @@
 ﻿# --- SKA Science Data Processor ---
 # Slow Transients Pipeline (STP) Library Benchmarking Tests
 
-set(CMAKE_CXX_STANDARD 14)
+# Minimum language standard is C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CXX_STANDARD_REQUIRED ON)
 
 # Turn on useful compiler flags
 add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstrict-aliasing -march=native)
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-ffast-math -O3)
+endif()
 
 # Dependency: Threads (required by google benchmark)
 find_package(Threads REQUIRED)
@@ -17,12 +22,8 @@ get_filename_component(PIPELINE_DATAPATH "../../test-data/pipeline-tests" ABSOLU
 add_definitions ( -D_PIPELINE_DATAPATH="${PIPELINE_DATAPATH}/")
 
 # Configures the location of the configuration files
-get_filename_component(PIPELINE_CONFIGPATH "../../configs/reduce" ABSOLUTE)
+get_filename_component(PIPELINE_CONFIGPATH "../../configs/benchmark-tests" ABSOLUTE)
 add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
-
-# Configures the location of the fftw wisdom files
-get_filename_component(WISDOM_FILEPATH "${CMAKE_BINARY_DIR}/wisdomfiles" ABSOLUTE)
-add_definitions ( -D_WISDOM_FILEPATH="${WISDOM_FILEPATH}/")
 
 # For convenience all link libraries required by
 # the benchmark are put in one variable
@@ -32,11 +33,11 @@ add_custom_target(benchmarking COMMAND run-parts .)
 
 # Helper function for test target specification
 function(add_benchmark_test benchmark_test_name benchmark_test_source)
-   add_executable(${benchmark_test_name} ${benchmark_test_source} ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp)
-   add_dependencies(${benchmark_test_name} stp cnpy-static benchmark armadillo)
+   add_executable(${benchmark_test_name} ${benchmark_test_source} ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp ../auxiliary/linear_interpolation.cpp)
+   add_dependencies(${benchmark_test_name} stp cnpy-stp benchmark armadillo)
    target_include_directories(${benchmark_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
        ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary ${RAPIDJSON_INCLUDE_PATH})
-   target_link_libraries(${benchmark_test_name} ${BENCHMARK_LINK_LIBRARIES} cnpy-static)
+   target_link_libraries(${benchmark_test_name} ${BENCHMARK_LINK_LIBRARIES} cnpy-stp)
 endfunction()
 
 # Benchmark Tests: ---------------------------------------------------------------------------------------------------
@@ -65,6 +66,9 @@ add_benchmark_test(fft_shift_benchmark fftshift_benchmark.cpp)
 # Imager
 add_benchmark_test(imager_benchmark imager_benchmark.cpp)
 
+# Interpolation
+add_benchmark_test(interpolation_benchmark interpolation_benchmark.cpp)
+
 # Kernel
 add_benchmark_test(kernel_benchmark kernel_benchmark.cpp)
 
@@ -76,4 +80,3 @@ add_benchmark_test(sourcefind_benchmark sourcefind_benchmark.cpp)
 
 # Pipeline
 add_benchmark_test(pipeline_benchmark pipeline_benchmark.cpp)
-

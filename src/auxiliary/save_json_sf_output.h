@@ -1,7 +1,7 @@
 #ifndef SAVE_JSON_SF_OUTPUT_H
 #define SAVE_JSON_SF_OUTPUT_H
 
-#include <stp.h>
+#include <sourcefind/sourcefind.h>
 #include <string>
 
 /**

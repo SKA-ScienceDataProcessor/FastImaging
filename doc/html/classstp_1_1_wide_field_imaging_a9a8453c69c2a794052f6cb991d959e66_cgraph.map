@@ -1,0 +1,4 @@
+<map id="stp::WideFieldImaging::generate_convolution_kernel_wproj" name="stp::WideFieldImaging::generate_convolution_kernel_wproj">
+<area shape="rect" id="node2" href="$namespacestp.html#ad83c7146797af76e015385bbc11130d0" title="Performs the forward fast fourier transform of a complex matrix using the FFTW library (complex to co..." alt="" coords="211,5,329,32"/>
+<area shape="rect" id="node3" href="$classstp_1_1_mat_stp.html#abae20e2ed72546a78609ae8b0295359c" title="Delete matrix buffer. " alt="" coords="207,56,333,83"/>
+</map>

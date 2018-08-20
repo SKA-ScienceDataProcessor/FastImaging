@@ -16,5 +16,5 @@ TEST(ConvGaussianFunc, test_conv_funcs_test_gaussian)
     arma::vec input = { 0.0, 1.0, 3.1 };
     arma::vec output = { 1.0, 1. / exp(1.), 0. };
 
-    EXPECT_TRUE(arma::approx_equal(Gaussian(1.0, 3.0)(input), output, "absdiff", fptolerance));
+    EXPECT_TRUE(arma::approx_equal(Gaussian(3.0, 1.0)(input), output, "absdiff", fptolerance));
 }

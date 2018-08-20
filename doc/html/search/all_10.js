@@ -1,10 +1,11 @@
 var searchData=
 [
-  ['theta',['theta',['../structstp_1_1_gaussian2d_params.html#afadecebcd37b9b5bba92f916039a7a28',1,'stp::Gaussian2dParams']]],
-  ['times_5fsf',['times_sf',['../namespacestp.html#a54c6b61e9265ab85495b35c81b13d43d',1,'stp']]],
-  ['top',['top',['../structstp_1_1_bounding_box.html#a42675b807603afceddf023780b44ee15',1,'stp::BoundingBox']]],
-  ['tophat',['TopHat',['../classstp_1_1_top_hat.html',1,'stp::TopHat'],['../classstp_1_1_top_hat.html#a535d01d323f653076addd3108c5cbc10',1,'stp::TopHat::TopHat()'],['../namespacestp.html#a92421a2e1781ba7c1263b57c12082d58acd678285c2431c505ac62192462e0b04',1,'stp::TopHat()']]],
-  ['triangle',['Triangle',['../classstp_1_1_triangle.html',1,'stp::Triangle'],['../classstp_1_1_triangle.html#a9c8ff5f41fadcbe1a5ad662a6a8f8b2b',1,'stp::Triangle::Triangle()'],['../namespacestp.html#a92421a2e1781ba7c1263b57c12082d58a5e5500cb2b82eb72d550de644bd1b64b',1,'stp::Triangle()']]],
-  ['trustregion_5fdenseqr',['TrustRegion_DenseQR',['../namespacestp.html#ae604b01190a3a3414720a85c806fd7d6a4d89de3a5b02f9f6f445cbe2358a8675',1,'stp']]],
-  ['types_2eh',['types.h',['../types_8h.html',1,'']]]
+  ['r_5ffft',['r_fft',['../structstp_1_1_imager_pars.html#ae42f53f5f88e5a14ce7478acfe5b269d',1,'stp::ImagerPars']]],
+  ['r_5fsolve',['r_solve',['../classtk_1_1band__matrix.html#a0c7d6395a84db25a968952e23fa30bab',1,'tk::band_matrix']]],
+  ['readme_2emd',['README.md',['../_r_e_a_d_m_e_8md.html',1,'']]],
+  ['real_5ft',['real_t',['../types_8h.html#ab46614359717672dc9a4eed4669be6e6',1,'types.h']]],
+  ['reset',['reset',['../classstp_1_1_mat_stp.html#abae20e2ed72546a78609ae8b0295359c',1,'stp::MatStp']]],
+  ['right',['right',['../structstp_1_1_bounding_box.html#a1ece3e9432bf6f727d960c03d95c620b',1,'stp::BoundingBox']]],
+  ['rms_5fest',['rms_est',['../classstp_1_1_source_find_image.html#af83138449ac4188590875429e42e65b0',1,'stp::SourceFindImage']]],
+  ['rotate_5fmatrix',['rotate_matrix',['../namespacestp.html#acd1a18f626d11eebaae47da542f454d1',1,'stp']]]
 ];

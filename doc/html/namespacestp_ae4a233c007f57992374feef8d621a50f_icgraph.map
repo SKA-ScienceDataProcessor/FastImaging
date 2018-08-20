@@ -1,4 +1,3 @@
 <map id="stp::mat_binmedian" name="stp::mat_binmedian">
-<area shape="rect" id="node2" href="$structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e" title="DoublePair constructor that sets two double numbers. " alt="" coords="189,5,373,32"/>
-<area shape="rect" id="node3" href="$namespacestp.html#a276a9a7f4bb8bc1db6451515349d3e8d" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="218,56,345,83"/>
+<area shape="rect" id="node2" href="$namespacestp.html#a7a8c4842ab9c1c71a7eb2226602296c7" title="Perform sigma&#45;clip and estimate RMS of input matrix. " alt="" coords="189,5,316,32"/>
 </map>

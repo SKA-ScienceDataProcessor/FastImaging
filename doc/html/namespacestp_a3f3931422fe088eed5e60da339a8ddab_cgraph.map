@@ -1,0 +1,10 @@
+<map id="stp::image_visibilities" name="stp::image_visibilities">
+<area shape="rect" id="node2" href="$namespacestp.html#a4ceb4ec3c09055cb1fb2d418ab7f9a1e" title="Init FFTW threads and import FFTW wisdom file if required. " alt="" coords="226,5,321,32"/>
+<area shape="rect" id="node3" href="$namespacestp.html#aca087153e5cd03672af82c1a31b2e2e8" title="Performs the backward fast fourier transform of a halfplane complex matrix using the FFTW library (co..." alt="" coords="216,56,331,83"/>
+<area shape="rect" id="node4" href="$classstp_1_1_mat_stp.html#abae20e2ed72546a78609ae8b0295359c" title="Delete matrix buffer. " alt="" coords="210,107,337,133"/>
+<area shape="rect" id="node5" href="$namespacestp.html#a8147549e9e6af9bc222ab8bd39c4407d" title="Performs matrix circular shift as needed for iFFT. " alt="" coords="231,157,316,184"/>
+<area shape="rect" id="node7" href="$namespacestp.html#a674d910ef471f5f234894a92057a0a47" title="Normalizes the result image and beam. " alt="" coords="200,209,347,250"/>
+<area shape="rect" id="node6" href="$namespacestp.html#ad37648a3b9f67014a4e20050b9d7b478" title="Shift elements of the input matrix in a circular manner. " alt="" coords="404,157,520,184"/>
+<area shape="rect" id="node8" href="$namespacestp.html#a404fa9ce3a8e0427915ba3ac3aea9a16" title="Computes the image&#45;domain 1D kernel using the forward fast fourier transform or the analytic definiti..." alt="" coords="395,216,529,243"/>
+<area shape="rect" id="node9" href="$namespacestp.html#a52c5be3b41c5afffc90f9667adb9a620" title="Performs the forward fast fourier transform of a real vector (1D) using the FFTW library (real to com..." alt="" coords="577,216,732,243"/>
+</map>

@@ -1,7 +1,21 @@
 var searchData=
 [
-  ['labeldatathread',['LabelDataThread',['../structstp_1_1_label_data_thread.html#afd42a0cb27b1c61f7957a3335eb9d3eb',1,'stp::LabelDataThread::LabelDataThread()'],['../structstp_1_1_label_data_thread.html#ade599105640ff8996e8691aafc49247f',1,'stp::LabelDataThread::LabelDataThread(uint in_col_start, uint in_lunique_start, uint in_lunique_p, uint in_lunique_n)']]],
-  ['labeling_5f4con',['labeling_4con',['../namespacestp.html#ad8fa1a958117b48b5cd405d3aa680678',1,'stp']]],
-  ['labeling_5f8con',['labeling_8con',['../namespacestp.html#ae8d9b51a632aa86b4dc0bd0ed818d3c7',1,'stp']]],
-  ['leastsq_5ffit_5fgaussian_5f2d',['leastsq_fit_gaussian_2d',['../structstp_1_1_island_params.html#a617f8e09216bdaaf6b2a17199457e214',1,'stp::IslandParams']]]
+  ['gaussian',['Gaussian',['../classstp_1_1_gaussian.html#a64b9371474d9ae92ac1e807b147ad4a7',1,'stp::Gaussian::Gaussian()'],['../classstp_1_1_gaussian.html#a48780abbb0a4fc1a78a42c0e8e057f7a',1,'stp::Gaussian::Gaussian(const double trunc, const double width_normalization=1.0)']]],
+  ['gaussian2dparams',['Gaussian2dParams',['../structstp_1_1_gaussian2d_params.html#ac3a87b140387c80fd780c89644000ee9',1,'stp::Gaussian2dParams::Gaussian2dParams()'],['../structstp_1_1_gaussian2d_params.html#a55e7603d866f5f3861a5afaf79322a80',1,'stp::Gaussian2dParams::Gaussian2dParams(double in_amplitude, double in_x_centre, double in_y_centre, double in_semimajor, double in_semiminor, double in_theta)']]],
+  ['gaussianallresiduals',['GaussianAllResiduals',['../classstp_1_1_gaussian_all_residuals.html#acd0a39caab3be9fa027f4b4d4701ab82',1,'stp::GaussianAllResiduals']]],
+  ['gaussiananalytic',['GaussianAnalytic',['../classstp_1_1_gaussian_analytic.html#a4837f810e4883cf759c67ffe26940bc5',1,'stp::GaussianAnalytic']]],
+  ['gaussiananalyticallresiduals',['GaussianAnalyticAllResiduals',['../classstp_1_1_gaussian_analytic_all_residuals.html#ab115cfb4f4d97ed3f879d296b0cef3b3',1,'stp::GaussianAnalyticAllResiduals']]],
+  ['gaussianresidual',['GaussianResidual',['../classstp_1_1_gaussian_residual.html#a23d8c1a409da25e6cb3e3093469d6b3a',1,'stp::GaussianResidual']]],
+  ['gaussiansinc',['GaussianSinc',['../classstp_1_1_gaussian_sinc.html#a5b920c9e544885fcd1436166072cf6c0',1,'stp::GaussianSinc::GaussianSinc()'],['../classstp_1_1_gaussian_sinc.html#ac597559980605da2571b8caa224afd0e',1,'stp::GaussianSinc::GaussianSinc(const double trunc, const double width_normalization_gaussian=_default_width_normalization_gaussian, const double width_normalization_sinc=_default_width_normalization_sinc)']]],
+  ['gcf',['gcf',['../classstp_1_1_top_hat.html#aab337173746cc274f390c62af2dce15c',1,'stp::TopHat::gcf()'],['../classstp_1_1_triangle.html#a65152cc4507d58f7106438b28dce094e',1,'stp::Triangle::gcf()'],['../classstp_1_1_sinc.html#a118fa19b1ec9a9b54aa4c2551161a2bc',1,'stp::Sinc::gcf()'],['../classstp_1_1_gaussian.html#a29ab8ef02b74c8ee5a91e760980ebdf2',1,'stp::Gaussian::gcf()'],['../classstp_1_1_gaussian_sinc.html#a9e7b9e3234ed9bb3ab678f2eff0c199a',1,'stp::GaussianSinc::gcf()'],['../classstp_1_1_p_s_w_f.html#a1061ca126f514cd0caa6f9775a5d7cae',1,'stp::PSWF::gcf()']]],
+  ['generate_5fcombined_5fw_5faa_5fkernel',['generate_combined_w_aa_kernel',['../classstp_1_1_wide_field_imaging.html#a37802e179aff6ceae21e35312189b0a6',1,'stp::WideFieldImaging']]],
+  ['generate_5fconvolution_5fkernel_5faproj',['generate_convolution_kernel_aproj',['../classstp_1_1_wide_field_imaging.html#a99e16ca0726a77ff2a43692b79372ab0',1,'stp::WideFieldImaging']]],
+  ['generate_5fconvolution_5fkernel_5fwproj',['generate_convolution_kernel_wproj',['../classstp_1_1_wide_field_imaging.html#a9a8453c69c2a794052f6cb991d959e66',1,'stp::WideFieldImaging']]],
+  ['generate_5fhermitian_5fmatrix_5ffrom_5fnonredundant',['generate_hermitian_matrix_from_nonredundant',['../namespacestp.html#ac4e9a876d5c753d6dd3bda54f6d85119',1,'stp']]],
+  ['generate_5fkernel_5fcache',['generate_kernel_cache',['../classstp_1_1_wide_field_imaging.html#a2f5c2375da482d085a930876bca81d83',1,'stp::WideFieldImaging']]],
+  ['generate_5fvisibilities_5ffrom_5flocal_5fskymodel',['generate_visibilities_from_local_skymodel',['../namespacestp.html#afbc82270e03dee57c2a67c3a81f0369c',1,'stp']]],
+  ['get_5fheight',['get_height',['../structstp_1_1_bounding_box.html#a1b25cedf5d232bbd501ecd93108157a5',1,'stp::BoundingBox']]],
+  ['get_5ftrunc_5fconv_5fsupport',['get_trunc_conv_support',['../classstp_1_1_wide_field_imaging.html#ae9b3feaed0c11ecc7f5ae2bf08f7b248',1,'stp::WideFieldImaging']]],
+  ['get_5fwidth',['get_width',['../structstp_1_1_bounding_box.html#a5e1b106dcd0dcf1bae545155ab9650fc',1,'stp::BoundingBox']]],
+  ['gridderoutput',['GridderOutput',['../classstp_1_1_gridder_output.html#a875fc3decf005dff279ed0d43195942b',1,'stp::GridderOutput::GridderOutput()=default'],['../classstp_1_1_gridder_output.html#a7de6a41a043d64b12e4b583e612e868c',1,'stp::GridderOutput::GridderOutput(MatStp&lt; cx_real_t &gt; &amp;in_vis_grid, MatStp&lt; cx_real_t &gt; &amp;in_sampling_grid, double in_sampling_total)']]]
 ];

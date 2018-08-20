@@ -1,4 +1,5 @@
 <map id="/home/lucas/skadev/FastImaging/src/stp/common/ccl.h" name="/home/lucas/skadev/FastImaging/src/stp/common/ccl.h">
-<area shape="rect" id="node2" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="5,184,83,211"/>
-<area shape="rect" id="node4" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="105,109,178,136"/>
+<area shape="rect" id="node2" href="$global__macros_8h.html" title="../global_macros.h" alt="" coords="37,109,166,136"/>
+<area shape="rect" id="node5" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="385,184,463,211"/>
+<area shape="rect" id="node8" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="266,109,339,136"/>
 </map>

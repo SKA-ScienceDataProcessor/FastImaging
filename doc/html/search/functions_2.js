@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['datastats',['DataStats',['../structstp_1_1_data_stats.html#ae797f7cd2025b6ca1ae563b591357bca',1,'stp::DataStats::DataStats()'],['../structstp_1_1_data_stats.html#a30ab91435b34b3bcced6f036e1ee2e82',1,'stp::DataStats::DataStats(real_t u)'],['../structstp_1_1_data_stats.html#a703ec6abcf34a53495e806d4891f150e',1,'stp::DataStats::DataStats(real_t u, real_t s)'],['../structstp_1_1_data_stats.html#a235f8b33cdf1602c3dc3309073e0bd2a',1,'stp::DataStats::DataStats(real_t u, real_t s, real_t m)']]],
-  ['degree_5fto_5frad',['degree_to_rad',['../namespacestp.html#ab4376d9dfa3b7a21f1ca69629c347d99',1,'stp']]],
-  ['delete_5fmatrix_5fbuffer',['delete_matrix_buffer',['../classstp_1_1_mat_stp.html#a647f2e90b61e3e2a43c9f3baa8b3c248',1,'stp::MatStp']]],
-  ['doublepair',['DoublePair',['../structstp_1_1_double_pair.html#a92d35013e92a975d6e735c51c1bdec25',1,'stp::DoublePair::DoublePair()'],['../structstp_1_1_double_pair.html#a33a214de9ae3e8a4e78e70f81ffa2a6e',1,'stp::DoublePair::DoublePair(double a1, double a2)']]]
+  ['band_5fmatrix',['band_matrix',['../classtk_1_1band__matrix.html#a5a62f404ad5ae5cf01229e975eb3f2e6',1,'tk::band_matrix::band_matrix()'],['../classtk_1_1band__matrix.html#a58ca6f7c27ceb61885e48218f01f1707',1,'tk::band_matrix::band_matrix(int dim, int n_u, int n_l)']]],
+  ['besselj1',['besselj1',['../namespacestp.html#aa7384480437bf68b0f41f58f4744be7c',1,'stp']]],
+  ['bilinear_5finterpolation',['bilinear_interpolation',['../namespacestp.html#ac80246a6034b9fe13f3decfcae23393b',1,'stp']]],
+  ['boundingbox',['BoundingBox',['../structstp_1_1_bounding_box.html#a3e852371cfe56aa2e7d3d634369526a3',1,'stp::BoundingBox::BoundingBox()'],['../structstp_1_1_bounding_box.html#aae17bfc0c907cc50aa9e1b19ece90ab0',1,'stp::BoundingBox::BoundingBox(int in_top, int in_bottom, int in_left, int in_right)']]],
+  ['bounds_5fcheck_5fkernel_5fcentre_5flocations',['bounds_check_kernel_centre_locations',['../namespacestp.html#a39093b21b3a22c0e0afcef9127a185f6',1,'stp']]]
 ];

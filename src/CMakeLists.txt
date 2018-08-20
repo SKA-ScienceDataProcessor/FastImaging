@@ -26,10 +26,13 @@ endif()
 option(BUILD_TESTS "Builds the unit tests" ON)
 option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
 option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode - required for parallel nth_element" ON)
-option(USE_FLOAT "Builds STP using FLOAT type to represent large arrays of real/complex numbers" ON)
-option(WITH_FUNCTION_TIMINGS "Measures function execution times from the reduce executable" ON)
+option(USE_FLOAT "Builds STP using FLOAT type to represent large arrays of real/complex numbers" OFF)
+option(ENABLE_FUNCTIONTIMINGS "Measures function execution times from the reduce executable" ON)
 option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
 option(USE_FFTSHIFT "Explicitly performs FFT shifting of the image matrix (and beam if generated) after the FFT - results in slower imager" OFF)
+option(ENABLE_WPROJECTION "Enable support for W-projection" ON)
+option(ENABLE_APROJECTION "Enable support for A-projection (experimental) - implicitly enables W-projection" OFF)
+option(ENABLE_STP_DEBUG "Enable debug logger function calls on STP library" OFF)
 
 # Check libstdc++ parallel mode
 # This needs to be done here, otherwise reduce, tests and benchmark fail linking
@@ -62,7 +65,7 @@ if(USE_FLOAT)
 endif()
 
 # Measure function execution times from the reduce executable
-if(WITH_FUNCTION_TIMINGS)
+if(ENABLE_FUNCTIONTIMINGS)
     add_definitions(-DFUNCTION_TIMINGS)
 endif()
 
@@ -74,6 +77,22 @@ endif()
 # Explicitly shifts the image and beam matrices in memory after FFT (results in slower imager)
 if(USE_FFTSHIFT)
     add_definitions(-DFFTSHIFT)
+endif()
+
+# Enable support for W-projection
+if(ENABLE_WPROJECTION)
+    add_definitions(-DWPROJECTION)
+endif()
+
+# Enable support for A-projection (also enables W-projection)
+if(ENABLE_APROJECTION)
+    add_definitions(-DWPROJECTION)
+    add_definitions(-DAPROJECTION)
+endif()
+
+# Enable debug logger function calls on STP library
+if(ENABLE_STP_DEBUG)
+    add_definitions(-DSTPLIB_DEBUG_ON)
 endif()
 
 # Sub-project: third-party dependencies (Google Test, Google Benchmark)
@@ -125,6 +144,10 @@ if(CPPCHECK)
         --quiet
         --verbose
         ${STP_SOURCE_DIRECTORY}
+        ${PYTHON_BINDINGS_SOURCE_DIRECTORY}
+        ${REDUCE_SOURCE_DIRECTORY}
+        ${TESTS_SOURCE_DIRECTORY}
+        ${BENCHMARK_SOURCE_DIRECTORY}
     )
 else()
     message(WARNING "cppcheck was not found. Target \"cppcheck\" will not be available.")
@@ -146,13 +169,13 @@ else()
 endif()
 
 # If valgrind is available, add a target for it
-# It will run on the test_pipeline_gaussiansinc executable
+# It will run on the test_pipeline_simple executable
 find_program(VALGRIND valgrind DOC "The valgrind executable path")
 if(VALGRIND)
     set(VALGRIND_OUTFILE valgrind_output)
     # add valgrind as a custom target
     add_custom_target(valgrind
-        DEPENDS test_pipeline_gaussiansinc
+        DEPENDS test_pipeline_simple
         COMMAND ${VALGRIND}
                 --leak-check=full
                 --show-reachable=no
@@ -162,7 +185,7 @@ if(VALGRIND)
                 --log-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log
                 # This is optional:
                 #--xml=yes --xml-file=${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.xml
-                ${CMAKE_CURRENT_BINARY_DIR}/test/test_pipeline_gaussiansinc
+                ${CMAKE_CURRENT_BINARY_DIR}/test/test_pipeline_simple
         WORKING_DIRECTORY
                 ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Valgrind report will be saved to ${CMAKE_CURRENT_BINARY_DIR}/${VALGRIND_OUTFILE}.log"

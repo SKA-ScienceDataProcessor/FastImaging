@@ -17,9 +17,8 @@ template <typename T>
 void npz_save(const std::string zipname, const std::string fname, arma::Mat<T>& data, std::string mode = "w")
 {
     arma::Mat<T> tdata = data.st(); // transpose is required because npz saves in C memory order (fortran_order = false)
-    uint ndims = 2;
-    uint shape[] = { (uint)tdata.n_cols, (uint)tdata.n_rows };
-    cnpy::npz_save(zipname, fname, tdata.memptr(), shape, ndims, mode);
+    std::vector<size_t> shape = { tdata.n_cols, tdata.n_rows };
+    cnpy::npz_save(zipname, fname, tdata.memptr(), shape, mode);
 }
 
 #endif /* SAVE_DATA_H */

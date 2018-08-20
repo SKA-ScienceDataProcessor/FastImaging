@@ -49,11 +49,11 @@ public:
  * @param[in] data (arma::Mat): Input data matrix. Data is not changed.
  * @param[in] sigma (double): The number of standard deviations to use for both the lower and upper clipping limit. Defaults to 3.
  * @param[in] iters (uint): The number of iterations for sigma clipping. Defaults to 5.
- * @param[in] stats (DataStats): The mean, sigma and median values to be used. If non-finite values are passed, they must be computed.
+ * @param[in] stats (DataStats): The mean, sigma and median values to be used. If data stats are not passed (non-valid), they are computed internally.
  *
  * @return (double): Computed Root Mean Square value.
  */
-double estimate_rms(const arma::Mat<real_t>& data, double num_sigma = 3, uint iters = 5, DataStats stats = DataStats(arma::datum::nan, arma::datum::nan, arma::datum::nan));
+double estimate_rms(const arma::Mat<real_t>& data, double num_sigma = 3, uint iters = 5, DataStats stats = DataStats());
 
 /**
  * @brief IslandParams struct
