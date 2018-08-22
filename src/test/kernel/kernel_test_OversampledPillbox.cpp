@@ -21,7 +21,7 @@ TEST(KernelGenerationOversampledPillbox, NoOffset)
 {
     arma::mat offset_index = { 0., 0. };
 
-    arma::mat expected_results = {
+    arma::Mat<real_t> expected_results = {
         { 0., 0., 0., 0., 0., 0., 0. },
         { 0., 1., 1., 1., 1., 1., 0. },
         { 0., 1., 1., 1., 1., 1., 0. },
@@ -31,7 +31,7 @@ TEST(KernelGenerationOversampledPillbox, NoOffset)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
+    arma::Mat<real_t> result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
@@ -40,7 +40,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffset)
 {
     arma::mat offset_index = { 0.01, 0.01 };
 
-    arma::mat expected_results = {
+    arma::Mat<real_t> expected_results = {
         { 0., 0., 0., 0., 0., 0., 0. },
         { 0., 1., 1., 1., 1., 1., 0. },
         { 0., 1., 1., 1., 1., 1., 0. },
@@ -50,7 +50,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffset)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
+    arma::Mat<real_t> result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
@@ -59,7 +59,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffsetRight)
 {
     arma::mat offset_index = { -.05, 0. };
 
-    arma::mat expected_results = {
+    arma::Mat<real_t> expected_results = {
         { 0., 0., 0., 0., 0., 0., 0. },
         { 0., 1., 1., 1., 1., 0., 0. },
         { 0., 1., 1., 1., 1., 0., 0. },
@@ -69,7 +69,7 @@ TEST(KernelGenerationOversampledPillbox, SmallOffsetRight)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
+    arma::Mat<real_t> result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
@@ -78,7 +78,7 @@ TEST(KernelGenerationOversampledPillbox, OffsetRight)
 {
     arma::mat offset_index = { 0.4, 0. };
 
-    arma::mat expected_results = {
+    arma::Mat<real_t> expected_results = {
         { 0., 0., 0., 0., 0., 0., 0. },
         { 0., 0., 0., 1., 1., 1., 1. },
         { 0., 0., 0., 1., 1., 1., 1. },
@@ -88,6 +88,6 @@ TEST(KernelGenerationOversampledPillbox, OffsetRight)
         { 0., 0., 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
+    arma::Mat<real_t> result_array = make_kernel_array(TopHat(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }

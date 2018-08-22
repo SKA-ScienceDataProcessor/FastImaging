@@ -1,5 +1,5 @@
-#include "../auxiliary/linear_interpolation.h"
 #include <gtest/gtest.h>
+#include <linear_interpolation.h>
 #include <stp.h>
 
 using namespace stp;
@@ -11,8 +11,8 @@ TEST(LinearInterpolation, Correctness)
 
     size_t length_interp = length * 8;
     x = arma::regspace<arma::Col<real_t>>(0, length - 1);
-    y = arma::randu(arma::size(x));
-    xi = arma::sort(arma::randu(length_interp) * (length - 2));
+    y = arma::randu<arma::Col<real_t>>(arma::size(x));
+    xi = arma::sort(arma::randu<arma::Col<real_t>>(length_interp) * (length - 2));
 
     yi.set_size(arma::size(xi));
     yi_arma.set_size(arma::size(xi));

@@ -103,6 +103,10 @@ add_subdirectory(${THIRD_PARTY_SOURCE_DIRECTORY})
 set(STP_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/stp)
 add_subdirectory(${STP_SOURCE_DIRECTORY})
 
+# Sub-project: Auxiliary Library
+set(AUX_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/auxiliary)
+add_subdirectory(${AUX_SOURCE_DIRECTORY})
+
 # Target: STP Reduce
 set(REDUCE_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/reduce)
 add_subdirectory(${REDUCE_SOURCE_DIRECTORY})

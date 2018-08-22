@@ -19,7 +19,7 @@ set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
 
 # For convenience all link libraries required by
 # the tests are put in one variable
-set(TEST_LINK_LIBRARIES stp cnpy-stp gtest gtest_main Threads::Threads armadillo)
+set(TEST_LINK_LIBRARIES auxlib stp gtest gtest_main Threads::Threads armadillo)
 
 # Copy configuration files to the binary directory
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../configs/imager-tests/conf_tests.json ${CMAKE_CURRENT_BINARY_DIR}/conf_tests.json COPYONLY)
@@ -40,12 +40,9 @@ add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # Helper function for test target specification
 function(add_unit_test unit_test_name unit_test_source)
-    add_executable(${unit_test_name} ${unit_test_source} ../auxiliary/fixtures.h ../auxiliary/gaussian2d.cpp
-        ../auxiliary/load_data.cpp ../auxiliary/load_json_config.cpp imager/load_json_imager.cpp
-        ../auxiliary/linear_interpolation.cpp)
-    add_dependencies(${unit_test_name} stp cnpy-stp gtest gtest_main benchmark armadillo)
-    target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary
-        ${RAPIDJSON_INCLUDE_PATH})
+    add_executable(${unit_test_name} ${unit_test_source} imager/load_json_imager.cpp)
+    add_dependencies(${unit_test_name} auxlib stp gtest gtest_main benchmark armadillo)
+    target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${RAPIDJSON_INCLUDE_PATH})
     target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
 endfunction()
 

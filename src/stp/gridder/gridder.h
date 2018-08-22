@@ -80,7 +80,7 @@ arma::field<arma::Mat<cx_real_t>> populate_kernel_cache(const T& kernel_creator,
 
     arma::mat oversampled_pixel_offsets = (arma::linspace(0, cache_size - 1, cache_size) - oversampled_pixel) / oversampling;
     arma::field<arma::Mat<cx_real_t>> cache(cache_size, cache_size); // 2D kernel array cache to be returned
-    arma::field<arma::mat> kernel1D_cache(cache_size); // Temporary cache for 1D kernel arrays
+    arma::field<arma::Mat<real_t>> kernel1D_cache(cache_size); // Temporary cache for 1D kernel arrays
 
     // Fill 1D kernel array cache
     for (int i = 0; i < cache_size; i++) {
@@ -902,7 +902,7 @@ GridderOutput convolve_to_grid(
 
                 // Exact gridding is used, i.e. the kernel is recalculated for each visibility, with
                 // precise sub-pixel offset according to that visibility's UV co-ordinates.
-                arma::mat normed_kernel_array = make_kernel_array(kernel_creator, conv_support, frac);
+                arma::Mat<real_t> normed_kernel_array = make_kernel_array(kernel_creator, conv_support, frac);
 
                 for (int j = 0; j < kernel_size; j++) {
                     int grid_col = gc_x - conv_support + j;

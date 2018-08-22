@@ -33,7 +33,7 @@ public:
     const int image_size = 8;
     const int support = 2;
     GridderOutput result;
-    arma::mat kernel;
+    arma::Mat<real_t> kernel;
     arma::cx_mat vis;
     arma::mat vis_weights;
     arma::mat uv;

@@ -1,8 +1,8 @@
 #ifndef LOAD_JSON_CONFIG_H
 #define LOAD_JSON_CONFIG_H
 
-#include "../stp/types.h"
 #include <fstream>
+#include <types.h>
 
 // RapidJson
 #include <rapidjson/document.h>

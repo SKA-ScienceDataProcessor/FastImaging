@@ -7,7 +7,7 @@
 
 static void generate_1D_TopHat(benchmark::State& state)
 {
-    double offset = 0.0;
+    real_t offset = 0.0;
     int support = state.range(0);
     int oversampling = 1;
 
@@ -15,14 +15,14 @@ static void generate_1D_TopHat(benchmark::State& state)
         stp::TopHat kernel_creator(3.0);
         int array_size = 2 * support * oversampling + 1;
         int centre_idx = support * oversampling;
-        arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+        arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
         benchmark::DoNotOptimize(kernel_creator(distance_vec - offset));
     }
 }
 
 static void generate_1D_Triangle(benchmark::State& state)
 {
-    double offset = 0.0;
+    real_t offset = 0.0;
     int support = state.range(0);
     int oversampling = 1;
 
@@ -30,14 +30,14 @@ static void generate_1D_Triangle(benchmark::State& state)
         stp::Triangle kernel_creator(2.0);
         int array_size = 2 * support * oversampling + 1;
         int centre_idx = support * oversampling;
-        arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+        arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
         benchmark::DoNotOptimize(kernel_creator(distance_vec - offset));
     }
 }
 
 static void generate_1D_Sinc(benchmark::State& state)
 {
-    double offset = 0.0;
+    real_t offset = 0.0;
     int support = state.range(0);
     int oversampling = 1;
 
@@ -45,14 +45,14 @@ static void generate_1D_Sinc(benchmark::State& state)
         stp::Sinc kernel_creator;
         int array_size = 2 * support * oversampling + 1;
         int centre_idx = support * oversampling;
-        arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+        arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
         benchmark::DoNotOptimize(kernel_creator(distance_vec - offset));
     }
 }
 
 static void generate_1D_Gaussian(benchmark::State& state)
 {
-    double offset = 0.0;
+    real_t offset = 0.0;
     int support = state.range(0);
     int oversampling = 1;
 
@@ -60,7 +60,7 @@ static void generate_1D_Gaussian(benchmark::State& state)
         stp::Gaussian kernel_creator;
         int array_size = 2 * support * oversampling + 1;
         int centre_idx = support * oversampling;
-        arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+        arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
         benchmark::DoNotOptimize(kernel_creator(distance_vec - offset));
         benchmark::ClobberMemory();
     }
@@ -68,7 +68,7 @@ static void generate_1D_Gaussian(benchmark::State& state)
 
 static void generate_1D_GaussianSinc(benchmark::State& state)
 {
-    double offset = 0.0;
+    real_t offset = 0.0;
     int support = state.range(0);
     int oversampling = 1;
 
@@ -76,7 +76,7 @@ static void generate_1D_GaussianSinc(benchmark::State& state)
         stp::GaussianSinc kernel_creator(support);
         int array_size = 2 * support * oversampling + 1;
         int centre_idx = support * oversampling;
-        arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+        arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
         benchmark::DoNotOptimize(kernel_creator(distance_vec - offset));
         benchmark::ClobberMemory();
     }
@@ -84,7 +84,7 @@ static void generate_1D_GaussianSinc(benchmark::State& state)
 
 static void generate_1D_PSWF(benchmark::State& state)
 {
-    double offset = 0.0;
+    real_t offset = 0.0;
     int support = state.range(0);
     int oversampling = 1;
 
@@ -92,7 +92,7 @@ static void generate_1D_PSWF(benchmark::State& state)
         stp::PSWF kernel_creator(support);
         int array_size = 2 * support * oversampling + 1;
         int centre_idx = support * oversampling;
-        arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+        arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
         benchmark::DoNotOptimize(kernel_creator(distance_vec - offset));
         benchmark::ClobberMemory();
     }

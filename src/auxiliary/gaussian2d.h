@@ -2,7 +2,7 @@
 #define GAUSSIAN2D_H
 
 #include <armadillo>
-#include <stp.h>
+#include <types.h>
 
 /**
  * @brief Gaussian 2D model class
@@ -12,9 +12,9 @@
 class Gaussian2D {
 
 public:
-    double amplitude;
     double x_mean;
     double y_mean;
+    double amplitude;
     double x_stddev;
     double y_stddev;
     double theta;

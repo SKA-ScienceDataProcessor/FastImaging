@@ -33,17 +33,17 @@ public:
 
     /**
      * @brief Operator ()
-     * @param[in] radius_in_pix (arma::vec)
+     * @param[in] radius_in_pix (arma::Col<real_t>)
      * @return TopHat mat
      */
-    arma::vec operator()(const arma::vec& radius_in_pix) const;
+    arma::Col<real_t> operator()(const arma::Col<real_t>& radius_in_pix) const;
 
     /**
      * @brief Generates the 1D grid correction function (gcf)
-     * @param[in] radius (arma::vec&)
+     * @param[in] radius (arma::Col<real_t>&)
      * @return 1D grid correction function (gcf)
      */
-    arma::vec gcf(const arma::vec& radius) const;
+    arma::Col<real_t> gcf(const arma::Col<real_t>& radius) const;
 
 private:
     double _half_base_width;
@@ -68,17 +68,17 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::vec)
+     * @param[in] radius_in_pix (arma::Col<real_t>)
      * @return Triangle mat
      */
-    arma::vec operator()(const arma::vec& radius_in_pix) const;
+    arma::Col<real_t> operator()(const arma::Col<real_t>& radius_in_pix) const;
 
     /**
      * @brief Generates the 1D grid correction function (gcf)
-     * @param[in] radius (arma::vec&)
+     * @param[in] radius (arma::Col<real_t>&)
      * @return 1D grid correction function (gcf)
      */
-    arma::vec gcf(const arma::vec& radius) const;
+    arma::Col<real_t> gcf(const arma::Col<real_t>& radius) const;
 
 private:
     const double _half_base_width;
@@ -109,17 +109,17 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::vec&)
+     * @param[in] radius_in_pix (arma::Col<real_t>&)
      * @return Convolution kernel
      */
-    arma::vec operator()(const arma::vec& radius_in_pix) const;
+    arma::Col<real_t> operator()(const arma::Col<real_t>& radius_in_pix) const;
 
     /**
      * @brief Generates the 1D grid correction function (gcf)
-     * @param[in] radius (arma::vec&)
+     * @param[in] radius (arma::Col<real_t>&)
      * @return 1D grid correction function (gcf)
      */
-    arma::vec gcf(const arma::vec& radius) const;
+    arma::Col<real_t> gcf(const arma::Col<real_t>& radius) const;
 
 private:
     double _trunc;
@@ -153,17 +153,17 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::vec&)
+     * @param[in] radius_in_pix (arma::Col<real_t>&)
      * @return Convolution kernel
      */
-    arma::vec operator()(const arma::vec& radius_in_pix) const;
+    arma::Col<real_t> operator()(const arma::Col<real_t>& radius_in_pix) const;
 
     /**
      * @brief Generates the 1D grid correction function (gcf)
-     * @param[in] radius (arma::vec&)
+     * @param[in] radius (arma::Col<real_t>&)
      * @return 1D grid correction function (gcf)
      */
-    arma::vec gcf(const arma::vec& radius) const;
+    arma::Col<real_t> gcf(const arma::Col<real_t>& radius) const;
 
 private:
     double _trunc;
@@ -200,17 +200,17 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::vec&)
+     * @param[in] radius_in_pix (arma::Col<real_t>&)
      * @return Convolution kernel
      */
-    arma::vec operator()(const arma::vec& radius_in_pix) const;
+    arma::Col<real_t> operator()(const arma::Col<real_t>& radius_in_pix) const;
 
     /**
      * @brief Generates the 1D grid correction function (gcf)
-     * @param[in] radius (arma::vec&)
+     * @param[in] radius (arma::Col<real_t>&)
      * @return 1D grid correction function (gcf)
      */
-    arma::vec gcf(const arma::vec& radius) const;
+    arma::Col<real_t> gcf(const arma::Col<real_t>& radius) const;
 
 private:
     static constexpr double _default_width_normalization_gaussian = 2.52;
@@ -245,17 +245,17 @@ public:
 
     /**
      * @brief operator ()
-     * @param[in] radius_in_pix (arma::vec&)
+     * @param[in] radius_in_pix (arma::Col<real_t>&)
      * @return Convolution kernel
      */
-    arma::vec operator()(const arma::vec& radius_in_pix) const;
+    arma::Col<real_t> operator()(const arma::Col<real_t>& radius_in_pix) const;
 
     /**
      * @brief Generates the 1D grid correction function (gcf)
-     * @param[in] radius (arma::vec&)
+     * @param[in] radius (arma::Col<real_t>&)
      * @return 1D grid correction function (gcf)
      */
-    arma::vec gcf(const arma::vec& radius) const;
+    arma::Col<real_t> gcf(const arma::Col<real_t>& radius) const;
 
 private:
     double _trunc;
@@ -267,7 +267,7 @@ private:
 *
 *  @param[in] kernel_creator: functor used for kernel generation
 *  @param[in] support (int): Defines the 'radius' of the bounding box within which convolution takes place.
-*  @param[in] offset (arma::vec): 2-vector subpixel offset from the sampling position of the
+*  @param[in] offset (arma::Col<real_t>): 2-vector subpixel offset from the sampling position of the
 *                                central pixel to the origin of the kernel function.
 *  @param[in] oversampling (int): Controls kernel-generation.
 *  @param[in] pad (bool): Whether to pad the array by an extra pixel-width. This is used when generating an
@@ -277,7 +277,7 @@ private:
 *  @return Result kernel
 */
 template <typename T>
-arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::mat& offset, int oversampling = 1, bool pad = false, bool normalize = true)
+arma::Mat<real_t> make_kernel_array(const T& kernel_creator, int support, const arma::mat& offset, int oversampling = 1, bool pad = false, bool normalize = true)
 {
     assert(support >= 1);
     assert(offset.n_elem == 2);
@@ -290,14 +290,14 @@ arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::ma
     int array_size = 2 * (support + localPad) * oversampling + 1;
     int centre_idx = (support + localPad) * oversampling;
 
-    arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+    arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
 
     // Call the functor's operator ()
-    arma::vec x_kernel_coeffs = kernel_creator(distance_vec - offset[0]);
-    arma::vec y_kernel_coeffs = kernel_creator(distance_vec - offset[1]);
+    arma::Col<real_t> x_kernel_coeffs = kernel_creator(distance_vec - offset[0]);
+    arma::Col<real_t> y_kernel_coeffs = kernel_creator(distance_vec - offset[1]);
 
     // Multiply the two vectors obtained with convolution function to obtain the 2D kernel.
-    arma::mat result = y_kernel_coeffs * x_kernel_coeffs.st();
+    arma::Mat<real_t> result = y_kernel_coeffs * x_kernel_coeffs.st();
 
     return (normalize == true) ? (result / arma::accu(result)) : result;
 }
@@ -314,10 +314,10 @@ arma::mat make_kernel_array(const T& kernel_creator, int support, const arma::ma
 *                          oversampled kernel that will be used for interpolation.
 *  @param[in] normalize (bool): Whether or not the returned image should be normalized
 *
-*  @return (arma::vec) Result 1D kernel
+*  @return (arma::Col<real_t>) Result 1D kernel
 */
 template <typename T>
-arma::vec make_1D_kernel(const T& kernel_creator, int support, const double offset, int oversampling = 1, bool pad = false, bool normalize = true)
+arma::Col<real_t> make_1D_kernel(const T& kernel_creator, int support, const double offset, int oversampling = 1, bool pad = false, bool normalize = true)
 {
     assert(support >= 1);
     assert(fabs(offset) <= 0.5);
@@ -328,10 +328,10 @@ arma::vec make_1D_kernel(const T& kernel_creator, int support, const double offs
     int array_size = 2 * (support + localPad) * oversampling + 1;
     int centre_idx = (support + localPad) * oversampling;
 
-    arma::vec distance_vec((arma::linspace(0, array_size - 1, array_size) - centre_idx) / oversampling);
+    arma::Col<real_t> distance_vec((arma::linspace<arma::Col<real_t>>(0, array_size - 1, array_size) - centre_idx) / oversampling);
 
     // Call the functor's operator ()
-    arma::vec result = kernel_creator(distance_vec - offset);
+    arma::Col<real_t> result = kernel_creator(distance_vec - offset);
 
     return (normalize == true) ? (result / arma::accu(result)) : result;
 }
@@ -357,13 +357,13 @@ arma::Col<real_t> ImgDomKernel(const T& kernel_creator, size_t kernel_size, bool
 
     if (analytic_gcf == true) {
         /* Create 1D kernel */
-        aa_kernel_img = kernel_creator.gcf((arma::linspace(0, kernel_size - 1, kernel_size) - centre_idx) / centre_idx);
+        aa_kernel_img = kernel_creator.gcf((arma::linspace<arma::Col<real_t>>(0, kernel_size - 1, kernel_size) - centre_idx) / centre_idx);
     } else {
         arma::Col<real_t> kernel1D_array(kernel_size); //  1D kernel array
         arma::Col<real_t> fft_kernel1D_array(kernel_size); //  1D kernel array
 
         /* Create 1D kernel */
-        arma::vec kernel1D = kernel_creator(arma::linspace(0, kernel_size - 1, kernel_size) - centre_idx);
+        arma::Col<real_t> kernel1D = kernel_creator(arma::linspace<arma::Col<real_t>>(0, kernel_size - 1, kernel_size) - centre_idx);
 
         // normalize
         double kernel_sum = arma::accu((kernel1D));

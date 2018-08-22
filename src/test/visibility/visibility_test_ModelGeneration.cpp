@@ -1,5 +1,5 @@
-#include "../../auxiliary/load_data.h"
 #include <gtest/gtest.h>
+#include <load_data.h>
 #include <stp.h>
 
 using namespace stp;

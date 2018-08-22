@@ -7,7 +7,7 @@ std::string input_npz("simdata_nstep10.npz");
 
 // As the results are compared with python output (which uses double type) the float case presents larger error
 #ifdef USE_FLOAT
-const double pipeline_tolerance(1.0e-7);
+const double pipeline_tolerance(1.0e-6);
 #else
 const double pipeline_tolerance(1.0e-11);
 #endif

@@ -2,17 +2,17 @@
  *  @brief Test interpolation functions performance
  */
 
-#include "../auxiliary/linear_interpolation.h"
-#include "../stp/common/spline.h"
 #include <benchmark/benchmark.h>
+#include <common/spline.h>
+#include <linear_interpolation.h>
 #include <stp.h>
 
 void init_arrays(arma::Col<real_t>& x, arma::Col<real_t>& y, arma::Col<real_t>& xi, size_t length)
 {
     size_t length_interp = length * 8;
     x = arma::regspace<arma::Col<real_t>>(0, length - 1);
-    y = arma::randu(arma::size(x));
-    xi = arma::sort(arma::randu(length_interp) * (length - 2));
+    y = arma::randu<arma::Col<real_t>>(arma::size(x));
+    xi = arma::sort(arma::randu<arma::Col<real_t>>(length_interp) * (length - 2));
 }
 
 static void arma_interpol1_benchmark(benchmark::State& state)

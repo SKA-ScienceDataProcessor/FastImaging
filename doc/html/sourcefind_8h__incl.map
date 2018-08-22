@@ -1,8 +1,6 @@
 <map id="/home/lucas/skadev/FastImaging/src/stp/sourcefind/sourcefind.h" name="/home/lucas/skadev/FastImaging/src/stp/sourcefind/sourcefind.h">
-<area shape="rect" id="node2" href="$ccl_8h.html" title="Function prototypes of the connected component labeling. " alt="" coords="309,109,425,136"/>
-<area shape="rect" id="node6" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="644,259,721,285"/>
-<area shape="rect" id="node9" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="51,184,125,211"/>
-<area shape="rect" id="node13" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="500,109,671,136"/>
-<area shape="rect" id="node14" href="$fitting_8h.html" title="Classes and function prototypes of gaussian fitting. " alt="" coords="746,184,811,211"/>
-<area shape="rect" id="node3" href="$global__macros_8h.html" title="../global_macros.h" alt="" coords="201,184,330,211"/>
+<area shape="rect" id="node2" href="$matrix__math_8h.html" title="Classes and function prototypes of matrix math. " alt="" coords="5,109,176,136"/>
+<area shape="rect" id="node3" href="$types_8h.html" title="Type definitions, global variables and enumerations. " alt="" coords="181,184,259,211"/>
+<area shape="rect" id="node7" href="$matstp_8h.html" title="MatStp matrix class. " alt="" coords="251,109,389,136"/>
+<area shape="rect" id="node9" href="$fitting_8h.html" title="Classes and function prototypes of gaussian fitting. " alt="" coords="414,109,479,136"/>
 </map>

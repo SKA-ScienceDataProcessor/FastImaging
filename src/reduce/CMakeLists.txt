@@ -12,9 +12,6 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(-ffast-math -O3)
 endif()
 
-# Dependency: RapidJSON
-set(RAPIDJSON_INCLUDE_PATH "../third-party/rapidjson/include")
-
 # Dependency: spdlog
 set(SPDLOG_INCLUDE_PATH "../third-party/spdlog/include")
 
@@ -25,31 +22,28 @@ set(TCLAP_INCLUDE_PATH "../third-party/tclap/include")
 set(REDUCE_TARGET_NAME "reduce")
 
 # Build the reduce target
-add_executable(${REDUCE_TARGET_NAME} reduce.cpp common_functions.cpp ../auxiliary/load_data.cpp ../auxiliary/save_data.h ../auxiliary/load_json_config.cpp ../auxiliary/save_json_sf_output.cpp)
-add_dependencies(${STP_TARGET_NAME} stp cnpy-stp armadillo)
-target_include_directories(${REDUCE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
-    ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${RAPIDJSON_INCLUDE_PATH} ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
-target_link_libraries(${REDUCE_TARGET_NAME} stp cnpy-stp armadillo)
+add_executable(${REDUCE_TARGET_NAME} reduce.cpp common_functions.cpp)
+add_dependencies(${STP_TARGET_NAME} auxlib stp)
+target_include_directories(${REDUCE_TARGET_NAME} PRIVATE ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
+target_link_libraries(${REDUCE_TARGET_NAME} auxlib stp)
 
 # Target: run_imagevis
 set(IMGVIS_TARGET_NAME "run_imager")
 
 # Build the reduce target
-add_executable(${IMGVIS_TARGET_NAME} run_imager.cpp common_functions.cpp ../auxiliary/load_data.cpp ../auxiliary/save_data.h ../auxiliary/load_json_config.cpp ../auxiliary/save_json_sf_output.cpp)
-add_dependencies(${STP_TARGET_NAME} stp cnpy-stp)
-target_include_directories(${IMGVIS_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
-    ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${RAPIDJSON_INCLUDE_PATH} ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
-target_link_libraries(${IMGVIS_TARGET_NAME} stp cnpy-stp)
+add_executable(${IMGVIS_TARGET_NAME} run_imager.cpp common_functions.cpp)
+add_dependencies(${STP_TARGET_NAME} auxlib stp)
+target_include_directories(${IMGVIS_TARGET_NAME} PRIVATE ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
+target_link_libraries(${IMGVIS_TARGET_NAME} auxlib stp)
 
 # Target: run_sourcefind
 set(SOURCEFIND_TARGET_NAME "run_sourcefind")
 
 # Build the reduce target
-add_executable(${SOURCEFIND_TARGET_NAME} run_sourcefind.cpp common_functions.cpp ../auxiliary/load_data.cpp ../auxiliary/save_data.h ../auxiliary/load_json_config.cpp ../auxiliary/save_json_sf_output.cpp)
-add_dependencies(${STP_TARGET_NAME} stp cnpy-stp)
-target_include_directories(${SOURCEFIND_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/cnpy
-    ${CMAKE_CURRENT_SOURCE_DIR}/../auxiliary/ ${RAPIDJSON_INCLUDE_PATH} ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
-target_link_libraries(${SOURCEFIND_TARGET_NAME} stp cnpy-stp)
+add_executable(${SOURCEFIND_TARGET_NAME} run_sourcefind.cpp common_functions.cpp)
+add_dependencies(${STP_TARGET_NAME} auxlib stp)
+target_include_directories(${SOURCEFIND_TARGET_NAME} PRIVATE ${TCLAP_INCLUDE_PATH} ${SPDLOG_INCLUDE_PATH})
+target_link_libraries(${SOURCEFIND_TARGET_NAME} auxlib stp)
 
 # Copy config files to the build directory
 add_custom_command(

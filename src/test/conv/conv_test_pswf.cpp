@@ -13,7 +13,7 @@ using namespace stp;
 // Test the sinc functor implementation.
 TEST(ConvPswfFunc, conv_funcs_pswf)
 {
-    arma::vec input = { 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0 };
+    arma::Col<real_t> input = { 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0 };
 
     /* From Python implementation:
      *     from fastimgproto.gridder.conv_funcs import PSWF
@@ -26,7 +26,7 @@ TEST(ConvPswfFunc, conv_funcs_pswf)
      *     array([0.9999996673648565, 0.8729012518028004, 0.5732453907230994,
      *            0.27079903839833847, 0.08262342035850252, 0.012010540820816389, 0. ])
      */
-    arma::vec output = {
+    arma::Col<real_t> output = {
         0.9999996673648565,
         0.8729012518028004,
         0.5732453907230994,

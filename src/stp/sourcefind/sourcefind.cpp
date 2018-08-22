@@ -4,8 +4,8 @@
 */
 
 #include "sourcefind.h"
+#include "../common/ccl.h"
 #include "../common/matrix_math.h"
-#include "../common/matstp.h"
 #include "../global_macros.h"
 #include "fitting.h"
 #include <cassert>

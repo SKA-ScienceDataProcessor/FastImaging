@@ -7,7 +7,7 @@
 
 #include <stp.h>
 
-#include "../../auxiliary/load_data.h"
+#include <load_data.h>
 // RapidJson
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>

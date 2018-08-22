@@ -6,7 +6,7 @@
 #define LINEAR_INTERPOLATION_H
 
 #include <armadillo>
-#include <stp.h>
+#include <types.h>
 
 real_t linear_interpolation(arma::Col<real_t>& x, arma::Col<real_t>& y, real_t& xi_p, int loidx);
 

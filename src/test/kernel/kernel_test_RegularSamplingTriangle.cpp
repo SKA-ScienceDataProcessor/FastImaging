@@ -16,16 +16,16 @@ const int oversampling = 1;
 const bool pad = false;
 const bool normalize = false;
 
-const double kv1(1. - 1. / 1.5);
-const double kv1sq(kv1* kv1);
-const double kv_half(1. - 0.5 / 1.5);
+const real_t kv1(1. - 1. / 1.5);
+const real_t kv1sq(kv1* kv1);
+const real_t kv_half(1. - 0.5 / 1.5);
 
 // Test 2D kernel convolution method in a regular sampling triangle, without offset.
 TEST(KernelGenerationRegularSamplingTriangle, NoOffset)
 {
     arma::mat offset_index = { 0., 0. };
 
-    arma::mat expected_results = {
+    arma::Mat<real_t> expected_results = {
         { 0., 0., 0., 0., 0. },
         { 0., kv1sq, kv1, kv1sq, 0. },
         { 0., kv1, 1., kv1, 0. },
@@ -33,7 +33,7 @@ TEST(KernelGenerationRegularSamplingTriangle, NoOffset)
         { 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(Triangle(half_base_width), support, offset_index, oversampling, pad, normalize);
+    arma::Mat<real_t> result_array = make_kernel_array(Triangle(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }
 
@@ -42,7 +42,7 @@ TEST(KernelGenerationRegularSamplingTriangle, OffsetRight)
 {
     arma::mat offset_index = { 0.5, 0. };
 
-    arma::mat expected_results = {
+    arma::Mat<real_t> expected_results = {
         { 0., 0., 0., 0., 0. },
         { 0., 0., kv_half * kv1, kv_half * kv1, 0. },
         { 0., 0., kv_half, kv_half, 0. },
@@ -50,6 +50,6 @@ TEST(KernelGenerationRegularSamplingTriangle, OffsetRight)
         { 0., 0., 0., 0., 0. }
     };
 
-    arma::mat result_array = make_kernel_array(Triangle(half_base_width), support, offset_index, oversampling, pad, normalize);
+    arma::Mat<real_t> result_array = make_kernel_array(Triangle(half_base_width), support, offset_index, oversampling, pad, normalize);
     EXPECT_TRUE(arma::approx_equal(result_array, expected_results, "absdiff", fptolerance));
 }

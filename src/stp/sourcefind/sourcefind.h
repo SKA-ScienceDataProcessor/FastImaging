@@ -6,7 +6,6 @@
 #ifndef SOURCE_FIND_H
 #define SOURCE_FIND_H
 
-#include "../common/ccl.h"
 #include "../common/matrix_math.h"
 #include "../common/matstp.h"
 #include "../types.h"

@@ -1,4 +1,8 @@
 ## Release Notes
+### 22 August 2018
+- Fix build issue
+- Build static library for auxiliary functions
+
 ### 20 August 2018
 - Implemented support for W-projection which is used for wide-field imaging
 - Implemented initial support for A-projection (work in progress)
