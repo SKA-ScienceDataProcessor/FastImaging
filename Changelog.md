@@ -1,4 +1,8 @@
 ## Release Notes
+### 26 September 2018
+- Improved Hankel optimisation speed
+- Added test scripts
+
 ### 22 August 2018
 - Fix build issue
 - Build static library for auxiliary functions

@@ -91,7 +91,7 @@ TEST_F(WprojectionPipelineTest, test_wproj_hankel)
 
     // Expected results
     int expected_total_isl = 5;
-    std::vector<double> expected_extremum_value = { 0.9912718909924438, 0.9794795722531972, 0.9627690384503329, 0.9606837234437606, 1.2122830460228946 };
+    std::vector<double> expected_extremum_value = { 0.99126548796787806, 0.97916638485134411, 0.96251544620881657, 0.96036208179378824, 1.2258315512118649 };
     std::vector<double> expected_extremum_x = { 512, 631, 713, 786, 851 };
     std::vector<double> expected_extremum_y = { 512, 658, 770, 882, 995 };
 

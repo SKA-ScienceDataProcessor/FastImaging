@@ -4,9 +4,6 @@
 [submodule "src/third-party/openblas"]
 	path = src/third-party/openblas
 	url = https://github.com/xianyi/OpenBLAS.git
-[submodule "src/third-party/armadillo"]
-	path = src/third-party/armadillo
-	url = https://github.com/conradsnicta/armadillo-code.git
 [submodule "src/third-party/benchmark"]
 	path = src/third-party/benchmark
 	url = https://github.com/google/benchmark.git
@@ -34,3 +31,6 @@
 [submodule "src/third-party/cnpy"]
 	path = src/third-party/cnpy
 	url = https://github.com/rogersce/cnpy.git
+[submodule "src/third-party/armadillo"]
+	path = src/third-party/armadillo
+	url = https://gitlab.com/conradsnicta/armadillo-code.git

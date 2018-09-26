@@ -127,6 +127,7 @@ private:
 
         if (trunc_at > 0.0) {
             //truncate kernel at a certain percentage from maximum
+            double scale = M_SQRT2 / double(oversampling * 2);
             real_t min_value = std::abs(y_array[0]) * trunc_at;
             int trunc_idx = wp.max_wpconv_support * oversampling;
             while (trunc_idx > oversampling) {
@@ -135,7 +136,7 @@ private:
                 }
                 trunc_idx -= oversampling;
             }
-            truncated_wpconv_support = std::min(int((ceil(double(trunc_idx) * M_SQRT2 / double(oversampling)))), wp.max_wpconv_support);
+            truncated_wpconv_support = std::min(int((ceil(double(trunc_idx) * scale))), wp.max_wpconv_support);
         }
 
         current_hankel_kernel_size = (truncated_wpconv_support * 2 + 1 + 1) * oversampling;

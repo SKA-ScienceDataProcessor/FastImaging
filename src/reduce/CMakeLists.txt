@@ -57,5 +57,9 @@ add_custom_command(
             simdata_nstep10.npz
     COMMAND ${CMAKE_COMMAND} -E create_symlink
             ${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/simdata_awproj_nstep10.npz
-            simdata_awproj_nstep10.npz)
+            simdata_awproj_nstep10.npz
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+            ${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/wenssdata_awproj.npz
+            wenssdata_awproj.npz)
+
 

@@ -1,7 +1,7 @@
 {
     "imager_settings": {
         "image_size_pix": 16384,
-        "cell_size_arcsec": 6,
+        "cell_size_arcsec": 5,
         "kernel_function": "PSWF",
         "kernel_support" : 3,
         "kernel_exact": false,
@@ -15,8 +15,8 @@
     "wprojection_settings": {
         "num_wplanes": 100,
         "wplanes_median": false,
-        "max_wpconv_support": 50,
-        "hankel_opt": false,
+        "max_wpconv_support": 250,
+        "hankel_opt": true,
         "undersampling_opt": 1,
         "kernel_trunc_perc": 1.0,
         "interp_type": "cubic"

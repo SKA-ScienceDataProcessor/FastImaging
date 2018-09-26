@@ -7,9 +7,8 @@
 #include <tbb/tbb.h>
 
 #include "../common/fft.h"
+#include "../global_macros.h"
 #include "aw_projection.h"
-
-#define INTERP_TRUNC
 
 namespace stp {
 
@@ -111,6 +110,8 @@ void WideFieldImaging::generate_convolution_kernel_aproj(const arma::Mat<real_t>
             }
         });
 
+    STPLIB_DEBUG(spdlog::get("stplib"), "W-Proj: C2C FFT size = {}", tmp_kernel.n_rows);
+
     fft_fftw_c2c(tmp_kernel, conv_kernel, r_fft);
 
     // truncate kernel at a certain percentage from maximum
@@ -140,6 +141,8 @@ void WideFieldImaging::generate_convolution_kernel_wproj(double input_w_value, c
 
     if (wp.hankel_opt == false) {
         comb_kernel = combine_kernels(aa_kernel_img, scaled_cell_size);
+
+        STPLIB_DEBUG(spdlog::get("stplib"), "W-Proj: C2C FFT size = {}", comb_kernel.n_rows);
 
         fft_fftw_c2c(comb_kernel, conv_kernel, r_fft);
         comb_kernel.reset();
@@ -190,6 +193,8 @@ void WideFieldImaging::generate_convolution_kernel_wproj(double input_w_value, c
         /*** generate Hankel transform output array **/
         /*********************************************/
         arma::Col<cx_real_t> comb_kernel_radius(half_arr_size);
+
+        STPLIB_DEBUG(spdlog::get("stplib"), "W-Proj: DHT size = {}", half_arr_size);
 
         for (size_t i = 0; i < half_arr_size; i++) {
             real_t acc1 = 0;
@@ -293,7 +298,7 @@ arma::field<arma::Mat<cx_real_t>> WideFieldImaging::generate_kernel_cache()
             }
         }
     }
-
+    STPLIB_DEBUG(spdlog::get("stplib"), "W-Proj: Kernel maximum = {}, minimum = {}", std::abs(cache(oversampling / 2, oversampling / 2).at(cache(oversampling / 2, oversampling / 2).n_rows / 2, cache(oversampling / 2, oversampling / 2).n_cols / 2)), std::abs(cache(oversampling / 2, oversampling / 2).at(0, cache(oversampling / 2, oversampling / 2).n_cols / 2)));
     return std::move(cache);
 }
 

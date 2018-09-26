@@ -17,7 +17,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, 
         // Check if y value of the visibility point is negative (i.e. belongs to the top half-plane) and compute conjugate if true
         if (uv_lambda.at(i, 1) < 0.0) {
             // If the visibity point is close to the 0-frequency (within kernel_support distance)
-            // also keep the visibility point in the top half-plane (use an auxiliary array)
+            // also keep the visibility point in the top half-plane
             if (uv_lambda.at(i, 1) > -(kernel_support + 1)) {
                 good_vis.at(i) = 2;
             }
@@ -27,7 +27,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, 
             vis.at(i) = std::conj(vis.at(i));
         } else {
             // If the visibity point in the bottom halfplane is close to the 0-frequency (within kernel_support distance)
-            // add the conjugate visibility point to the top half-plane (use an auxiliary array)
+            // add the conjugate visibility point to the top half-plane
             if (uv_lambda.at(i, 1) < (kernel_support + 1)) {
                 good_vis.at(i) = 2;
             }
@@ -45,7 +45,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda
         // Check if y value of the visibility point is negative (i.e. belongs to the top half-plane) and compute conjugate if true
         if (uv_lambda.at(i, 1) < 0.0) {
             // If the visibity point is close to the 0-frequency (within kernel_support distance)
-            // also keep the visibility point in the top half-plane (use an auxiliary array)
+            // also keep the visibility point in the top half-plane
             if (uv_lambda.at(i, 1) > -(kernel_support + 1)) {
                 good_vis.at(i) = 2;
             }
@@ -56,7 +56,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda
             vis.at(i) = std::conj(vis.at(i));
         } else {
             // If the visibity point in the bottom halfplane is close to the 0-frequency (within kernel_support distance)
-            // add the conjugate visibility point to the top half-plane (use an auxiliary array)
+            // add the conjugate visibility point to the top half-plane
             if (uv_lambda.at(i, 1) < (kernel_support + 1)) {
                 good_vis.at(i) = 2;
             }

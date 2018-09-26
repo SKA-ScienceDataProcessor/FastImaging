@@ -2,13 +2,14 @@
 #define GLOBAL_MACROS_H
 
 #include <chrono>
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 #include <vector>
 
 namespace stp {
 
 // Macro for STP debug prints
 #ifdef STPLIB_DEBUG_ON
-#include <spdlog/spdlog.h>
 #define STPLIB_DEBUG(logger, ...)   \
     if (logger) {                   \
         logger->debug(__VA_ARGS__); \

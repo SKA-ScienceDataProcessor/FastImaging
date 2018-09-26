@@ -468,6 +468,8 @@ GridderOutput convolve_to_grid(
         WideFieldImaging wide_imaging(workarea_size, arc_sec_to_rad(cell_size), oversampling, undersampling_ratio, w_proj, r_fft);
 #endif
 
+        STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Workarea size = {}", workarea_size);
+
         // get oversampled kernel indexes
         arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
@@ -572,6 +574,7 @@ GridderOutput convolve_to_grid(
                     conv_support = wide_imaging.get_trunc_conv_support();
                     assert(conv_support > 0);
                     kernel_size = conv_support * 2 + 1;
+                    STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Conv kernel support = {}, Conv kernel size = {}", conv_support, kernel_size);
                     kernel_cache_conj.reset();
                     kernel_cache_conj.set_size(arma::size(kernel_cache));
                 }
@@ -702,6 +705,7 @@ GridderOutput convolve_to_grid(
                     conv_support = wide_imaging.get_trunc_conv_support();
                     assert(conv_support > 0);
                     kernel_size = conv_support * 2 + 1;
+                    STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Conv kernel support = {}, Conv kernel size = {}", conv_support, kernel_size);
                 }
 #endif
 
@@ -870,7 +874,8 @@ GridderOutput convolve_to_grid(
                             }
                         }
                     }
-                });
+                },
+                    tbb::simple_partitioner());
 #ifdef APROJECTION
             }
 #endif
