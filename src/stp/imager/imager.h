@@ -28,59 +28,96 @@ namespace stp {
  * @param[in] generate_beam (bool): Enables generation of gridded sampling matrix. Default is false.
  * @param[in] r_fft (FFTRoutine): Selects FFT routine.
  */
-template <typename T>
-void normalise_image_beam_result_1D(arma::Mat<real_t>& image_mat,
+template <bool grid_correction, typename T>
+void normalise_image_beam_result_1D(
+    arma::Mat<real_t>& image_mat,
     arma::Mat<real_t>& beam_mat,
+    arma::Mat<real_t>& norm_image,
+    arma::Mat<real_t>& norm_beam,
     const T& kernel_creator,
+    const size_t padded_image_size,
     const size_t image_size,
     const real_t normalization_factor,
     const bool analytic_gcf = true,
     const bool generate_beam = false,
     FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT)
 {
+    size_t half_padded_image_size = padded_image_size / 2;
+
     // generate ImgDomKernel
-    arma::Col<real_t> fft_1D_array = ImgDomKernel(kernel_creator, image_size, false, analytic_gcf, r_fft);
+    arma::Col<real_t> fft_1D_array;
+    if (grid_correction) {
+        fft_1D_array = ImgDomKernel(kernel_creator, padded_image_size, false, analytic_gcf, r_fft);
+    }
 
     // normalisation
 #ifdef FFTSHIFT
+    norm_image.set_size(image_size, image_size);
     tbb::parallel_for(tbb::blocked_range<size_t>(0, image_size),
         [&](const tbb::blocked_range<size_t>& r) {
             size_t j_begin = r.begin(),
                    j_end = r.end();
-            for (size_t j = j_begin; j < j_end; ++j) {
-                for (size_t i = 0; i < image_size; ++i) {
-                    image_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(i) * fft_1D_array.at(j));
+            size_t orig_i = (half_padded_image_size - image_size / 2);
+            size_t orig_j = (half_padded_image_size - image_size / 2);
+            for (size_t j = j_begin; j < j_end; ++j, ++orig_j) {
+                for (size_t i = 0; i < image_size; ++i, ++orig_i) {
+                    if (grid_correction) {
+                        norm_image.at(i, j) = image_mat(orig_i, orig_j) * normalization_factor / (fft_1D_array.at((half_padded_image_size - image_size / 2) + i) * fft_1D_array.at((half_padded_image_size - image_size / 2) + j));
+                    } else {
+                        norm_image.at(i, j) = image_mat(orig_i, orig_j) * normalization_factor;
+                    }
                 }
             }
         });
 
+    image_mat.reset();
+
     // Beam is optional
     if (generate_beam) {
+        norm_beam.set_size(image_size, image_size);
         tbb::parallel_for(tbb::blocked_range<size_t>(0, image_size),
             [&](const tbb::blocked_range<size_t>& r) {
                 size_t j_begin = r.begin(),
                        j_end = r.end();
-                for (size_t j = j_begin; j < j_end; ++j) {
-                    for (size_t i = 0; i < image_size; ++i) {
-                        beam_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(i) * fft_1D_array.at(j));
+                size_t orig_i = (half_padded_image_size - image_size / 2);
+                size_t orig_j = (half_padded_image_size - image_size / 2);
+                for (size_t j = j_begin; j < j_end; ++j, ++orig_j) {
+                    for (size_t i = 0; i < image_size; ++i, ++orig_i) {
+                        if (grid_correction) {
+                            norm_beam.at(i, j) = beam_mat(orig_i, orig_j) * normalization_factor / (fft_1D_array.at((half_padded_image_size - image_size / 2) + i) * fft_1D_array.at((half_padded_image_size - image_size / 2) + j));
+                        } else {
+                            norm_image.at(i, j) = image_mat(orig_i, orig_j) * normalization_factor;
+                        }
                     }
                 }
             });
+        beam_mat.reset();
     }
 #else
+    norm_image.set_size(image_size, image_size);
+
     tbb::parallel_for(tbb::blocked_range<size_t>(0, image_size / 2),
         [&](const tbb::blocked_range<size_t>& r) {
             size_t j_begin = r.begin(),
                    j_end = r.end();
             for (size_t j = j_begin; j < j_end; ++j) {
-                size_t jj = j + image_size / 2;
-                size_t ii = image_size / 2;
-                for (size_t i = 0; i < image_size / 2; ++i, ++ii) {
-                    image_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                size_t jj = j + half_padded_image_size;
+                size_t ii = half_padded_image_size;
+                for (size_t i = 0; i < (image_size / 2); ++i, ++ii) {
+                    if (grid_correction) {
+                        norm_image.at(i, j) = image_mat(i, j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    } else {
+                        norm_image.at(i, j) = image_mat(i, j) * normalization_factor;
+                    }
                 }
-                ii = 0;
-                for (size_t i = image_size / 2; i < image_size; ++i, ++ii) {
-                    image_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                ii = half_padded_image_size - image_size / 2;
+                size_t orig_i = padded_image_size - (image_size / 2);
+                for (size_t i = (image_size / 2); i < image_size; ++i, ++ii, ++orig_i) {
+                    if (grid_correction) {
+                        norm_image.at(i, j) = image_mat(orig_i, j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    } else {
+                        norm_image.at(i, j) = image_mat(orig_i, j) * normalization_factor;
+                    }
                 }
             }
         });
@@ -89,34 +126,57 @@ void normalise_image_beam_result_1D(arma::Mat<real_t>& image_mat,
         [&](const tbb::blocked_range<size_t>& r) {
             size_t j_begin = r.begin(),
                    j_end = r.end();
-            for (size_t j = j_begin; j < j_end; ++j) {
-                size_t jj = j - image_size / 2;
-                size_t ii = image_size / 2;
-                for (size_t i = 0; i < image_size / 2; ++i, ++ii) {
-                    image_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+            size_t orig_j = padded_image_size + j_begin - image_size;
+            for (size_t j = j_begin; j < j_end; ++j, ++orig_j) {
+                size_t jj = half_padded_image_size + j - image_size;
+                size_t ii = half_padded_image_size;
+                for (size_t i = 0; i < (image_size / 2); ++i, ++ii) {
+                    if (grid_correction) {
+                        norm_image.at(i, j) = image_mat(i, orig_j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    } else {
+                        norm_image.at(i, j) = image_mat(i, orig_j) * normalization_factor;
+                    }
                 }
-                ii = 0;
-                for (size_t i = image_size / 2; i < image_size; ++i, ++ii) {
-                    image_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                ii = half_padded_image_size - image_size / 2;
+                size_t orig_i = padded_image_size - (image_size / 2);
+                for (size_t i = (image_size / 2); i < image_size; ++i, ++ii, ++orig_i) {
+                    if (grid_correction) {
+                        norm_image.at(i, j) = image_mat(orig_i, orig_j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    } else {
+                        norm_image.at(i, j) = image_mat(orig_i, orig_j) * normalization_factor;
+                    }
                 }
             }
         });
 
+    image_mat.reset();
+
     // Beam is optional
     if (generate_beam) {
+        norm_beam.set_size(image_size, image_size);
+
         tbb::parallel_for(tbb::blocked_range<size_t>(0, image_size / 2),
             [&](const tbb::blocked_range<size_t>& r) {
                 size_t j_begin = r.begin(),
                        j_end = r.end();
                 for (size_t j = j_begin; j < j_end; ++j) {
-                    size_t jj = j + image_size / 2;
-                    size_t ii = image_size / 2;
-                    for (size_t i = 0; i < image_size / 2; ++i, ++ii) {
-                        beam_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    size_t jj = j + half_padded_image_size;
+                    size_t ii = half_padded_image_size;
+                    for (size_t i = 0; i < (image_size / 2); ++i, ++ii) {
+                        if (grid_correction) {
+                            norm_beam.at(i, j) = beam_mat(i, j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                        } else {
+                            norm_beam.at(i, j) = beam_mat(i, j) * normalization_factor;
+                        }
                     }
-                    ii = 0;
-                    for (size_t i = image_size / 2; i < image_size; ++i, ++ii) {
-                        beam_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    ii = half_padded_image_size - image_size / 2;
+                    size_t orig_i = padded_image_size - (image_size / 2);
+                    for (size_t i = (image_size / 2); i < image_size; ++i, ++ii, ++orig_i) {
+                        if (grid_correction) {
+                            norm_beam.at(i, j) = beam_mat(orig_i, j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                        } else {
+                            norm_beam.at(i, j) = beam_mat(orig_i, j) * normalization_factor;
+                        }
                     }
                 }
             });
@@ -125,18 +185,30 @@ void normalise_image_beam_result_1D(arma::Mat<real_t>& image_mat,
             [&](const tbb::blocked_range<size_t>& r) {
                 size_t j_begin = r.begin(),
                        j_end = r.end();
-                for (size_t j = j_begin; j < j_end; ++j) {
-                    size_t jj = j - image_size / 2;
-                    size_t ii = image_size / 2;
-                    for (size_t i = 0; i < image_size / 2; ++i, ++ii) {
-                        beam_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                size_t orig_j = padded_image_size + j_begin - image_size;
+                for (size_t j = j_begin; j < j_end; ++j, ++orig_j) {
+                    size_t jj = half_padded_image_size + j - image_size;
+                    size_t ii = half_padded_image_size;
+                    for (size_t i = 0; i < (image_size / 2); ++i, ++ii) {
+                        if (grid_correction) {
+                            norm_beam.at(i, j) = beam_mat(i, orig_j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                        } else {
+                            norm_beam.at(i, j) = beam_mat(i, orig_j) * normalization_factor;
+                        }
                     }
-                    ii = 0;
-                    for (size_t i = image_size / 2; i < image_size; ++i, ++ii) {
-                        beam_mat.at(i, j) *= normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                    ii = half_padded_image_size - image_size / 2;
+                    size_t orig_i = padded_image_size - (image_size / 2);
+                    for (size_t i = (image_size / 2); i < image_size; ++i, ++ii, ++orig_i) {
+                        if (grid_correction) {
+                            norm_beam.at(i, j) = beam_mat(orig_i, orig_j) * normalization_factor / (fft_1D_array.at(ii) * fft_1D_array.at(jj));
+                        } else {
+                            norm_beam.at(i, j) = beam_mat(orig_i, orig_j) * normalization_factor;
+                        }
                     }
                 }
             });
+
+        beam_mat.reset();
     }
 #endif
 }
@@ -170,10 +242,11 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
 {
 #ifdef FUNCTION_TIMINGS
     times_iv.reserve(NUM_TIME_INST);
+    times_gridder.reserve(NUM_TIME_INST);
 #endif
     TIMESTAMP_IMAGER
 
-    int image_size = img_pars.image_size;
+    int padded_image_size = img_pars.padded_image_size;
     double cell_size = img_pars.cell_size;
     bool kernel_exact = img_pars.kernel_exact;
     int kernel_support = img_pars.kernel_support;
@@ -182,9 +255,11 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     FFTRoutine r_fft = img_pars.r_fft;
 
     /* Some checks */
+    assert(img_pars.padding_factor >= 1.0);
+    assert(padded_image_size >= img_pars.image_size);
     assert(kernel_exact || (oversampling >= 1)); // If kernel exact is false, then oversampling must be >= 1
-    assert(image_size > 0);
-    assert(ispowerof2(image_size)); // Image size must be power of two. Also parallel complex2real FFTW function only works with image sizes multiple of 4.
+    assert(padded_image_size > 0);
+    assert(ispowerof2(padded_image_size)); // Image size must be power of two. Also parallel complex2real FFTW function only works with image sizes multiple of 4.
     assert(kernel_support > 0);
     assert(cell_size > 0.0);
     assert(vis.n_elem == vis_weights.n_elem);
@@ -215,7 +290,7 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     init_fftw(r_fft, img_pars.fft_wisdom_filename);
 
     // Size of a UV-grid pixel, in multiples of wavelength (lambda):
-    double inv_grid_pixel_width_lambda = arc_sec_to_rad(cell_size) * double(image_size);
+    double inv_grid_pixel_width_lambda = arc_sec_to_rad(cell_size) * double(padded_image_size);
     // convert u,v to pixel
     arma::mat uv_lambda(uvw_lambda.n_rows, 2);
     arma::vec w_lambda = uvw_lambda.col(2);
@@ -230,11 +305,11 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     bool halfplane_gridding = true;
 
     if (generate_beam) {
-        gridded_data = convolve_to_grid<true>(kernel_creator, kernel_support, image_size,
+        gridded_data = convolve_to_grid<true>(kernel_creator, kernel_support, padded_image_size,
             uv_lambda, vis, vis_weights, kernel_exact, oversampling, shift_uv, halfplane_gridding,
             w_proj, w_lambda, cell_size, img_pars.analytic_gcf, r_fft, a_proj);
     } else {
-        gridded_data = convolve_to_grid<false>(kernel_creator, kernel_support, image_size,
+        gridded_data = convolve_to_grid<false>(kernel_creator, kernel_support, padded_image_size,
             uv_lambda, vis, vis_weights, kernel_exact, oversampling, shift_uv, halfplane_gridding,
             w_proj, w_lambda, cell_size, img_pars.analytic_gcf, r_fft, a_proj);
     }
@@ -275,25 +350,16 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     TIMESTAMP_IMAGER
 
     // Normalisation and convolution kernel correction
+    arma::Mat<real_t> norm_result_image;
+    arma::Mat<real_t> norm_result_beam;
     if (gridded_data.sample_grid_total > 0.0) {
         real_t normalization_factor = 1.0 / (gridded_data.sample_grid_total);
         if (img_pars.gridding_correction == true) {
-            normalise_image_beam_result_1D(fft_result_image, fft_result_beam, kernel_creator, image_size,
-                normalization_factor, img_pars.analytic_gcf, generate_beam, r_fft);
+            normalise_image_beam_result_1D<true>(fft_result_image, fft_result_beam, norm_result_image, norm_result_beam, kernel_creator, padded_image_size,
+                img_pars.image_size, normalization_factor, img_pars.analytic_gcf, generate_beam, r_fft);
         } else {
-            // Just normalization
-            tbb::parallel_for(tbb::blocked_range<size_t>(0, fft_result_image.n_elem), [&](const tbb::blocked_range<size_t>& r) {
-                size_t i_begin = r.begin(), i_end = r.end();
-                for (size_t i = i_begin; i < i_end; ++i)
-                    fft_result_image.at(i) *= normalization_factor;
-            });
-            if (generate_beam) {
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, fft_result_beam.n_elem), [&](const tbb::blocked_range<size_t>& r) {
-                    size_t i_begin = r.begin(), i_end = r.end();
-                    for (size_t i = i_begin; i < i_end; ++i)
-                        fft_result_beam.at(i) *= normalization_factor;
-                });
-            }
+            normalise_image_beam_result_1D<false>(fft_result_image, fft_result_beam, norm_result_image, norm_result_beam, kernel_creator, padded_image_size,
+                img_pars.image_size, normalization_factor, img_pars.analytic_gcf, generate_beam, r_fft);
         }
     }
 
@@ -306,10 +372,7 @@ std::pair<arma::Mat<real_t>, arma::Mat<real_t>> image_visibilities(
     fftw_cleanup_threads();
 #endif
 
-    assert(arma::is_finite(fft_result_image));
-    assert(arma::is_finite(fft_result_beam));
-
-    return std::make_pair(std::move(fft_result_image), std::move(fft_result_beam));
+    return std::make_pair(std::move(norm_result_image), std::move(norm_result_beam));
 }
 
 /**

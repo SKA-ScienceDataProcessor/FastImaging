@@ -46,18 +46,33 @@ void initLogger(int logging_value)
     spdlog::register_logger(benchlogger);
 }
 
-void check_image_size(int& image_size)
+void set_image_sizes(stp::ImagerPars &imagerPars)
 {
-    int new_image_size = image_size;
-    if (!ispowerof2(new_image_size)) {
-        int prev_imagesize = image_size;
-        new_image_size = 1;
-        while (new_image_size < prev_imagesize)
-            new_image_size *= 2;
-        image_size = new_image_size;
+    // Image sizes must be multiple of 4
+    bool changed = false;
+    while ((imagerPars.image_size % 4) != 0) {
+        imagerPars.image_size++;
+        changed = true;
+    }
+    if (changed)
+    {
         reducelogger->warn("!");
-        reducelogger->warn("Image size must be a power of two value.");
-        reducelogger->warn("Changed image size: {} => {}.", prev_imagesize, new_image_size);
+        reducelogger->warn("Image size must be a multiple of four.");
+        reducelogger->warn("Set padded image size to {} pixels.", imagerPars.image_size);
+        reducelogger->warn("!");
+    }
+
+    changed = false;
+    imagerPars.padded_image_size = static_cast<double>(imagerPars.image_size) * imagerPars.padding_factor;
+    while ((imagerPars.padded_image_size % 4) != 0) {
+        imagerPars.padded_image_size++;
+        changed = true;
+    }
+    if (changed)
+    {
+        reducelogger->warn("!");
+        reducelogger->warn("Padded image size must be a multiple of four.");
+        reducelogger->warn("Set padded image size to {} pixels.", imagerPars.padded_image_size);
         reducelogger->warn("!");
     }
 }
@@ -67,6 +82,8 @@ void log_configuration_imager(const ConfigurationFile& cfg)
     reducelogger->info("Imager settings:");
     reducelogger->info(" - image_size={}", cfg.img_pars.image_size);
     reducelogger->info(" - cell_size={}", cfg.img_pars.cell_size);
+    reducelogger->info(" - image_padding_factor={}", cfg.img_pars.padding_factor);
+    reducelogger->info(" - padded_image_size={}", cfg.img_pars.padded_image_size);
     reducelogger->info(" - kernel_function={}", cfg.s_kernel_function);
     reducelogger->info(" - kernel_support={}", cfg.img_pars.kernel_support);
     reducelogger->info(" - kernel_exact={}", cfg.img_pars.kernel_exact);
@@ -96,7 +113,10 @@ void log_configuration_imager(const ConfigurationFile& cfg)
         reducelogger->info("A-Projection settings:");
         reducelogger->info(" - aproj_numtimesteps={}", cfg.a_proj.num_timesteps);
         reducelogger->info(" - obs_dec={}", cfg.a_proj.obs_dec);
-        reducelogger->info(" - obs_lat={}", cfg.a_proj.obs_lat);
+        reducelogger->info(" - obs_ra={}", cfg.a_proj.obs_ra);
+        reducelogger->info(" - aproj_opt={}", cfg.a_proj.aproj_opt);
+        reducelogger->info(" - aproj_mask_perc={}", cfg.a_proj.aproj_mask_perc);
+        reducelogger->info(" - pbeam_coefs={{{}}}", fmt::join(cfg.a_proj.pbeam_coefs.begin(), cfg.a_proj.pbeam_coefs.end(), ", "));
     } else
 #endif
         reducelogger->info("A-Projection disabled");
@@ -143,11 +163,6 @@ void log_detected_islands(stp::SourceFindImage& sfimage, bool print_gaussian_fit
 
 void log_function_timings()
 {
-    extern std::vector<std::chrono::high_resolution_clock::time_point> times_main;
-    extern std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
-    extern std::vector<std::chrono::high_resolution_clock::time_point> times_sf;
-    extern std::vector<std::chrono::high_resolution_clock::time_point> times_ccl;
-
     std::chrono::duration<double> time_span;
     benchlogger->info("");
     benchlogger->info("### FUNCTION TIMINGS [seconds] ###");
@@ -159,6 +174,10 @@ void log_function_timings()
         for (uint i = 1; i < stp::times_iv.size(); i++) {
             time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv[i] - stp::times_iv[i - 1]);
             benchlogger->info(" - {:11s} = {:10.5f}", imager_steps[i - 1], time_span.count());
+            if (i == 2 && !stp::times_gridder.empty()) {
+                // Kernel generation
+                benchlogger->info("   *Kernel Gen = {:10.5f}", stp::times_gridder[0].count());
+            }
         }
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(stp::times_iv.back() - stp::times_iv.front());
         benchlogger->info(" - Total       = {:10.5f}", time_span.count());

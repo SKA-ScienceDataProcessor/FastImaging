@@ -1,4 +1,8 @@
 ## Release Notes
+### 17 May 2019
+- Improved Hankel optimisation implementation using projection-slice theorem
+- Implemented AW-projection using spherical harmonics
+
 ### 26 September 2018
 - Improved Hankel optimisation speed
 - Added test scripts

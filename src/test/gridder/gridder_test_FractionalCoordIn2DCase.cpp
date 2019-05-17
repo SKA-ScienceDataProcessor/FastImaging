@@ -28,7 +28,7 @@ TEST(GridderFractionalCoordIn2DCase, OversampledKernelIndices)
     arma::mat input = arma::join_rows(io_pairs.col(0), io_pairs.col(0));
     EXPECT_TRUE(arma::size(input) == arma::size(io_pairs));
 
-    arma::imat output = calculate_oversampled_kernel_indices(input, oversampling_kernel_indices);
+    arma::Mat<int> output = calculate_oversampled_kernel_indices(input, oversampling_kernel_indices);
     EXPECT_TRUE(arma::size(input) == arma::size(output));
     EXPECT_EQ(arma::accu(io_pairs.col(1) != output.col(0)), 0);
     EXPECT_EQ(arma::accu(io_pairs.col(1) != output.col(1)), 0);

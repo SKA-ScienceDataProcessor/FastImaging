@@ -27,24 +27,45 @@ public:
 
     /**
      * @brief WideFieldImaging constructor initilization
-     * @param[in] kernel_size (int): W-Kernel size (work area size)
+     * @param[in] kernel_size (uint): W-Kernel size (work area size)
      * @param[in] cell_size (double): Cell size
-     * @param[in] oversampling (int): Kernel oversampling
+     * @param[in] oversampling (uint): Kernel oversampling ratio
+     * @param[in] scaling_factor (double): Scaling factor
      * @param[in] w_proj (W_ProjectionPars): W-Projection parameters
      * @param[in] r_fft (FFTRoutine): Selects FFT routine.
      */
-    WideFieldImaging(size_t kernel_size, double cell_size, int oversampling, int undersampling, const W_ProjectionPars& w_proj,
+    WideFieldImaging(uint kernel_size, double cell_size, uint oversampling, double scaling_factor, const W_ProjectionPars& w_proj,
         FFTRoutine r_fft = FFTRoutine::FFTW_ESTIMATE_FFT);
 
     /**
-     * @brief Generate combined W-AA kernel (does not perform Fourier Transform).
+     * @brief Generate image-domain convolution kernel by multiplying image-domain anti-aliasing and W-kernels.
      *
-     * This function is useful for A-projection as the resulting kernel is then combined with A-kernel multiple times (for each timestep).
+     * Generating the image-domain convolution kernel in a separate function is useful for A-projection, because this kernel needs to be multiplied
+     * by A-kernel several times (for each timestep).
      *
-     * @param[in] input_w_value (double): Average W value used to compute W-kernel.
      * @param[in] aa_kernel_img (arma::Col): Sampled image-domain anti-aliasing kernel.
+     * @param[in] input_w_value (real_t): Average W value used to compute W-kernel.
      */
-    void generate_combined_w_aa_kernel(double input_w_value, const arma::Col<real_t>& aa_kernel_img);
+    void generate_image_domain_convolution_kernel(const real_t input_w_value, const arma::Col<real_t>& aa_kernel_img);
+
+    /**
+     * @brief Generate projected image-domain convolution kernel obtained by multiplying image-domain anti-aliasing and W-kernels.
+     *
+     * The projected image-domain convolution kernel is used for Hankel transform using the projection slice theorem.
+     *
+     * @param[in] aa_kernel_img (arma::Col): Sampled image-domain anti-aliasing kernel.
+     * @param[in] input_w_value (real_t): Average W value used to compute W-kernel.
+     */
+    arma::Col<cx_real_t> generate_projected_image_domain_kernel(const real_t input_w_value, const arma::Col<real_t>& aa_kernel_img);
+
+    /**
+    * @brief Generate convolution kernel at oversampled-pixel offsets for W-Projection.
+    *
+    * @param[in] input_w_value (real_t): Average W value used to compute W-kernel.
+    * @param[in] aa_kernel_img (arma::Col<real_t>&): Sampled image-domain anti-aliasing kernel.
+    * @param[in] hankel_proj_slice (bool): Whether to use projection slice theorem for Hankel transform or not
+    */
+    void generate_convolution_kernel_wproj(real_t input_w_value, const arma::Col<real_t>& aa_kernel_img, bool hankel_proj_slice = false);
 
     /**
      * @brief Generate convolution kernel at oversampled-pixel offsets for A-Projection.
@@ -52,14 +73,6 @@ public:
      * @param[in] a_kernel_img (arma::Mat): A-kernel (computed from beam pattern) used to generate A-projection convolution kernel.
      */
     void generate_convolution_kernel_aproj(const arma::Mat<real_t>& a_kernel_img);
-
-    /**
-    * @brief Generate convolution kernel at oversampled-pixel offsets for W-Projection.
-    *
-    * @param[in] input_w_value (double): Average W value used to compute W-kernel.
-    * @param[in] aa_kernel_img (arma::Col<real_t>&): Sampled image-domain anti-aliasing kernel.
-    */
-    void generate_convolution_kernel_wproj(double input_w_value, const arma::Col<real_t>& aa_kernel_img);
 
     /**
      * @brief Generate a cache of kernels at oversampled-pixel offsets for A/W-Projection.
@@ -71,30 +84,22 @@ public:
     /**
      * @brief Get kernel truncation value in pixels.
      *
-     * @return (int): Kernel truncation value.
+     * @return (uint): Kernel truncation value.
      */
-    int get_trunc_conv_support()
+    uint get_trunc_conv_support() const
     {
         return truncated_wpconv_support;
     }
 
-private:
-    /**
-     * @brief Combine W-kernel and anti-aliasing kernel.
-     *
-     * W-kernel is internally generated using the input cell size.
-     *
-     * @param[in] aa_kernel_img (arma::Col): Sampled image-domain anti-aliasing kernel.
-     * @param[in] scaled_cell_size (double): Scaled cell size for W-kernel generation.
-     */
-    MatStp<cx_real_t> combine_kernels(const arma::Col<real_t>& aa_kernel_img, const double scaled_cell_size);
+    // Upsampled convolution kernel
+    arma::Mat<cx_real_t> conv_kernel;
 
+private:
     /**
      * @brief Auxiliary function to combine w_kernel and aa_img_domain_kernel values
      */
     inline cx_real_t combine_2d_kernel_value(const arma::Col<real_t>& aa_kernel_img,
-        const int pixel_x, const int pixel_y, const real_t fft_factor,
-        const double w_value, const double scaled_cell_size, const int ctr_idx);
+        const size_t pixel_x, const size_t pixel_y, const real_t w_value, const real_t scaled_cell_size, const uint ctr_idx);
 
     /**
      * @brief Generate kernel diagonal radius points for interpolation.
@@ -115,28 +120,31 @@ private:
      *
      * @param[in] x_array (arma::Col): Radius points.
      * @param[in] y_array (arma::Col): Radius function values.
-     * @param[in] trunc_at (double): Truncation percentage.
+     * @param[in] trunc_at (real_t): Truncation percentage.
      * @return (arma::Col): Interpolation values at kernel half quadrant
      */
-    template <bool isCubic>
-    arma::Col<cx_real_t> RadialInterpolate(const arma::Col<real_t>& x_array, const arma::Col<cx_real_t>& y_array, double trunc_at)
+    template <bool isCubic, bool isDiagonal = false>
+    arma::Col<cx_real_t> RadialInterpolate(const arma::Col<real_t>& x_array, const arma::Col<cx_real_t>& y_array, real_t trunc_at)
     {
         assert(x_array.n_elem <= y_array.n_elem);
         tk::spline<isCubic> m_spline_real;
         tk::spline<isCubic> m_spline_imag;
 
-        if (trunc_at > 0.0) {
+        if (trunc_at > real_t(0.0)) {
             //truncate kernel at a certain percentage from maximum
-            double scale = M_SQRT2 / double(oversampling * 2);
             real_t min_value = std::abs(y_array[0]) * trunc_at;
-            int trunc_idx = wp.max_wpconv_support * oversampling;
+            uint trunc_idx = wp.max_wpconv_support * oversampling;
+            real_t scale = real_t(1.0) / real_t(oversampling);
+            if (isDiagonal == true) {
+                scale = real_t(M_SQRT2) / real_t(oversampling * 2);
+            }
             while (trunc_idx > oversampling) {
                 if (std::abs(y_array[trunc_idx]) > min_value) {
                     break;
                 }
                 trunc_idx -= oversampling;
             }
-            truncated_wpconv_support = std::min(int((ceil(double(trunc_idx) * scale))), wp.max_wpconv_support);
+            truncated_wpconv_support = std::min(uint((std::ceil(real_t(trunc_idx) * scale))), wp.max_wpconv_support);
         }
 
         current_hankel_kernel_size = (truncated_wpconv_support * 2 + 1 + 1) * oversampling;
@@ -172,12 +180,18 @@ private:
                 new_x = std::sqrt(static_cast<real_t>(ii * ii + j * j));
 
             // find where the interpolation is going to happen
-            k = size_t(new_x * M_SQRT2);
-            // numeric imprecision due to the M_SQRT1_2 division don't allow this next step to be skipped
-            // the speed gain will still be enourmous in comparison with the previous algorithm (that searched the whole array)
-            if (new_x < x_array(k)) {
-                if (k > 0)
-                    k--;
+            if (isDiagonal == true) {
+                k = size_t(new_x * real_t(M_SQRT2));
+                // numeric imprecision due to the M_SQRT1_2 division don't allow this next step to be skipped
+                // the speed gain will still be enourmous in comparison with the previous algorithm (that searched the whole array)
+                if (new_x < x_array(k)) {
+                    if (k > 0)
+                        k--;
+                }
+            } else {
+                k = size_t(new_x);
+                if (k >= x_array.n_elem)
+                    k = x_array.n_elem - 1;
             }
             /* kernel_half_quandrant is an array that stores all the interpolated values of half a quadrant of the final kernel
              * in the following index order:
@@ -196,25 +210,24 @@ private:
             assert(arma::is_finite(val_im));
             tmp_kernel_half_quandrant[i] = cx_real_t(val_re, val_im);
         }
-        return std::move(tmp_kernel_half_quandrant);
+        return tmp_kernel_half_quandrant;
     }
 
-    int max_hankel_kernel_size;
-    int current_hankel_kernel_size;
-    int truncated_wpconv_support;
-    double w_value;
-    size_t array_size;
+    uint max_hankel_kernel_size;
+    uint current_hankel_kernel_size;
+    uint truncated_wpconv_support;
+    real_t w_value;
+    uint array_size;
 
-    size_t kernel_size;
-    double cell_size;
-    int oversampling;
-    int undersampling;
+    uint kernel_size;
+    real_t cell_size;
+    uint oversampling;
+    double scaling_factor;
     W_ProjectionPars wp;
     FFTRoutine r_fft;
 
     MatStp<cx_real_t> comb_kernel;
     arma::Col<cx_real_t> kernel_half_quandrant;
-    arma::Mat<cx_real_t> conv_kernel;
     arma::Mat<real_t> DHT;
     arma::Col<real_t> hankel_radius_points;
 };
@@ -222,11 +235,11 @@ private:
 /**
  * @brief Compute parallatic angle for beam rotation.
  *
- *  @param[in] ha (double): Hour angle of the object, in decimal hours (0,24)
- *  @param[in] dec_d (double): Declination of the object, in degrees
- *  @param[in] lat_d (double): The latitude of the observer, in degrees
- *  @return (double): Parallactic angle in radians
+ *  @param[in] ha (real_t): Hour angle of the object, in decimal hours (0,24)
+ *  @param[in] dec_rad (real_t): Declination of the object, in radians
+ *  @param[in] ra_rad (real_t): Right Ascension of the object, in radians
+ *  @return (real_t): Parallactic angle in radians
  */
-double parangle(double ha, double dec_d, double lat_d);
+real_t parangle(real_t ha, real_t dec_rad, real_t ra_rad);
 }
 #endif /* AW_PROJECTION_H */

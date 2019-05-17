@@ -34,3 +34,6 @@
 [submodule "src/third-party/armadillo"]
 	path = src/third-party/armadillo
 	url = https://gitlab.com/conradsnicta/armadillo-code.git
+[submodule "src/third-party/spherical-harmonics"]
+	path = src/third-party/spherical-harmonics
+	url = https://github.com/google/spherical-harmonics.git

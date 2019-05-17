@@ -22,8 +22,10 @@ set(STP_TARGET_NAME "stp")
 # so that IDEs will notice them, but it's otherwise innocuous.
 set(STP_SOURCE_FILES
     stp.h types.h
-    common/fft.cpp common/ccl.cpp common/matrix_math.cpp common/matstp.h common/spline.cpp global_macros.h
+    common/fft.cpp common/ccl.cpp common/matrix_math.cpp common/matstp.h common/spline.cpp common/spharmonics.h global_macros.h
     convolution/conv_func.cpp gridder/gridder.cpp gridder/aw_projection.cpp sourcefind/sourcefind.cpp sourcefind/fitting.cpp imager/imager.cpp visibility/visibility.cpp
+    # Add source files of spherical harmonics project
+    common/spharmonics.cpp ../third-party/spherical-harmonics/sh/default_image.cc
     # The following third-party include files are added just to be noticed by IDE
     ../third-party/armadillo/include/armadillo ../third-party/fftw/api/fftw3.h ../third-party/tbb/include/tbb/tbb.h ../third-party/openblas/cblas.h
 )
@@ -33,6 +35,9 @@ add_library(${STP_TARGET_NAME} STATIC ${STP_SOURCE_FILES})
 add_dependencies(${STP_TARGET_NAME} tbb fftw openblas armadillo ceres)
 target_include_directories(${STP_TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${STP_TARGET_NAME} tbb fftw openblas Threads::Threads armadillo ceres)
+
+# Add include directory of spherical harmonics project
+target_include_directories(${STP_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../third-party/spherical-harmonics)
 
 # Dependency: spdlog
 if(ENABLE_FUNCTIONTIMINGS)

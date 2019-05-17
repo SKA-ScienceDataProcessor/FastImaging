@@ -8,6 +8,8 @@
 #include <fftw3.h>
 #include <thread>
 
+#include "../global_macros.h"
+
 namespace stp {
 
 void init_fftw(FFTRoutine r_fft, std::string fft_wisdom_filename)
@@ -84,6 +86,18 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
 
     assert(plan != NULL);
 
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} x {} size. Trying again with FFTW_ESTIMATE...", n_cols, n_rows);
+
+        plan = fftwf_plan_dft_c2r_2d(
+            n_cols, // FFTW uses row-major order, requiring the plan
+            n_rows, // to be passed the dimensions in reverse.
+            reinterpret_cast<fftwf_complex*>(input.memptr()),
+            reinterpret_cast<float*>(output.memptr()),
+            FFTW_ESTIMATE);
+    }
+
     if (plan == NULL) {
         throw std::runtime_error("Failed to create FFTW plan.");
     }
@@ -97,6 +111,22 @@ void fft_fftw_c2r(arma::Mat<cx_real_t>& input, arma::Mat<real_t>& output, FFTRou
         reinterpret_cast<fftw_complex*>(input.memptr()),
         reinterpret_cast<double*>(output.memptr()),
         fftw_flag);
+
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} x {} size. Trying again with FFTW_ESTIMATE...", n_cols, n_rows);
+
+        plan = fftw_plan_dft_c2r_2d(
+           n_cols, // FFTW uses row-major order, requiring the plan
+           n_rows, // to be passed the dimensions in reverse.
+           reinterpret_cast<fftw_complex*>(input.memptr()),
+           reinterpret_cast<double*>(output.memptr()),
+           FFTW_ESTIMATE);
+    }
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
 
     assert(plan != NULL);
     fftw_execute(plan);
@@ -146,6 +176,18 @@ void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRou
 
     assert(plan != NULL);
 
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} x {} size. Trying again with FFTW_ESTIMATE...", input.n_cols, input.n_rows);
+
+        plan = fftwf_plan_dft_r2c_2d(
+           input.n_cols, // FFTW uses row-major order, requiring the plan
+           input.n_rows, // to be passed the dimensions in reverse.
+           reinterpret_cast<float*>(input.memptr()),
+           reinterpret_cast<fftwf_complex*>(output.memptr()),
+           FFTW_ESTIMATE);
+    }
+
     if (plan == NULL) {
         throw std::runtime_error("Failed to create FFTW plan.");
     }
@@ -159,6 +201,22 @@ void fft_fftw_r2c(arma::Mat<real_t>& input, arma::Mat<cx_real_t>& output, FFTRou
         reinterpret_cast<double*>(input.memptr()),
         reinterpret_cast<fftw_complex*>(output.memptr()),
         fftw_flag);
+
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} x {} size. Trying again with FFTW_ESTIMATE...", input.n_cols, input.n_rows);
+
+        plan = fftw_plan_dft_r2c_2d(
+            input.n_cols, // FFTW uses row-major order, requiring the plan
+            input.n_rows, // to be passed the dimensions in reverse.
+            reinterpret_cast<double*>(input.memptr()),
+            reinterpret_cast<fftw_complex*>(output.memptr()),
+            FFTW_ESTIMATE);
+    }
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
 
     assert(plan != NULL);
     fftw_execute(plan);
@@ -214,6 +272,19 @@ void fft_fftw_c2c(arma::Mat<cx_real_t>& input, arma::Mat<cx_real_t>& output, FFT
 
     assert(plan != NULL);
 
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} x {} size. Trying again with FFTW_ESTIMATE...", n_cols, n_rows);
+
+        plan = fftwf_plan_dft_2d(
+            n_rows, // FFTW uses row-major order, requiring the plan
+            n_cols, // to be passed the dimensions in reverse.
+            reinterpret_cast<fftwf_complex*>(input.memptr()),
+            reinterpret_cast<fftwf_complex*>(output.memptr()),
+            direction,
+            FFTW_ESTIMATE);
+    }
+
     if (plan == NULL) {
         throw std::runtime_error("Failed to create FFTW plan.");
     }
@@ -229,7 +300,23 @@ void fft_fftw_c2c(arma::Mat<cx_real_t>& input, arma::Mat<cx_real_t>& output, FFT
         direction,
         fftw_flag);
 
-    assert(plan != NULL);
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} x {} size. Trying again with FFTW_ESTIMATE...", n_cols, n_rows);
+
+        plan = fftw_plan_dft_2d(
+            n_rows, // FFTW uses row-major order, requiring the plan
+            n_cols, // to be passed the dimensions in reverse.
+            reinterpret_cast<fftw_complex*>(input.memptr()),
+            reinterpret_cast<fftw_complex*>(output.memptr()),
+            direction,
+            FFTW_ESTIMATE);
+    }
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
+
     fftw_execute(plan);
     fftw_destroy_plan(plan);
 #endif
@@ -277,7 +364,106 @@ void fft_fftw_dft_r2r_1d(arma::Col<real_t>& input, arma::Col<real_t>& output, FF
             FFTW_R2HC,
             fftw_flag);
 
-    assert(plan != NULL);
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} size. Trying again with FFTW_ESTIMATE...", n_elems);
+
+        plan = fftwf_plan_r2r_1d(
+            n_elems,
+            reinterpret_cast<float*>(input.memptr()),
+            reinterpret_cast<float*>(output.memptr()),
+            FFTW_R2HC,
+            FFTW_ESTIMATE);
+    }
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
+
+    fftwf_execute(plan);
+    fftwf_destroy_plan(plan);
+#else
+    fftw_plan plan = fftw_plan_r2r_1d(
+            n_elems,
+            reinterpret_cast<double*>(input.memptr()),
+            reinterpret_cast<double*>(output.memptr()),
+            FFTW_R2HC,
+            fftw_flag);
+
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} size. Trying again with FFTW_ESTIMATE...", n_elems);
+
+        plan = fftw_plan_r2r_1d(
+            n_elems,
+            reinterpret_cast<double*>(input.memptr()),
+            reinterpret_cast<double*>(output.memptr()),
+            FFTW_R2HC,
+            FFTW_ESTIMATE);
+    }
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
+
+    fftw_execute(plan);
+    fftw_destroy_plan(plan);
+#endif
+}
+
+void fft_fftw_dft_c2c_1d(arma::Col<cx_real_t>& input, arma::Col<cx_real_t>& output, FFTRoutine r_fft)
+{
+    int n_elems = int(input.size());
+
+    if (input.memptr() != output.memptr()) {
+        output.set_size(arma::size(input));
+    }
+
+    unsigned int fftw_flag = FFTW_ESTIMATE;
+
+    switch (r_fft) {
+    case FFTRoutine::FFTW_ESTIMATE_FFT:
+        fftw_flag = FFTW_ESTIMATE;
+        break;
+    case FFTRoutine::FFTW_MEASURE_FFT:
+        // Do not use this mode as the plan generation is very slow
+        fftw_flag = FFTW_MEASURE;
+        assert(0);
+        break;
+    case FFTRoutine::FFTW_PATIENT_FFT:
+        // Do not use this mode as the plan generation is extremely slow
+        fftw_flag = FFTW_PATIENT;
+        assert(0);
+        break;
+    case FFTRoutine::FFTW_WISDOM_FFT:
+    case FFTRoutine::FFTW_WISDOM_INPLACE_FFT:
+        fftw_flag = FFTW_WISDOM_ONLY;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+#ifdef USE_FLOAT
+    fftwf_plan plan
+        = fftwf_plan_dft_1d(
+            n_elems,
+            reinterpret_cast<fftwf_complex*>(input.memptr()),
+            reinterpret_cast<fftwf_complex*>(output.memptr()),
+            FFTW_FORWARD,
+            fftw_flag);
+
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} size. Trying again with FFTW_ESTIMATE...", n_elems);
+
+        plan = fftwf_plan_dft_1d(
+            n_elems,
+            reinterpret_cast<fftwf_complex*>(input.memptr()),
+            reinterpret_cast<fftwf_complex*>(output.memptr()),
+            FFTW_FORWARD,
+            FFTW_ESTIMATE);
+    }
 
     if (plan == NULL) {
         throw std::runtime_error("Failed to create FFTW plan.");
@@ -287,14 +473,29 @@ void fft_fftw_dft_r2r_1d(arma::Col<real_t>& input, arma::Col<real_t>& output, FF
     fftwf_destroy_plan(plan);
 #else
     fftw_plan plan
-        = fftw_plan_r2r_1d(
+        = fftw_plan_dft_1d(
             n_elems,
-            reinterpret_cast<double*>(input.memptr()),
-            reinterpret_cast<double*>(output.memptr()),
-            FFTW_R2HC,
+            reinterpret_cast<fftw_complex*>(input.memptr()),
+            reinterpret_cast<fftw_complex*>(output.memptr()),
+            FFTW_FORWARD,
             fftw_flag);
 
-    assert(plan != NULL);
+    if (plan == NULL)
+    {
+        STPLIB_DEBUG("stplib", "Failed to use FFTW plan for {} size. Trying again with FFTW_ESTIMATE...", n_elems);
+
+        plan = fftw_plan_dft_1d(
+            n_elems,
+            reinterpret_cast<fftw_complex*>(input.memptr()),
+            reinterpret_cast<fftw_complex*>(output.memptr()),
+            FFTW_FORWARD,
+            FFTW_ESTIMATE);
+    }
+
+    if (plan == NULL) {
+        throw std::runtime_error("Failed to create FFTW plan.");
+    }
+
     fftw_execute(plan);
     fftw_destroy_plan(plan);
 #endif

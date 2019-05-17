@@ -83,7 +83,7 @@ bool GaussianAnalytic::Evaluate(double const* const* parameters, double* residua
     const double xdiff2 = xdiff * xdiff;
     const double ydiff2 = ydiff * ydiff;
     const double g = amplitude * exp(-((a * xdiff2) + (b * xdiff * ydiff) + (c * ydiff2)));
-    residuals[0] = g - (double)_data;
+    residuals[0] = g - double(_data);
 
     if (!jacobians)
         return true;
@@ -175,21 +175,21 @@ bool GaussianAnalyticAllResiduals::Evaluate(double const* const* parameters, dou
     }
 
 #ifndef FFTSHIFT
-    int h_shift = (int)(_data.n_cols / 2);
-    int v_shift = (int)(_data.n_rows / 2);
+    uint h_shift = uint(_data.n_cols / 2);
+    uint v_shift = uint(_data.n_rows / 2);
 #endif
 
     // Compute residuals on positions where label map is equal to label_idx
-    for (int i = _box.left; i <= _box.right; ++i) {
-        for (int j = _box.top; j <= _box.bottom; ++j) {
-            const double x = (double)(i);
-            const double y = (double)(j);
+    for (uint i = _box.left; i <= _box.right; ++i) {
+        for (uint j = _box.top; j <= _box.bottom; ++j) {
+            const double x = double(i);
+            const double y = double(j);
 #ifdef FFTSHIFT
-            const int& ii = i;
-            const int& jj = j;
+            const uint& ii = i;
+            const uint& jj = j;
 #else
-            const int ii = i < h_shift ? i + h_shift : i - h_shift;
-            const int jj = j < v_shift ? j + v_shift : j - v_shift;
+            const uint ii = i < h_shift ? i + h_shift : i - h_shift;
+            const uint jj = j < v_shift ? j + v_shift : j - v_shift;
 #endif
             if (_label_map.at(jj, ii) != _label_idx) {
                 continue;
@@ -200,7 +200,7 @@ bool GaussianAnalyticAllResiduals::Evaluate(double const* const* parameters, dou
             const double xdiff2 = xdiff * xdiff;
             const double ydiff2 = ydiff * ydiff;
             const double g = amplitude * exp(-((a * xdiff2) + (b * xdiff * ydiff) + (c * ydiff2)));
-            residuals[0] = g - (double)_data.at(jj, ii);
+            residuals[0] = g - double(_data.at(jj, ii));
             residuals++;
 
             // Compute jacobian

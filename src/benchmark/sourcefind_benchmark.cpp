@@ -33,7 +33,7 @@ static void sourcefind_test_benchmark(benchmark::State& state)
     ConfigurationFile cfg(config_path + config_file_oversampling);
     cfg.img_pars.image_size = image_size;
 
-    stp::GaussianSinc kernel_func(cfg.img_pars.kernel_support);
+    stp::PSWF kernel_func(cfg.img_pars.kernel_support);
     std::pair<arma::Mat<real_t>, arma::Mat<real_t>> result = stp::image_visibilities(kernel_func, residual_vis, input_snr_weights,
         input_uvw, cfg.img_pars);
     result.second.reset();

@@ -25,6 +25,7 @@ public:
 
     double image_size;
     double cell_size;
+    double padding_factor;
     bool kernel_exact;
     int oversampling;
     int support;
@@ -37,6 +38,7 @@ public:
         : val(set_up_json(typeConvolution, typeTest))
         , image_size(val["image_size"].GetDouble())
         , cell_size(val["cell_size"].GetDouble())
+        , padding_factor(1.0)
         , support(val["support"].GetInt())
         , kernel_exact(val["kernel_exact"].GetBool())
         , oversampling(val["oversampling"].GetInt())

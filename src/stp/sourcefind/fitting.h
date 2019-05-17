@@ -37,10 +37,10 @@ struct BoundingBox {
     /**
      * @brief BoundingBox constructor that sets all parameters.
      *
-     * @param[in] in_top (double): Bounding box top row.
-     * @param[in] in_bottom (double): Bounding box bottom row.
-     * @param[in] in_left (double): Bounding box left column.
-     * @param[in] in_right (double): Bounding box right column.
+     * @param[in] in_top (int): Bounding box top row.
+     * @param[in] in_bottom (int): Bounding box bottom row.
+     * @param[in] in_left (int): Bounding box left column.
+     * @param[in] in_right (int): Bounding box right column.
      */
     BoundingBox(int in_top, int in_bottom, int in_left, int in_right)
         : top(in_top)
@@ -53,21 +53,27 @@ struct BoundingBox {
     /**
      * @brief Bounding box width.
      *
-     * @return (double) width.
+     * @return (uint) width.
      */
-    int get_width()
+    uint get_width()
     {
-        return right - left + 1;
+        if (right >= left)
+            return right - left + 1;
+        else
+            return 0;
     }
 
     /**
      * @brief Bounding box height.
      *
-     * @return (double) height.
+     * @return (uint) height.
      */
-    int get_height()
+    uint get_height()
     {
-        return bottom - top + 1;
+        if (bottom >= top)
+            return bottom - top + 1;
+        else
+            return 0;
     }
 };
 
@@ -198,9 +204,7 @@ public:
         const T ydiff = _y - y_centre;
 
         // Compute residual
-        residual[0] = amplitude * exp(-(a * xdiff * xdiff
-                                      + b * xdiff * ydiff
-                                      + c * ydiff * ydiff))
+        residual[0] = amplitude * exp(-(a * xdiff * xdiff + b * xdiff * ydiff + c * ydiff * ydiff))
             - _data;
 
         return true;
@@ -265,21 +269,21 @@ public:
         const T c = 0.5 * ((sint2 / xstd2) + (cost2 / ystd2));
 
 #ifndef FFTSHIFT
-        int h_shift = (int)(_data.n_cols / 2);
-        int v_shift = (int)(_data.n_rows / 2);
+        uint h_shift = uint(_data.n_cols / 2);
+        uint v_shift = uint(_data.n_rows / 2);
 #endif
 
         // Compute residuals on positions where label map corresponds to label_idx
-        for (int i = _box.left; i <= _box.right; ++i) {
-            for (int j = _box.top; j <= _box.bottom; ++j) {
-                const double x = (double)(i);
-                const double y = (double)(j);
+        for (uint i = _box.left; i <= _box.right; ++i) {
+            for (uint j = _box.top; j <= _box.bottom; ++j) {
+                const double x = double(i);
+                const double y = double(j);
 #ifdef FFTSHIFT
-                const int& ii = i;
-                const int& jj = j;
+                const uint& ii = i;
+                const uint& jj = j;
 #else
-                const int ii = i < h_shift ? i + h_shift : i - h_shift;
-                const int jj = j < v_shift ? j + v_shift : j - v_shift;
+                const uint ii = i < h_shift ? i + h_shift : i - h_shift;
+                const uint jj = j < v_shift ? j + v_shift : j - v_shift;
 #endif
                 if (_label_map.at(jj, ii) != _label_idx) {
                     continue;
@@ -288,10 +292,8 @@ public:
                 const T xdiff = x - x_centre;
                 const T ydiff = y - y_centre;
 
-                residual[0] = amplitude * exp(-(a * xdiff * xdiff
-                                              + b * xdiff * ydiff
-                                              + c * ydiff * ydiff))
-                    - (double)_data.at(jj, ii);
+                residual[0] = amplitude * exp(-(a * xdiff * xdiff + b * xdiff * ydiff + c * ydiff * ydiff))
+                    - double(_data.at(jj, ii));
 
                 residual++;
             }

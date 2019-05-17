@@ -34,7 +34,7 @@ TEST(GridderKernelCaching, equal)
         arma::Mat<real_t> aligned_exact_kernel = arma::conv_to<arma::Mat<real_t>>::from(make_kernel_array(triangle, support, offset));
         // Generate an index into the kernel-cache at the precise offset
         // (i.e. a multiple of 0.2-regular-pixel-widths)
-        arma::imat aligned_cache_idx = calculate_oversampled_kernel_indices(offset, oversampling);
+        arma::Mat<int> aligned_cache_idx = calculate_oversampled_kernel_indices(offset, oversampling);
         arma::Mat<real_t> cached_kernel = arma::real(kernel_cache(aligned_cache_idx.at(0, 1) + (oversampling / 2), aligned_cache_idx.at(0, 0) + (oversampling / 2)));
 
         EXPECT_TRUE(arma::approx_equal(aligned_exact_kernel, cached_kernel, "absdiff", fptolerance));
@@ -45,7 +45,7 @@ TEST(GridderKernelCaching, equal)
                 arma::Mat<real_t> unaligned_exact_kernel = arma::conv_to<arma::Mat<real_t>>::from(make_kernel_array(triangle, support, s_offset));
 
                 // Check that the irregular position resolves to the correct nearby aligned position:
-                arma::imat unaligned_cache_idx = calculate_oversampled_kernel_indices(s_offset, oversampling);
+                arma::Mat<int> unaligned_cache_idx = calculate_oversampled_kernel_indices(s_offset, oversampling);
                 EXPECT_TRUE(arma::approx_equal(unaligned_cache_idx, aligned_cache_idx, "absdiff", fptolerance));
 
                 // Demonstrate retrieval of the cached kernel:

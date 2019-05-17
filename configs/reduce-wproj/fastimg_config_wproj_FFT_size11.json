@@ -1,8 +1,9 @@
 {
     "imager_settings": {
-        "image_size_pix": 16384,
-        "cell_size_arcsec": 5,
-        "kernel_function": "PSWF",
+        "image_size_pix": 2048,
+        "cell_size_arcsec": 60,
+	"padding_factor": 1.0,
+        "kernel_function": "Gaussian",
         "kernel_support" : 3,
         "kernel_exact": false,
         "oversampling": 8,
@@ -13,10 +14,11 @@
         "fft_wisdom_filename": "../wisdomfiles/WisdomFile_STP.fftw"
     },
     "wprojection_settings": {
-        "num_wplanes": 100,
+        "num_wplanes": 128,
         "wplanes_median": false,
-        "max_wpconv_support": 250,
-        "hankel_opt": true,
+        "max_wpconv_support": 127,
+        "hankel_opt": false,
+        "hankel_proj_slice": false,
         "undersampling_opt": 1,
         "kernel_trunc_perc": 1.0,
         "interp_type": "cubic"
@@ -27,8 +29,8 @@
         "obs_lat": 0.0
     },
     "sourcefind_settings": {
-        "sourcefind_detection": 50.0,
-        "sourcefind_analysis": 50.0,
+        "sourcefind_detection": 20.0,
+        "sourcefind_analysis": 20.0,
         "find_negative_sources": true,
         "rms_estimation": 0.0,
         "sigma_clip_iters": 5,

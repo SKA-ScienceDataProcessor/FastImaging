@@ -4,6 +4,7 @@
 */
 
 #include "stp_python.h"
+
 #include <pybind11/stl.h>
 #include <utility>
 
@@ -17,40 +18,53 @@ pybind11::tuple image_visibilities_wrapper(
     np_complex_double_array vis,
     np_double_array snr_weights,
     np_double_array uvw_lambda,
-    int image_size,
+    uint image_size,
     double cell_size,
+    double padding_factor,
     stp::KernelFunction kernel_func,
-    int kernel_support,
+    uint kernel_support,
     bool kernel_exact,
-    int oversampling,
+    uint oversampling,
     bool generate_beam,
     bool gridding_correction,
     bool analytic_gcf,
     stp::FFTRoutine r_fft,
     std::string fft_wisdom_filename,
-    int num_wplanes,
+    uint num_wplanes,
     bool wplanes_median,
-    int max_wpconv_support,
+    uint max_wpconv_support,
     bool hankel_opt,
-    int undersampling_opt,
+    bool hankel_proj_slice,
+    uint undersampling_opt,
     double kernel_trunc_perc,
     stp::InterpType interp_type,
-    int aproj_numtimesteps,
+    uint aproj_numtimesteps,
     double obs_dec,
-    double obs_lat,
+    double obs_ra,
+    bool aproj_opt,
+    double aproj_mask_perc,
     np_double_array lha,
-    np_double_array mueller_term)
+    np_double_array pbeam_coefs)
 {
     assert(vis.request().ndim == 1); // vis is a 1D array
     assert(uvw_lambda.request().ndim == 2); // uv_pixels is a 2D array
 
     // Set imager parameters
-    stp::ImagerPars img_pars(image_size, cell_size, kernel_func, kernel_support, kernel_exact, oversampling,
+    stp::ImagerPars img_pars(image_size, cell_size, padding_factor, kernel_func, kernel_support, kernel_exact, oversampling,
         generate_beam, gridding_correction, analytic_gcf, r_fft, fft_wisdom_filename);
 
     // Set W-Projection parameters
     stp::W_ProjectionPars wproj_pars(num_wplanes, max_wpconv_support, undersampling_opt, kernel_trunc_perc,
-        hankel_opt, interp_type, wplanes_median);
+        hankel_opt, hankel_proj_slice, interp_type, wplanes_median);
+
+    // Image sizes must be multiple of 4
+    while ((img_pars.image_size % 4) != 0) {
+        img_pars.image_size++;
+    }
+    img_pars.padded_image_size = static_cast<double>(img_pars.image_size) * img_pars.padding_factor;
+    while ((img_pars.padded_image_size % 4) != 0) {
+        img_pars.padded_image_size++;
+    }
 
     arma::cx_mat vis_arma(
         static_cast<ptr_complex_double>(vis.request().ptr),
@@ -80,15 +94,11 @@ pybind11::tuple image_visibilities_wrapper(
         false,
         true);
 
-    arma::mat muellerterm_arma(
-        static_cast<ptr_double>(mueller_term.request().ptr),
-        mueller_term.request().shape[0], // n_rows
-        mueller_term.request().shape[1], // n_cols
-        false,
-        true);
+    std::vector<double> pbeam_coefs_vec(static_cast<ptr_double>(pbeam_coefs.request().ptr),
+        static_cast<ptr_double>(pbeam_coefs.request().ptr) + size_t(pbeam_coefs.request().shape[0]));
 
     // Set A-Projection parameters
-    stp::A_ProjectionPars aproj_pars(aproj_numtimesteps, obs_dec, obs_lat, lha_arma, muellerterm_arma);
+    stp::A_ProjectionPars aproj_pars(aproj_numtimesteps, obs_dec, obs_ra, aproj_opt, aproj_mask_perc, lha_arma, pbeam_coefs_vec);
 
     // Run imager
     stp::ImageVisibilities imager(std::move(vis_arma), std::move(snr_weights_arma),
@@ -226,20 +236,50 @@ PYBIND11_MODULE(stp_python, m)
 
     // Function bindings
     m.def("image_visibilities_wrapper", &image_visibilities_wrapper, "Compute image visibilities (gridding + ifft).",
-        pybind11::arg("vis"), pybind11::arg("snr_weights"), pybind11::arg("uvw_lambda"), pybind11::arg("image_size"), pybind11::arg("cell_size"),
-        pybind11::arg("kernel_func") = stp::KernelFunction::PSWF, pybind11::arg("kernel_support") = 3, pybind11::arg("kernel_exact") = true,
-        pybind11::arg("kernel_oversampling") = 8, pybind11::arg("generate_beam") = false, pybind11::arg("gridding_correction") = true,
-        pybind11::arg("analytic_gcf") = false, pybind11::arg("r_fft") = stp::FFTRoutine::FFTW_ESTIMATE_FFT, pybind11::arg("fft_wisdom_filename") = std::string(),
-        pybind11::arg("num_wplanes") = 0, pybind11::arg("wplanes_median") = false, pybind11::arg("max_wpconv_support") = 0, pybind11::arg("hankel_opt") = false,
-        pybind11::arg("undersampling_opt") = 1, pybind11::arg("kernel_trunc_perc") = 0.0, pybind11::arg("interp_type") = stp::InterpType::LINEAR,
-        pybind11::arg("aproj_numtimesteps") = 0, pybind11::arg("obs_dec") = 0.0, pybind11::arg("obs_lat") = 0.0,
-        pybind11::arg("lha") = np_double_array(), pybind11::arg("mueller_term") = np_double_array());
+        pybind11::arg("vis"),
+        pybind11::arg("snr_weights"),
+        pybind11::arg("uvw_lambda"),
+        pybind11::arg("image_size"),
+        pybind11::arg("cell_size"),
+        pybind11::arg("padding_factor") = 1.0,
+        pybind11::arg("kernel_func") = stp::KernelFunction::PSWF,
+        pybind11::arg("kernel_support") = 3,
+        pybind11::arg("kernel_exact") = true,
+        pybind11::arg("kernel_oversampling") = 8,
+        pybind11::arg("generate_beam") = false,
+        pybind11::arg("gridding_correction") = true,
+        pybind11::arg("analytic_gcf") = false,
+        pybind11::arg("r_fft") = stp::FFTRoutine::FFTW_ESTIMATE_FFT,
+        pybind11::arg("fft_wisdom_filename") = std::string(),
+        pybind11::arg("num_wplanes") = 0,
+        pybind11::arg("wplanes_median") = false,
+        pybind11::arg("max_wpconv_support") = 0,
+        pybind11::arg("hankel_opt") = false,
+        pybind11::arg("hankel_proj_slice") = false,
+        pybind11::arg("undersampling_opt") = 1,
+        pybind11::arg("kernel_trunc_perc") = 0.0,
+        pybind11::arg("interp_type") = stp::InterpType::LINEAR,
+        pybind11::arg("aproj_numtimesteps") = 0,
+        pybind11::arg("obs_dec") = 0.0,
+        pybind11::arg("obs_ra") = 0.0,
+        pybind11::arg("aproj_opt") = false,
+        pybind11::arg("aproj_mask_perc") = 0.0,
+        pybind11::arg("lha") = np_double_array(),
+        pybind11::arg("pbeam_coefs") = np_double_array());
 
     m.def("source_find_wrapper", &source_find_wrapper, "Find connected regions which peak above/below a given threshold.",
-        pybind11::arg("image_data"), pybind11::arg("detection_n_sigma"), pybind11::arg("analysis_n_sigma"), pybind11::arg("rms_est") = 0.0,
-        pybind11::arg("find_negative_sources") = true, pybind11::arg("sigma_clip_iters") = 5, pybind11::arg("median_method") = stp::MedianMethod::BINAPPROX,
-        pybind11::arg("gaussian_fitting") = false, pybind11::arg("ccl_4connectivity") = false, pybind11::arg("generate_labelmap") = true,
-        pybind11::arg("source_min_area") = 5, pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
+        pybind11::arg("image_data"),
+        pybind11::arg("detection_n_sigma"),
+        pybind11::arg("analysis_n_sigma"),
+        pybind11::arg("rms_est") = 0.0,
+        pybind11::arg("find_negative_sources") = true,
+        pybind11::arg("sigma_clip_iters") = 5,
+        pybind11::arg("median_method") = stp::MedianMethod::BINAPPROX,
+        pybind11::arg("gaussian_fitting") = false,
+        pybind11::arg("ccl_4connectivity") = false,
+        pybind11::arg("generate_labelmap") = true,
+        pybind11::arg("source_min_area") = 5,
+        pybind11::arg("ceres_diffmethod") = stp::CeresDiffMethod::AutoDiff_SingleResBlk,
         pybind11::arg("ceres_solvertype") = stp::CeresSolverType::LinearSearch_BFGS);
 }
 }

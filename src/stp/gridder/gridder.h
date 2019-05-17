@@ -19,8 +19,6 @@
 
 #define arc_sec_to_rad(value) ((value / 3600.0) * (M_PI / 180.0))
 
-#define UVW_GRIDDER
-
 namespace stp {
 
 /**
@@ -73,24 +71,24 @@ public:
  *  @return (arma::field<arma::mat>): Mapping oversampling-pixel offsets to normalised kernels.
  */
 template <typename T>
-arma::field<arma::Mat<cx_real_t>> populate_kernel_cache(const T& kernel_creator, const int support, const int oversampling, const bool pad = false, const bool normalize = true)
+arma::field<arma::Mat<cx_real_t>> populate_kernel_cache(const T& kernel_creator, const uint support, const uint oversampling, const bool pad = false, const bool normalize = true)
 {
-    int oversampled_pixel = (oversampling / 2);
-    int cache_size = (oversampled_pixel * 2 + 1);
+    uint oversampled_pixel = (oversampling / 2);
+    uint cache_size = (oversampled_pixel * 2 + 1);
 
     arma::mat oversampled_pixel_offsets = (arma::linspace(0, cache_size - 1, cache_size) - oversampled_pixel) / oversampling;
     arma::field<arma::Mat<cx_real_t>> cache(cache_size, cache_size); // 2D kernel array cache to be returned
     arma::field<arma::Mat<real_t>> kernel1D_cache(cache_size); // Temporary cache for 1D kernel arrays
 
     // Fill 1D kernel array cache
-    for (int i = 0; i < cache_size; i++) {
+    for (uint i = 0; i < cache_size; i++) {
         kernel1D_cache(i) = make_1D_kernel(kernel_creator, support, oversampled_pixel_offsets[i], 1, pad, normalize);
     }
     size_t kernel_size = kernel1D_cache(0).n_elem;
 
     // Generate 2D kernel array cache based on 1D kernel cache for reduced running times
-    for (int i = 0; i < cache_size; i++) {
-        for (int j = 0; j <= i; j++) {
+    for (uint i = 0; i < cache_size; i++) {
+        for (uint j = 0; j <= i; j++) {
             cache(j, i).set_size(kernel_size, kernel_size);
             // Perfom dot product
             for (size_t ii = 0; ii < kernel_size; ii++) {
@@ -103,7 +101,7 @@ arma::field<arma::Mat<cx_real_t>> populate_kernel_cache(const T& kernel_creator,
         }
     }
 
-    return std::move(cache);
+    return cache;
 }
 
 /**
@@ -114,9 +112,9 @@ arma::field<arma::Mat<cx_real_t>> populate_kernel_cache(const T& kernel_creator,
  * @param[in,out] w_lambda (arma::vec): W-coordinate of complex visibilities to be converted (1D array).
  * @param[in,out] vis (arma::cx_mat): Complex visibilities to be converted (1D array).
  * @param[in] kernel_support (int): Kernel support.
- * @param[in,out] good_vis (arma::uvec): Array that identifies visibilities to be duplicated.
+ * @param[in,out] good_vis (arma::Col<uint>): Array that identifies visibilities to be duplicated.
  */
-void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda, arma::cx_mat& vis, int kernel_support, arma::uvec& good_vis);
+void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda, arma::cx_mat& vis, int kernel_support, arma::Col<uint>& good_vis);
 
 /**
  * @brief Convert visibilities for half-plane gridding and mark the ones that need to be duplicated.
@@ -125,32 +123,44 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda
  *                                   2D double array with 2 columns. Assumed ordering is u,v.
  * @param[in,out] vis (arma::cx_mat): Complex visibilities to be converted (1D array).
  * @param[in] kernel_support (int): Kernel support.
- * @param[in,out] good_vis (arma::uvec): Identifies visibilities to be duplicated.
+ * @param[in,out] good_vis (arma::Col<uint>): Identifies visibilities to be duplicated.
  */
-void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, int kernel_support, arma::uvec& good_vis);
+void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, int kernel_support, arma::Col<uint>& good_vis);
 
 /**
- * @brief Divides the w plane into sections, averaging each section.
+ * @brief Divides the list of w-lambda values into N planes, averaging or determining the median of each function.
  *
  * @param[in] w_lambda (arma::mat): W-lambda values.
- * @param[in] good_vis (arma::uvec): Indicates which visibilities are valid.
- * @param[in] num_wplanes (int): number of planes to divide w_plane.
- * @param[out] w_planes_idx (arma::vec): w_plane_array with num_planes elements.
+ * @param[in] good_vis (arma::Col<uint>): Indicates which visibilities are valid.
+ * @param[in] num_wplanes (uint): Number of planes to divide w-lambda list.
+ * @param[out] w_avg_values (arma::Col): Average W-value for each plane.
+ * @param[out] w_planes_idx (arma::uvec): List of indexes corresponding to the first visibility associated to each plane.
  * @param[in] median (bool): Use median (rather than mean) to compute W-planes.
  */
-void average_w_planes(arma::mat w_lambda, const arma::uvec& good_vis, int num_wplanes, arma::vec& w_avg_values, arma::ivec& w_planes_idx, bool median = false);
+void average_w_planes(arma::mat w_lambda, const arma::Col<uint>& good_vis, uint num_wplanes, arma::Col<real_t>& w_avg_values, arma::uvec& w_planes_idx, bool median = false);
+
+/**
+ * @brief Divides the list of local hour-angle values into N planes, averaging each plane.
+ *
+ * @param[in] lha (arma::vec): List of local hour-angle values.
+ * @param[in] good_vis (arma::Col<uint>): Indicates which visibilities are valid.
+ * @param[in] num_timesteps (uint): number of planes to divide lha list.
+ * @param[out] lha_planes (arma::vec): Average lha-values for each plane.
+ * @param[out] vis_timesteps (arma::ivec): Plane index associated to each visibility.
+ */
+void average_lha_planes(const arma::vec& lha, const arma::Col<uint>& good_vis, uint num_timesteps, arma::Col<real_t>& lha_planes, arma::ivec& vis_timesteps);
 
 /** @brief bounds_check_kernel_centre_locations function
  *
  *  Vectorized bounds check.
  *
- * @param[in,out] good_vis (arma::uvec): List of indices for 'good' (in-bounds) positions. Note this is a list of integer values.
- * @param[in] kernel_centre_on_grid (arma::imat): Corresponding array of nearest-pixel grid-locations,
+ * @param[in,out] good_vis (arma::Col<uint>): List of indices for 'good' (in-bounds) positions. Note this is a list of integer values.
+ * @param[in] kernel_centre_on_grid (arma::Mat<int>): Corresponding array of nearest-pixel grid-locations,
  *            which will be the centre position of a kernel placement.
  *  @param[in] support (int): Kernel support size in regular pixels.
  *  @param[in] image_size (int): Image width in pixels
  */
-void bounds_check_kernel_centre_locations(arma::uvec& good_vis, const arma::imat& kernel_centre_on_grid, int image_size, int support);
+void bounds_check_kernel_centre_locations(arma::Col<uint>& good_vis, const arma::Mat<int>& kernel_centre_on_grid, int image_size, int support);
 
 /** @brief calculate_oversampled_kernel_indices function
  *
@@ -158,11 +168,24 @@ void bounds_check_kernel_centre_locations(arma::uvec& good_vis, const arma::imat
  *
  *  @param[in] subpixel_coord (arma::mat): Array of 'fractional' co-ords, that is the
                subpixel offsets from nearest pixel on the regular grid.
- *  @param[in] oversampling (int). How many oversampled pixels to one regular pixel.
+ *  @param[in] oversampling (uint). How many oversampled pixels to one regular pixel.
  *
- *  @return (arma::imat): Corresponding oversampled pixel indexes
+ *  @return (arma::Mat<int>): Corresponding oversampled pixel indexes
  */
-arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling);
+arma::Mat<int> calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, uint oversampling);
+
+/** @brief generate_a_kernel function
+ *
+ *  Generate A-kernel from spherical harmonics. Kernel to be combined with W-kernel and AA-kernel for A-projection
+ *
+ *  @param[in] a_proj (A_ProjectionPars): A-projection parameters
+ *  @param[in] fov (double): Field of view
+ *  @param[in] workarea_size (int): Workarea size
+ *  @param[in] rot_angle (double): Rotation angle (default is 0.0)
+ *
+ *  @return (arma::Mat<real_t>): A-kernel matrix
+ */
+arma::Mat<real_t> generate_a_kernel(const A_ProjectionPars& a_proj, const double fov, const int workarea_size, double rot_angle = 0.0);
 
 /** @brief Grid visibilities using convolutional gridding.
  *
@@ -187,7 +210,7 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *  parameters are provided.
  *
  *  @param[in] T& kernel_creator : the kernel creator functor.
- *  @param[in] support (int) : Defines the 'radius' of the bounding box within
+ *  @param[in] support (uint) : Defines the 'radius' of the bounding box within
  *              which convolution takes place. `Box width in pixels = 2*support+1`.
  *              (The central pixel is the one nearest to the UV co-ordinates.)
  *              (This is sometimes known as the 'half-support')
@@ -198,7 +221,7 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
  *  @param[in] vis (arma::cx_mat) : Complex visibilities. 1d array, shape: (n_vis).
  *  @param[in] vis_weights (arma::mat) : Visibility weights. 1d array, shape: (n_vis).
  *  @param[in] kernel_exact (bool) : Calculate exact kernel-values for every UV-sample.
- *  @param[in] oversampling (int) : Controls kernel-generation if ``exact==False``.
+ *  @param[in] oversampling (uint) : Controls kernel-generation if ``exact==False``.
                 Larger values give a finer-sampled set of pre-cached kernels.
  *  @param[in] shift_uv (bool) : Shift uv-coordinates before gridding (required when fftshift function is
  *              skipped before fft). Default is true.
@@ -217,13 +240,13 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
 template <bool generateBeam = true, typename T>
 GridderOutput convolve_to_grid(
     const T& kernel_creator,
-    const int support,
+    const uint support,
     int image_size,
     arma::mat uv_lambda,
     arma::cx_mat vis,
     arma::mat vis_weights,
     bool kernel_exact = true,
-    int oversampling = 1,
+    uint oversampling = 1,
     bool shift_uv = true,
     bool halfplane_gridding = true,
     const W_ProjectionPars& w_proj = W_ProjectionPars(),
@@ -235,11 +258,13 @@ GridderOutput convolve_to_grid(
 {
     bool use_wproj = w_proj.isEnabled();
     bool use_aproj = a_proj.isEnabled();
+    real_t obsdec_rad = real_t(deg2rad(a_proj.obs_dec));
+    real_t obsra_rad = real_t(deg2rad(a_proj.obs_ra));
 
     // Half image size
-    const int half_image_size = (image_size / 2);
+    const int half_image_size = int(image_size / 2);
     // Set convolution kernel support for gridding
-    int conv_support = support;
+    int conv_support = int(support);
 
     /* Some checks ***/
     assert(uv_lambda.n_cols == 2);
@@ -263,7 +288,7 @@ GridderOutput convolve_to_grid(
 #ifdef WPROJECTION
     if (use_wproj || use_aproj) {
         use_wproj = true;
-        conv_support = w_proj.max_wpconv_support; // Set convolution kernel support for gridding
+        conv_support = int(w_proj.max_wpconv_support); // Set convolution kernel support for gridding
         kernel_exact = false; // kernel exact must be false in this case
     }
 #endif
@@ -277,9 +302,9 @@ GridderOutput convolve_to_grid(
             oversampling = 1;
     }
 
-    arma::uvec good_vis(arma::size(vis));
+    arma::Col<uint> good_vis(arma::size(vis));
     good_vis.ones(); // Init good_vis with ones
-    arma::imat kernel_centre_on_grid(arma::size(uv_lambda));
+    arma::Mat<int> kernel_centre_on_grid(arma::size(uv_lambda));
     arma::mat uv_frac(arma::size(uv_lambda));
     arma::vec slha;
 
@@ -351,21 +376,21 @@ GridderOutput convolve_to_grid(
 
     // get visibilities to be processed and uv_frac
     for (size_t idx = 0; idx < kernel_centre_on_grid.n_rows; ++idx) {
-        arma::sword val = rint(uv_lambda.at(idx, 0));
+        int val = int(rint(uv_lambda.at(idx, 0)));
         uv_frac(idx, 0) = uv_lambda.at(idx, 0) - val;
         kernel_centre_on_grid(idx, 0) = val + half_image_size;
 
-        val = rint(uv_lambda.at(idx, 1));
+        val = int(rint(uv_lambda.at(idx, 1)));
         uv_frac(idx, 1) = uv_lambda.at(idx, 1) - val;
         kernel_centre_on_grid(idx, 1) = val + half_image_size;
     }
     bounds_check_kernel_centre_locations(good_vis, kernel_centre_on_grid, image_size, conv_support);
 
-    STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Total # of vis = {}", vis.n_elem);
-    STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Total # of good vis = {}", arma::accu(good_vis != 0));
+    STPLIB_DEBUG("stplib", "Gridder: Total # of vis = {}", vis.n_elem);
+    STPLIB_DEBUG("stplib", "Gridder: Total # of good vis = {}", arma::accu(good_vis != 0));
 
     // Number of rows of the output images. This changes if halfplane gridding is used
-    int image_rows = image_size;
+    int image_rows = int(image_size);
     if (halfplane_gridding) {
         image_rows = half_image_size + 1;
     }
@@ -373,7 +398,7 @@ GridderOutput convolve_to_grid(
     // Shift positions of the visibilities (to avoid call to fftshift function)
     if (shift_uv) {
         int shift_offset = half_image_size;
-        kernel_centre_on_grid.each_row([&](arma::imat& r) {
+        kernel_centre_on_grid.each_row([&](arma::Mat<int>& r) {
             if (r[0] < shift_offset) {
                 r[0] += shift_offset;
             } else {
@@ -399,7 +424,7 @@ GridderOutput convolve_to_grid(
 
     // Create matrices for output gridded images
     // Use MatStp class because these images shall be efficiently initialized with zeros
-    MatStp<cx_real_t> vis_grid(image_rows, image_size);
+    MatStp<cx_real_t> vis_grid((size_t(image_rows)), size_t(image_size));
     int sampl_image_size = 0;
     int sampl_image_rows = 0;
     if (generateBeam) {
@@ -407,7 +432,7 @@ GridderOutput convolve_to_grid(
         sampl_image_rows = image_rows;
     }
 
-    MatStp<cx_real_t> sampling_grid(sampl_image_rows, sampl_image_size);
+    MatStp<cx_real_t> sampling_grid((size_t(sampl_image_rows)), size_t(sampl_image_size));
     int kernel_size = conv_support * 2 + 1;
 
     if (kernel_exact == false) {
@@ -418,15 +443,16 @@ GridderOutput convolve_to_grid(
 
 #ifdef WPROJECTION
         // aux vars
-        int undersampling_ratio = 1;
+        double scaling_factor = 1.0;
         int workarea_size = image_size;
+        STPLIB_DEBUG("stplib", "Gridder: Maximum workarea size (before undersampling opt) = {}", workarea_size);
 
         // local data
-        arma::vec w_avg_values; // vector of w_planes
-        arma::ivec w_planes_firstidx; // wplanes index tracking
+        arma::Col<real_t> w_avg_values; // vector of w_planes
+        arma::uvec w_planes_firstidx; // wplanes index tracking
 
         // Compute W-Planes and convolution kernels for W-Projection
-        int num_wplanes = 1;
+        uint num_wplanes = 1;
         if (use_wproj) {
             num_wplanes = w_proj.num_wplanes;
 
@@ -438,21 +464,25 @@ GridderOutput convolve_to_grid(
             average_w_planes(arma::abs(w_lambda), good_vis, num_wplanes, w_avg_values, w_planes_firstidx, w_proj.wplanes_median);
 
             /*** Calculate kernel working area size */
-            int undersampling_opt = w_proj.undersampling_opt > 0 ? std::pow(2, w_proj.undersampling_opt - 1) : 0;
+            int undersampling_opt = w_proj.undersampling_opt > 0 ? int(std::pow(2, w_proj.undersampling_opt - 1)) : 0;
             if (undersampling_opt > 0) {
-                while ((image_size / (undersampling_ratio * 2 * undersampling_opt)) > (conv_support * 2 + 1)) {
-                    undersampling_ratio *= 2;
-                }
-                workarea_size = image_size / undersampling_ratio;
-            }
-
-            if (w_proj.hankel_opt == true) {
-                if (undersampling_ratio > 1) {
-                    undersampling_ratio = undersampling_ratio / 2;
-                    workarea_size = workarea_size * 2;
+                workarea_size = 2;
+                while ((workarea_size / undersampling_opt) < kernel_size) {
+                    workarea_size *= 2;
                 }
             }
+            else
+            {
+                // Undersampling optimisation is 0, set workarea size to the power of 2 above image_size
+                workarea_size = 2;
+                while (workarea_size < image_size) {
+                    workarea_size *= 2;
+                }
+            }
+            // We need to use scaling factor for w-kernel computation, because the workarea size is different than the image size
+            scaling_factor = double(image_size) / double(workarea_size);
 
+            // Determine image-domain AA-kernel
             aa_kernel_img = ImgDomKernel(kernel_creator, workarea_size, false, analytic_gcf, r_fft);
         } else {
             // Set some variables when w-projection is not used
@@ -465,118 +495,102 @@ GridderOutput convolve_to_grid(
         }
 
         // Create W-kernel object
-        WideFieldImaging wide_imaging(workarea_size, arc_sec_to_rad(cell_size), oversampling, undersampling_ratio, w_proj, r_fft);
+        WideFieldImaging wide_imaging(uint(workarea_size), arc_sec_to_rad(cell_size), oversampling, scaling_factor, w_proj, r_fft);
+
+        STPLIB_DEBUG("stplib", "Gridder: Workarea size = {}", workarea_size);
 #endif
 
-        STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Workarea size = {}", workarea_size);
-
         // get oversampled kernel indexes
-        arma::imat oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
+        arma::Mat<int> oversampled_offset = calculate_oversampled_kernel_indices(uv_frac, oversampling) + (oversampling / 2);
 
 #ifdef APROJECTION
         arma::ivec vis_timesteps(arma::size(vis));
-        arma::vec lha_mean;
-        int num_timesteps = 1;
+        arma::Col<real_t> lha_planes;
+        arma::Mat<real_t> Akernel;
+        uint num_timesteps = 1;
         if (use_aproj) {
-            // Find maximum and minimum lha values
-            double min_time = slha[0];
-            double max_time = slha[0];
-            slha.for_each([&](arma::mat::elem_type& val) {
-                if (val < min_time) {
-                    min_time = val;
-                }
-                if (val > max_time) {
-                    max_time = val;
-                }
-            });
-
-            // Define time intervals
             num_timesteps = a_proj.num_timesteps;
-            double tstep_size = (max_time - min_time) / num_timesteps;
-            arma::vec time_intervals = arma::linspace(min_time - tstep_size / 2, max_time + tstep_size / 2, num_timesteps + 1);
-            arma::uvec nvis_tstep_aux = arma::zeros<arma::uvec>(num_timesteps);
-            lha_mean = arma::zeros(num_timesteps);
+            average_lha_planes(slha, good_vis, num_timesteps, lha_planes, vis_timesteps);
 
-            // Assign each visibility to a time interval
-            for (arma::uword i = 0; i < slha.n_elem; i++) {
-                if (!good_vis[i])
-                    continue;
-
-                double time_value = slha.at(i);
-                int tidx = 1;
-                double interval_value = time_intervals.at(tidx);
-                while (time_value > interval_value) {
-                    tidx++;
-                    if (tidx < (num_timesteps + 1)) {
-                        interval_value = time_intervals.at(tidx);
-                    } else {
-                        break;
-                    }
-                }
-                // Selected time step
-                int seltimestep_idx = tidx - 1;
-                assert(seltimestep_idx >= 0);
-                assert(seltimestep_idx < num_timesteps);
-                vis_timesteps[i] = seltimestep_idx;
-                // Auxiliary calcs for mean computation
-                lha_mean.at(seltimestep_idx) += time_value;
-                nvis_tstep_aux.at(seltimestep_idx)++;
-            }
-            // Compute mean values
-            for (int i = 0; i < num_timesteps; i++) {
-                if (nvis_tstep_aux.at(i)) {
-                    lha_mean.at(i) /= nvis_tstep_aux.at(i);
-                } else {
-                    lha_mean.at(i) = 0.0;
-                }
+            if (a_proj.aproj_opt) {
+                double fov = arc_sec_to_rad(cell_size) * double(image_size);
+                Akernel = generate_a_kernel(a_proj, fov, workarea_size);
             }
         }
 #endif
 
         TIMESTAMP_IMAGER
 
+        // Init conv kernel generation time
+        std::chrono::duration<double> convkernelgentimes(0);
+
 #ifdef SERIAL_GRIDDER
-        // Single-threaded implementation of oversampled gridder
+// Single-threaded implementation of oversampled gridder
 #ifdef WPROJECTION
         for (int pi = 0; pi < num_wplanes; pi++) {
             arma::field<arma::Mat<cx_real_t>> kernel_cache_conj;
             arma::uword vi_begin = w_planes_firstidx(pi);
             arma::uword vi_end = (pi == (num_wplanes - 1)) ? good_vis.n_elem : w_planes_firstidx(pi + 1);
+
+            if (use_wproj) {
+                // Start timestamp
+                auto start = std::chrono::high_resolution_clock::now();
+#ifdef APROJECTION
+                if (use_aproj) {
+                    // Generate new AA/W-kernel for A-projection
+                    wide_imaging.generate_image_domain_convolution_kernel(w_avg_values(pi), aa_kernel_img);
+                } else
+#endif
+                {
+                    // Generate new convolution kernel for W-projection
+                    wide_imaging.generate_convolution_kernel_wproj(w_avg_values(pi), aa_kernel_img, w_proj.hankel_proj_slice);
+                }
+                // End timestamp
+                auto end = std::chrono::high_resolution_clock::now();
+                convkernelgentimes += (end-start);
+            }
 #else
         arma::uword vi_begin = 0;
         arma::uword vi_end = good_vis.n_elem;
 #endif
-#ifdef WPROJECTION
-            if (use_wproj) {
-                if (use_aproj) {
-                    // Generate new AA/W-kernel for A-projection
-                    wide_imaging.generate_combined_w_aa_kernel(w_avg_values(pi), aa_kernel_img);
-                } else {
-                    // Generate new convolution kernel for W-projection
-                    wide_imaging.generate_convolution_kernel_wproj(w_avg_values(pi), aa_kernel_img);
-                }
-            }
-#endif
 #ifdef APROJECTION
             for (int ts = 0; ts < num_timesteps; ts++) {
                 if (use_aproj) {
+                    // Start timestamp
+                    auto start = std::chrono::high_resolution_clock::now();
+
                     // Generate the AW - kernels
-                    double pangle = parangle(lha_mean.at(ts), a_proj.obs_dec, a_proj.obs_lat);
-                    double pbmin = a_proj.mueller_term(0, 0);
-                    arma::Mat<real_t> a_kernel = rotate_matrix(a_proj.mueller_term, pangle, pbmin, workarea_size);
+                    real_t pangle = parangle(lha_planes.at(ts), obsdec_rad, obsra_rad);
+
+                    STPLIB_DEBUG("stplib", "Generate conv. kernel with parallatic angle: {} lha: {}", pangle, lha_planes.at(ts));
+
+                    double fov = arc_sec_to_rad(cell_size) * double(image_size);
+                    Akernel = generate_a_kernel(a_proj, fov, workarea_size, pangle);
                     // Generate new convolution kernel for A-projection
-                    wide_imaging.generate_convolution_kernel_aproj(a_kernel);
+                    wide_imaging.generate_convolution_kernel_aproj(Akernel);
+
+                    // End timestamp
+                    auto end = std::chrono::high_resolution_clock::now();
+                    convkernelgentimes += (end-start);
                 }
 #endif
 #ifdef WPROJECTION
                 if (use_wproj) {
+                    // Start timestamp
+                    auto start = std::chrono::high_resolution_clock::now();
+
                     kernel_cache = wide_imaging.generate_kernel_cache();
-                    conv_support = wide_imaging.get_trunc_conv_support();
+                    conv_support = int(wide_imaging.get_trunc_conv_support());
                     assert(conv_support > 0);
                     kernel_size = conv_support * 2 + 1;
-                    STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Conv kernel support = {}, Conv kernel size = {}", conv_support, kernel_size);
+                    STPLIB_DEBUG("stplib", "Gridder: W-plane {} = {}, Plane size = {}, Conv kernel support = {}, Conv kernel size = {}", pi, w_avg_values(pi), vi_end - vi_begin, conv_support, kernel_size);
+
                     kernel_cache_conj.reset();
                     kernel_cache_conj.set_size(arma::size(kernel_cache));
+
+                    // End timestamp
+                    auto end = std::chrono::high_resolution_clock::now();
+                    convkernelgentimes += (end-start);
                 }
 #endif
                 for (arma::uword vi = vi_begin; vi < vi_end; vi++) {
@@ -593,8 +607,8 @@ GridderOutput convolve_to_grid(
 
                     int gc_x = kernel_centre_on_grid(vi, 0);
                     int gc_y = kernel_centre_on_grid(vi, 1);
-                    uint cp_x = oversampled_offset.at(vi, 0);
-                    uint cp_y = oversampled_offset.at(vi, 1);
+                    int cp_x = oversampled_offset.at(vi, 0);
+                    int cp_y = oversampled_offset.at(vi, 1);
                     cx_real_t vis_val = cx_real_t(vis[vi]);
                     const real_t vis_weight = vis_weights[vi];
 #ifdef WPROJECTION
@@ -667,49 +681,90 @@ GridderOutput convolve_to_grid(
 #endif
 #ifdef WPROJECTION
         }
+        times_gridder.push_back(convkernelgentimes);
 #endif
 #else
         // Multi-threaded implementation of oversampled gridder (20-25% faster)
 #ifdef WPROJECTION
-        for (int pi = 0; pi < num_wplanes; pi++) {
+        for (uint pi = 0; pi < num_wplanes; pi++) {
             arma::uword vi_begin = w_planes_firstidx(pi);
             arma::uword vi_end = (pi == (num_wplanes - 1)) ? good_vis.n_elem : w_planes_firstidx(pi + 1);
 
             if (use_wproj) {
+                // Start timestamp
+                auto start = std::chrono::high_resolution_clock::now();
+#ifdef APROJECTION
                 if (use_aproj) {
                     // Generate new AA/W-kernel for A-projection
-                    wide_imaging.generate_combined_w_aa_kernel(w_avg_values(pi), aa_kernel_img);
-                } else {
+                    if (a_proj.aproj_opt) {
+                        wide_imaging.generate_image_domain_convolution_kernel(w_avg_values(pi), aa_kernel_img);
+                        // Generate convolution kernel for A-projection (it will be rotated afterwards)
+                        wide_imaging.generate_convolution_kernel_aproj(Akernel);
+                    } else {
+                        wide_imaging.generate_image_domain_convolution_kernel(w_avg_values(pi), aa_kernel_img);
+                    }
+                } else
+#endif
+                {
                     // Generate new convolution kernel for W-projection
-                    wide_imaging.generate_convolution_kernel_wproj(w_avg_values(pi), aa_kernel_img);
+                    wide_imaging.generate_convolution_kernel_wproj(w_avg_values(pi), aa_kernel_img, w_proj.hankel_proj_slice);
                 }
+
+                // End timestamp
+                auto end = std::chrono::high_resolution_clock::now();
+                convkernelgentimes += (end-start);
             }
 #else
         arma::uword vi_begin = 0;
         arma::uword vi_end = good_vis.n_elem;
 #endif
 #ifdef APROJECTION
-            for (int ts = 0; ts < num_timesteps; ts++) {
+            for (uint ts = 0; ts < num_timesteps; ts++) {
                 if (use_aproj) {
+                    // Start timestamp
+                    auto start = std::chrono::high_resolution_clock::now();
+
                     // Generate the AW - kernels
-                    double pangle = parangle(lha_mean.at(ts), a_proj.obs_dec, a_proj.obs_lat);
-                    double pbmin = a_proj.mueller_term(0, 0);
-                    arma::Mat<real_t> a_kernel = rotate_matrix(a_proj.mueller_term, pangle, pbmin, workarea_size);
-                    // Generate new convolution kernel for A-projection
-                    wide_imaging.generate_convolution_kernel_aproj(a_kernel);
+                    real_t pangle = parangle(lha_planes.at(ts), obsdec_rad, obsra_rad);
+
+                    STPLIB_DEBUG("stplib", "Generate conv. kernel with parallatic angle: {} lha: {}", pangle, lha_planes.at(ts));
+
+                    if (a_proj.aproj_opt) {
+                        // TODO: remove shifts and review rotate_matrix function
+                        fftshift(wide_imaging.conv_kernel);
+                        cx_real_t pbmin = wide_imaging.conv_kernel(0, 0);
+                        wide_imaging.conv_kernel = rotate_matrix(wide_imaging.conv_kernel, pangle, pbmin, wide_imaging.conv_kernel.n_cols);
+                        fftshift(wide_imaging.conv_kernel);
+                    } else {
+                        double fov = arc_sec_to_rad(cell_size) * double(image_size);
+                        Akernel = generate_a_kernel(a_proj, fov, workarea_size, pangle);
+                        // Generate new convolution kernel for A-projection
+                        wide_imaging.generate_convolution_kernel_aproj(Akernel);
+                    }
+
+                    // End timestamp
+                    auto end = std::chrono::high_resolution_clock::now();
+                    convkernelgentimes += (end-start);
                 }
 #endif
 #ifdef WPROJECTION
                 if (use_wproj) {
+                    // Start timestamp
+                    auto start = std::chrono::high_resolution_clock::now();
+
                     kernel_cache = wide_imaging.generate_kernel_cache();
-                    conv_support = wide_imaging.get_trunc_conv_support();
+                    conv_support = int(wide_imaging.get_trunc_conv_support());
                     assert(conv_support > 0);
                     kernel_size = conv_support * 2 + 1;
-                    STPLIB_DEBUG(spdlog::get("stplib"), "Gridder: Conv kernel support = {}, Conv kernel size = {}", conv_support, kernel_size);
+                    STPLIB_DEBUG("stplib", "Gridder: W-plane {} = {}, Plane size = {}, Conv kernel support = {}, Conv kernel size = {}", pi, w_avg_values(pi), vi_end - vi_begin, conv_support, kernel_size);
+
+                    // End timestamp
+                    auto end = std::chrono::high_resolution_clock::now();
+                    convkernelgentimes += (end-start);
                 }
 #endif
 
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, kernel_size, 1), [&](const tbb::blocked_range<size_t>& r) {
+                tbb::parallel_for(tbb::blocked_range<int>(0, kernel_size, 1), [&](const tbb::blocked_range<int>& r) {
                     for (arma::uword vi = vi_begin; vi < vi_end; vi++) {
                         const uint good_vis_val = good_vis[vi];
 
@@ -725,10 +780,10 @@ GridderOutput convolve_to_grid(
 
                         int gc_x = kernel_centre_on_grid(vi, 0);
                         int gc_y = kernel_centre_on_grid(vi, 1);
-                        uint cp_x = oversampled_offset.at(vi, 0);
-                        uint cp_y = oversampled_offset.at(vi, 1);
+                        int cp_x = oversampled_offset.at(vi, 0);
+                        int cp_y = oversampled_offset.at(vi, 1);
                         cx_real_t vis_val = cx_real_t(vis[vi]);
-                        const real_t vis_weight = vis_weights[vi];
+                        const real_t vis_weight = real_t(vis_weights[vi]);
 #ifdef WPROJECTION
                         double w_lambda_val = w_lambda.at(vi);
 #endif
@@ -740,8 +795,8 @@ GridderOutput convolve_to_grid(
                                 gc_x = -kernel_centre_on_grid(vi, 0) + image_size;
                                 gc_y = -kernel_centre_on_grid(vi, 1) + image_size;
                                 if (oversampling > 1) {
-                                    cp_x = -oversampled_offset.at(vi, 0) + oversampling;
-                                    cp_y = -oversampled_offset.at(vi, 1) + oversampling;
+                                    cp_x = -oversampled_offset.at(vi, 0) + int(oversampling);
+                                    cp_y = -oversampled_offset.at(vi, 1) + int(oversampling);
                                 }
                                 vis_val = std::conj(vis_val);
 #ifdef WPROJECTION
@@ -749,7 +804,8 @@ GridderOutput convolve_to_grid(
 #endif
                             }
 
-                            int conv_col = ((gc_x - r.begin() + kernel_size) % kernel_size);
+                            int rbegin = r.begin();
+                            int conv_col = ((gc_x - rbegin + kernel_size) % kernel_size);
                             if (conv_col > conv_support)
                                 conv_col -= kernel_size;
                             int grid_col = (gc_x - conv_col);
@@ -757,14 +813,14 @@ GridderOutput convolve_to_grid(
                             if ((grid_col < image_size) && (grid_col >= 0)) {
 
                                 assert(std::abs(conv_col) <= conv_support);
-                                assert(arma::uword(grid_col % kernel_size) == r.begin());
+                                assert(arma::uword(grid_col % kernel_size) == rbegin);
 
-                                // Use pointers here for faster access
-                                cx_real_t* conv_kernel_array = kernel_cache(cp_y, cp_x).colptr(conv_support - conv_col);
-                                cx_real_t* vis_grid_col = vis_grid.colptr(grid_col);
-                                cx_real_t* sampling_grid_col = NULL;
+                                // Use pointer image_rows here for faster access
+                                cx_real_t* conv_kernel_array = kernel_cache(size_t(cp_y), size_t(cp_x)).colptr(uint(conv_support - conv_col));
+                                cx_real_t* vis_grid_col = vis_grid.colptr(uint(grid_col));
+                                cx_real_t* sampling_grid_col = nullptr;
                                 if (generateBeam) {
-                                    sampling_grid_col = sampling_grid.colptr(grid_col);
+                                    sampling_grid_col = sampling_grid.colptr(uint(grid_col));
                                 }
 
 #ifdef WPROJECTION
@@ -809,7 +865,7 @@ GridderOutput convolve_to_grid(
                             if ((gc_x >= (image_size - conv_support)) || (gc_x < conv_support)) {
                                 if (gc_x >= (image_size - conv_support)) {
                                     gc_x -= image_size;
-                                    conv_col = ((gc_x - r.begin() + kernel_size * 2) % kernel_size);
+                                    conv_col = ((gc_x - rbegin + kernel_size * 2) % kernel_size);
                                     if (conv_col > conv_support)
                                         conv_col -= kernel_size;
                                     grid_col = (gc_x - conv_col);
@@ -817,7 +873,7 @@ GridderOutput convolve_to_grid(
                                 } else {
                                     assert(gc_x < conv_support);
                                     gc_x += image_size;
-                                    conv_col = ((gc_x - r.begin() + kernel_size) % kernel_size);
+                                    conv_col = ((gc_x - rbegin + kernel_size) % kernel_size);
                                     if (conv_col > conv_support)
                                         conv_col -= kernel_size;
                                     grid_col = (gc_x - conv_col);
@@ -827,11 +883,11 @@ GridderOutput convolve_to_grid(
                                 if ((grid_col < image_size) && (grid_col >= 0)) {
 
                                     // Use pointers here for faster access
-                                    cx_real_t* conv_kernel_array = kernel_cache(cp_y, cp_x).colptr(conv_support - conv_col);
-                                    cx_real_t* vis_grid_col = vis_grid.colptr(grid_col);
-                                    cx_real_t* sampling_grid_col = NULL;
+                                    cx_real_t* conv_kernel_array = kernel_cache(size_t(cp_y), size_t(cp_x)).colptr(uint(conv_support - conv_col));
+                                    cx_real_t* vis_grid_col = vis_grid.colptr(uint(grid_col));
+                                    cx_real_t* sampling_grid_col = nullptr;
                                     if (generateBeam) {
-                                        sampling_grid_col = sampling_grid.colptr(grid_col);
+                                        sampling_grid_col = sampling_grid.colptr(uint(grid_col));
                                     }
 
 #ifdef WPROJECTION
@@ -881,6 +937,7 @@ GridderOutput convolve_to_grid(
 #endif
 #ifdef WPROJECTION
         }
+        times_gridder.push_back(convkernelgentimes);
 #endif
 #endif
     } else {
@@ -893,7 +950,7 @@ GridderOutput convolve_to_grid(
             int gc_y = kernel_centre_on_grid(vi, 1);
             arma::mat frac = uv_frac.row(vi);
             cx_real_t vis_val = cx_real_t(vis[vi]);
-            const real_t vis_weight = vis_weights[vi];
+            const real_t vis_weight = real_t(vis_weights[vi]);
 
             // If good_vis[vi] is 2, add also conjugate visibility
             for (arma::uword gv = 0; gv < good_vis[vi]; gv++) {
@@ -924,10 +981,10 @@ GridderOutput convolve_to_grid(
                             grid_row -= image_size;
                         // The following condition is needed for the case of halfplane gridding, because only the top halfplane visibilities are convolved
                         if (grid_row < image_rows) {
-                            const cx_real_t kernel_val = vis_weight * normed_kernel_array.at(i, j);
-                            vis_grid(grid_row, grid_col) += (vis_val * kernel_val);
+                            const cx_real_t kernel_val = vis_weight * normed_kernel_array.at(uint(i), uint(j));
+                            vis_grid(uint(grid_row), uint(grid_col)) += (vis_val * kernel_val);
                             if (generateBeam) {
-                                sampling_grid(grid_row, grid_col) += kernel_val;
+                                sampling_grid(uint(grid_row), uint(grid_col)) += kernel_val;
                             }
                         }
                     }
@@ -936,7 +993,7 @@ GridderOutput convolve_to_grid(
         }
     }
 
-    return std::move(GridderOutput(vis_grid, sampling_grid, sample_grid_total));
+    return GridderOutput(vis_grid, sampling_grid, sample_grid_total);
 }
 }
 

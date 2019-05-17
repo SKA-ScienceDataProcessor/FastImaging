@@ -19,7 +19,7 @@ ENABLE_APROJECTION="OFF"
 # Enable STP debug
 ENABLE_STP_DEBUG="OFF"
 
-while getopts "drifsgnwlh" OPTION
+while getopts "drifsgnwalh" OPTION
 do
 	case $OPTION in
 		d)
@@ -90,6 +90,10 @@ echo " >> ENABLE_APROJECTION = ${ENABLE_APROJECTION}"
 echo " >> ENABLE_STP_DEBUG = ${ENABLE_STP_DEBUG}"
 echo 
 echo " >> Create build directory in build/$BUILDTYPE"
+
+# Stop if there's an error
+set -e
+
 if [ -d build/$BUILDTYPE ] ; then
 	rm -r build/$BUILDTYPE
 fi
@@ -123,4 +127,3 @@ echo " >> Run tests"
 cd ../../build/$BUILDTYPE
 make test
 
-exit $?

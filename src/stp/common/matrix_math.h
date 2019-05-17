@@ -332,7 +332,8 @@ arma::Mat<T> matrix_shift(const arma::Mat<T>& in, const int length, const int di
     return out;
 }
 
-arma::Mat<real_t> rotate_matrix(const arma::mat& in_m, double angle, double cval, int out_size = 0);
+arma::Mat<real_t> rotate_matrix(const arma::Mat<real_t>& in_m, double angle, double cval, int out_size = 0);
+arma::Mat<cx_real_t> rotate_matrix(const arma::Mat<cx_real_t>& in_m, double angle, cx_real_t cval, int out_size = 0);
 }
 
 #endif /* MATRIX_MATH_H */

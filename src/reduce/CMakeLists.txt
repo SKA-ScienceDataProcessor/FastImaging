@@ -9,7 +9,7 @@ set(CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wfloat-equal -pedantic -pedantic-errors -fstrict-aliasing -march=native)
 add_compile_options(-Wno-unused-parameter -Wno-sign-compare) # avoids a lot of warnings due to cnpy (save_npz)
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-ffast-math -O3)
+	add_compile_options(-ffast-math -O3)
 endif()
 
 # Dependency: spdlog
@@ -47,19 +47,25 @@ target_link_libraries(${SOURCEFIND_TARGET_NAME} auxlib stp)
 
 # Copy config files to the build directory
 add_custom_command(
-    TARGET reduce POST_BUILD
-    COMMENT "Create symlink of test data and copy JSON config files to ${CMAKE_CURRENT_BINARY_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/../configs/reduce/
-            ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-            ${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/simdata_nstep10.npz
-            simdata_nstep10.npz
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-            ${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/simdata_awproj_nstep10.npz
-            simdata_awproj_nstep10.npz
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-            ${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/wenssdata_awproj.npz
-            wenssdata_awproj.npz)
+	TARGET reduce POST_BUILD
+	COMMENT "Create symlink of test data and copy JSON config files to ${CMAKE_CURRENT_BINARY_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+			${CMAKE_SOURCE_DIR}/../configs/reduce/
+			${CMAKE_CURRENT_BINARY_DIR}
+	COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/simdata_nstep10.npz
+			simdata_nstep10.npz
+	COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/fivesrcdata_wproj.npz
+			fivesrcdata_wproj.npz
+	COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/fivesrcdata_awproj.npz
+			fivesrcdata_awproj.npz
+	COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/wenssdata_wproj.npz
+			wenssdata_wproj.npz
+	COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/../test-data/pipeline-tests/wenssdata_awproj.npz
+			wenssdata_awproj.npz)
 
 

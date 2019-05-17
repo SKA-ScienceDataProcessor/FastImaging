@@ -4,10 +4,11 @@
  */
 
 #include "gridder.h"
+#include "../common/spharmonics.h"
 
 namespace stp {
 
-void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, int kernel_support, arma::uvec& good_vis)
+void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, int kernel_support, arma::Col<uint>& good_vis)
 {
     // Assume:  x = u = col 0
     //          y = v = col 1
@@ -35,7 +36,7 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::cx_mat& vis, 
     }
 }
 
-void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda, arma::cx_mat& vis, int kernel_support, arma::uvec& good_vis)
+void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda, arma::cx_mat& vis, int kernel_support, arma::Col<uint>& good_vis)
 {
     // Assume:  x = u = col 0
     //          y = v = col 1
@@ -64,33 +65,34 @@ void convert_to_halfplane_visibilities(arma::mat& uv_lambda, arma::vec& w_lambda
     }
 }
 
-void average_w_planes(arma::mat w_lambda, const arma::uvec& good_vis, int num_wplanes, arma::vec& w_avg_values, arma::ivec& w_planes_firstidx, bool median)
+void average_w_planes(arma::mat w_lambda, const arma::Col<uint>& good_vis, uint num_wplanes, arma::Col<real_t>& w_avg_values, arma::uvec& w_planes_firstidx, bool median)
 {
-    int num_elems = good_vis.n_elem;
-    int num_gvis = 0;
+    arma::uword num_elems = good_vis.n_elem;
+    arma::uword num_gvis = 0;
     // Count good visibilities
     for (size_t i = 0; i < good_vis.n_elem; ++i) {
         if (good_vis[i] != 0) {
             num_gvis++;
         }
     }
-    int plane_size = std::ceil(double(num_gvis) / num_wplanes);
-    assert(plane_size >= 1);
 
     if (median) {
 
-        int begin = 0;
-        for (int idx = 0; idx < num_wplanes; idx++) {
+        arma::uword begin = 0;
+        for (arma::uword idx = 0; idx < num_wplanes; idx++) {
 
-            int idx_mid = 0;
-            int middle = plane_size / 2;
+            // Because exact plane size is fractional, compute it at every iteration
+            arma::uword plane_size = arma::uword(std::ceil(double(num_gvis - begin) / (num_wplanes - idx)));
+            assert(plane_size >= 1);
+            arma::uword idx_mid = 0;
+            arma::uword middle = plane_size / 2;
             if ((begin + plane_size) > num_gvis) {
                 middle = (num_gvis - begin) / 2;
             }
 
             // average w-plane components
-            int k;
-            int counter = 0;
+            arma::uword k;
+            arma::uword counter = 0;
             for (k = begin; (counter < plane_size) && (k < num_elems); k++) {
                 if (good_vis(k) != 0) {
                     if (counter == middle) {
@@ -99,26 +101,34 @@ void average_w_planes(arma::mat w_lambda, const arma::uvec& good_vis, int num_wp
                     counter++;
                 }
             }
-            if ((plane_size % 2) == 0) {
-                // Even number
-                w_avg_values[idx] = (w_lambda(idx_mid - 1) + w_lambda(idx_mid)) / 2.0;
-            } else {
-                // Odd number
-                w_avg_values[idx] = w_lambda(idx_mid);
+            if (counter > 0) {
+                if ((plane_size % 2) == 0) {
+                    // Even number
+                    w_avg_values[idx] = real_t((w_lambda(idx_mid - 1) + w_lambda(idx_mid)) / 2.0);
+                } else {
+                    // Odd number
+                    w_avg_values[idx] = real_t(w_lambda(idx_mid));
+                }
             }
+            else
+                w_avg_values[idx] = 0.0;
 
             w_planes_firstidx[idx] = begin;
             begin = k;
         }
 
     } else {
-        int begin = 0;
-        for (int idx = 0; idx < num_wplanes; idx++) {
+        arma::uword begin = 0;
+        for (arma::uword idx = 0; idx < num_wplanes; idx++) {
+
+            // Because exact plane size is fractional, compute it at every iteration
+            arma::uword plane_size = arma::uword(std::ceil(double(num_gvis - begin) / (num_wplanes - idx)));
+            assert(plane_size >= 1);
 
             // average w-plane components
             double sum = 0;
-            int k;
-            int counter = 0;
+            arma::uword k;
+            arma::uword counter = 0;
             for (k = begin; (counter < plane_size) && (k < num_elems); k++) {
                 if (good_vis(k) != 0) {
                     sum += w_lambda(k);
@@ -128,16 +138,72 @@ void average_w_planes(arma::mat w_lambda, const arma::uvec& good_vis, int num_wp
             w_planes_firstidx[idx] = begin;
             begin = k;
             if (counter > 0)
-                w_avg_values[idx] = sum / counter;
+                w_avg_values[idx] = real_t(sum / counter);
+            else
+                w_avg_values[idx] = 0.0;
         }
     }
 }
 
-void bounds_check_kernel_centre_locations(arma::uvec& good_vis, const arma::imat& kernel_centre_on_grid, int image_size, int support)
+void average_lha_planes(const arma::vec& lha, const arma::Col<uint>& good_vis, uint num_timesteps, arma::Col<real_t>& lha_planes, arma::ivec& vis_timesteps)
+{
+    // Find maximum and minimum lha values
+    double min_time = lha[0];
+    double max_time = lha[0];
+    lha.for_each([&](const arma::vec::elem_type& val) {
+        if (val < min_time) {
+            min_time = val;
+        }
+        if (val > max_time) {
+            max_time = val;
+        }
+    });
+
+    // Define time intervals
+    double tstep_size = (max_time - min_time) / num_timesteps;
+    arma::vec time_intervals = arma::linspace(min_time - tstep_size / 2, max_time + tstep_size / 2, num_timesteps + 1);
+    arma::uvec nvis_tstep_aux = arma::zeros<arma::uvec>(num_timesteps);
+    lha_planes = arma::zeros<arma::Col<real_t>>(num_timesteps);
+
+    // Assign each visibility to a time interval
+    for (arma::uword i = 0; i < lha.n_elem; i++) {
+        if (!good_vis[i])
+            continue;
+
+        double time_value = lha.at(i);
+        uint tidx = 1;
+        double interval_value = time_intervals.at(tidx);
+        while (time_value > interval_value) {
+            tidx++;
+            if (tidx < (num_timesteps + 1)) {
+                interval_value = time_intervals.at(tidx);
+            } else {
+                break;
+            }
+        }
+        // Selected time step
+        uint seltimestep_idx = tidx - 1;
+        assert(seltimestep_idx < num_timesteps);
+        vis_timesteps[i] = seltimestep_idx;
+        // Auxiliary calcs for mean computation
+        lha_planes.at(seltimestep_idx) += real_t(time_value);
+        nvis_tstep_aux.at(seltimestep_idx)++;
+    }
+    // Compute mean values
+    for (uint i = 0; i < num_timesteps; i++) {
+        if (nvis_tstep_aux.at(i)) {
+            lha_planes.at(i) /= real_t(nvis_tstep_aux.at(i));
+        } else {
+            lha_planes.at(i) = real_t(0.0);
+        }
+    }
+}
+
+void bounds_check_kernel_centre_locations(arma::Col<uint>& good_vis, const arma::Mat<int>& kernel_centre_on_grid, int image_size, int support)
 {
     // Check bounds
-    int col = 0;
-    kernel_centre_on_grid.each_row([&](const arma::imat& r) {
+    uint col = 0;
+    kernel_centre_on_grid.each_row([&](const arma::Mat<int>& r) {
         const auto& kc_x = r[0];
         const auto& kc_y = r[1];
 
@@ -150,17 +216,17 @@ void bounds_check_kernel_centre_locations(arma::uvec& good_vis, const arma::imat
     });
 }
 
-arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int oversampling)
+arma::Mat<int> calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, uint oversampling)
 {
     assert(arma::uvec(arma::find(arma::abs(subpixel_coord) > 0.5)).is_empty());
 
-    arma::imat oversampled_coord(arma::size(subpixel_coord));
+    arma::Mat<int> oversampled_coord(arma::size(subpixel_coord));
 
     int range_max = oversampling / 2;
     int range_min = -1 * range_max;
 
     for (arma::uword i = 0; i < subpixel_coord.n_elem; i++) {
-        int val = rint(subpixel_coord.at(i) * oversampling);
+        int val = int(rint(subpixel_coord.at(i) * oversampling));
         if (val > range_max) {
             val = range_max;
         } else {
@@ -171,6 +237,40 @@ arma::imat calculate_oversampled_kernel_indices(arma::mat& subpixel_coord, int o
         oversampled_coord.at(i) = val;
     }
 
-    return std::move(oversampled_coord);
+    return oversampled_coord;
+}
+
+arma::Mat<real_t> generate_a_kernel(const A_ProjectionPars& a_proj, const double fov, const int workarea_size, double rot_angle)
+{
+    arma::Mat<real_t> Akernel((size_t)workarea_size, (size_t)workarea_size);
+    int degree = int((a_proj.pbeam_coefs.size() - 1) / 2);
+    int workarea_centre = workarea_size / 2;
+
+    tbb::parallel_for(tbb::blocked_range<int>(-workarea_centre, workarea_centre),
+        [&](const tbb::blocked_range<int>& r) {
+            int j_begin = r.begin(), j_end = r.end();
+            for (int j = j_begin; j < j_end; ++j) {
+                for (int i = -workarea_centre; i < workarea_centre; ++i) {
+                    // Compute phi and theta
+                    double j_rad = double(j) * fov / double(workarea_size);
+                    double i_rad = double(i) * fov / double(workarea_size);
+                    double theta = std::sqrt(j_rad * j_rad + i_rad * i_rad); // Polar angle
+                    double phi = M_PI / 2.0;                                 // Azimuth angle
+                    if (j != 0) {
+                        phi = std::atan(i_rad / j_rad);
+                    }
+                    // Init Akernel
+                    Akernel(size_t(j + workarea_centre), size_t(i + workarea_centre)) = 0;
+                    // Compute each spherical harmonic, get abs and sum
+                    for (int m = -degree; m <= degree; m++) { // SH order range
+                        Akernel(size_t(j + workarea_centre), size_t(i + workarea_centre)) += real_t(std::abs(sh::EvalSH(degree, m, phi + rot_angle, theta) * a_proj.pbeam_coefs[degree + m]));
+                    }
+                    // Invert Akernel value
+                    Akernel(size_t(j + workarea_centre), size_t(i + workarea_centre)) = 1.0 / Akernel(size_t(j + workarea_centre), size_t(i + workarea_centre));
+                }
+            }
+        });
+
+    return Akernel;
 }
 }

@@ -1,15 +1,15 @@
 #!/bin/bash
 
-if [ $# = 0 ]
+if [ $# != 2 ]
 then
-	echo "Missing config label."
+	echo "Missing config file and npz measurement set"
 	exit 1
 fi
 
 FIELD="max_wpconv_support"
-PARLIST="15 30 60 120 250 500 1000"
+PARLIST="63 127 255 511 1023"
 
 script_full_path=$(dirname "$0")
-$script_full_path/base_testscript.sh $FIELD "$PARLIST" $1
+$script_full_path/base_testscript.sh $FIELD "$PARLIST" $1 $2
 
 exit 0

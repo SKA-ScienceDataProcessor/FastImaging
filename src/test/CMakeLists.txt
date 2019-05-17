@@ -8,7 +8,7 @@ set(CXX_STANDARD_REQUIRED ON)
 # Turn on useful compiler flags
 add_compile_options(-march=native)
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-ffast-math -O3)
+	add_compile_options(-ffast-math -O3)
 endif()
 
 # Dependency: Threads (required by google test)
@@ -40,10 +40,10 @@ add_definitions ( -D_PIPELINE_CONFIGPATH="${PIPELINE_CONFIGPATH}/")
 
 # Helper function for test target specification
 function(add_unit_test unit_test_name unit_test_source)
-    add_executable(${unit_test_name} ${unit_test_source} imager/load_json_imager.cpp)
-    add_dependencies(${unit_test_name} auxlib stp gtest gtest_main benchmark armadillo)
-    target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${RAPIDJSON_INCLUDE_PATH})
-    target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
+	add_executable(${unit_test_name} ${unit_test_source} imager/load_json_imager.cpp)
+	add_dependencies(${unit_test_name} auxlib stp gtest gtest_main benchmark armadillo)
+	target_include_directories(${unit_test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${RAPIDJSON_INCLUDE_PATH})
+	target_link_libraries(${unit_test_name} ${TEST_LINK_LIBRARIES})
 endfunction()
 
 # Test Cases: Matrix Math Functions ------------------------------------------------------------------------------------
@@ -201,7 +201,6 @@ add_unit_test(test_sourcefind_fitting sourcefind/sourcefind_test_Fitting.cpp)
 
 # Test Cases: Pipeline Functions ---------------------------------------------------------------------------------------
 add_unit_test(test_pipeline_simple pipeline/pipeline_simple_test.cpp)
-add_unit_test(test_pipeline_wprojection pipeline/pipeline_wprojection_test.cpp)
 
 
 # Pass the test cases to CTest
@@ -273,5 +272,4 @@ add_test(NAME SourceFindFitting COMMAND test_sourcefind_fitting)
 
 # Pipeline Functions
 add_test(NAME SlowTransientsPipelineSimple COMMAND test_pipeline_simple)
-add_test(NAME SlowTransientsPipelineWprojection COMMAND test_pipeline_wprojection)
 

@@ -37,10 +37,18 @@ public:
             if (secitr != document.MemberEnd()) {
                 rapidjson::Value::ConstMemberIterator itr = secitr->value.FindMember("image_size_pix");
                 if (itr != secitr->value.MemberEnd())
-                    img_pars.image_size = itr->value.GetInt();
+                    img_pars.image_size = itr->value.GetUint();
                 itr = secitr->value.FindMember("cell_size_arcsec");
                 if (itr != secitr->value.MemberEnd())
                     img_pars.cell_size = itr->value.GetDouble();
+                itr = secitr->value.FindMember("padding_factor");
+                if (itr != secitr->value.MemberEnd()) {
+                    img_pars.padding_factor = itr->value.GetDouble();
+                    // Set padded image size
+                    img_pars.padded_image_size = static_cast<uint>(double(img_pars.image_size) * img_pars.padding_factor);
+                } else {
+                    img_pars.padded_image_size = img_pars.image_size;
+                }
                 itr = secitr->value.FindMember("kernel_function");
                 if (itr != secitr->value.MemberEnd()) {
                     s_kernel_function = itr->value.GetString();
@@ -48,13 +56,13 @@ public:
                 }
                 itr = secitr->value.FindMember("kernel_support");
                 if (itr != secitr->value.MemberEnd())
-                    img_pars.kernel_support = itr->value.GetInt();
+                    img_pars.kernel_support = itr->value.GetUint();
                 itr = secitr->value.FindMember("kernel_exact");
                 if (itr != secitr->value.MemberEnd())
                     img_pars.kernel_exact = itr->value.GetBool();
                 itr = secitr->value.FindMember("oversampling");
                 if (itr != secitr->value.MemberEnd())
-                    img_pars.oversampling = itr->value.GetInt();
+                    img_pars.oversampling = itr->value.GetUint();
                 itr = secitr->value.FindMember("generate_beam");
                 if (itr != secitr->value.MemberEnd())
                     img_pars.generate_beam = itr->value.GetBool();
@@ -79,19 +87,22 @@ public:
             if (secitr != document.MemberEnd()) {
                 rapidjson::Value::ConstMemberIterator itr = secitr->value.FindMember("num_wplanes");
                 if (itr != secitr->value.MemberEnd())
-                    w_proj.num_wplanes = itr->value.GetInt();
+                    w_proj.num_wplanes = itr->value.GetUint();
                 itr = secitr->value.FindMember("max_wpconv_support");
                 if (itr != secitr->value.MemberEnd())
-                    w_proj.max_wpconv_support = itr->value.GetInt();
+                    w_proj.max_wpconv_support = itr->value.GetUint();
                 itr = secitr->value.FindMember("undersampling_opt");
                 if (itr != secitr->value.MemberEnd())
-                    w_proj.undersampling_opt = itr->value.GetInt();
+                    w_proj.undersampling_opt = itr->value.GetUint();
                 itr = secitr->value.FindMember("kernel_trunc_perc");
                 if (itr != secitr->value.MemberEnd())
                     w_proj.kernel_trunc_perc = itr->value.GetDouble();
                 itr = secitr->value.FindMember("hankel_opt");
                 if (itr != secitr->value.MemberEnd())
                     w_proj.hankel_opt = itr->value.GetBool();
+                itr = secitr->value.FindMember("hankel_proj_slice");
+                if (itr != secitr->value.MemberEnd())
+                    w_proj.hankel_proj_slice = itr->value.GetBool();
                 itr = secitr->value.FindMember("interp_type");
                 if (itr != secitr->value.MemberEnd()) {
                     s_interp_type = itr->value.GetString();
@@ -108,13 +119,30 @@ public:
             if (secitr != document.MemberEnd()) {
                 rapidjson::Value::ConstMemberIterator itr = secitr->value.FindMember("aproj_numtimesteps");
                 if (itr != secitr->value.MemberEnd())
-                    a_proj.num_timesteps = itr->value.GetDouble();
+                    a_proj.num_timesteps = itr->value.GetUint();
                 itr = secitr->value.FindMember("obs_dec");
                 if (itr != secitr->value.MemberEnd())
                     a_proj.obs_dec = itr->value.GetDouble();
-                itr = secitr->value.FindMember("obs_lat");
+                itr = secitr->value.FindMember("obs_ra");
                 if (itr != secitr->value.MemberEnd())
-                    a_proj.obs_lat = itr->value.GetDouble();
+                    a_proj.obs_ra = itr->value.GetDouble();
+                // Pbeam_coefs is an array:
+                itr = secitr->value.FindMember("pbeam_coefs");
+                if (itr != secitr->value.MemberEnd()) {
+                    a_proj.pbeam_coefs.resize(itr->value.Size());
+                    size_t idx = 0;
+                    for (auto arrayitr = itr->value.Begin(); arrayitr != itr->value.End(); ++arrayitr) {
+                        assert(idx < a_proj.pbeam_coefs.size());
+                        a_proj.pbeam_coefs[idx] = arrayitr->GetDouble();
+                        idx++;
+                    }
+                }
+                itr = secitr->value.FindMember("aproj_opt");
+                if (itr != secitr->value.MemberEnd())
+                    a_proj.aproj_opt = itr->value.GetBool();
+                itr = secitr->value.FindMember("aproj_mask_perc");
+                if (itr != secitr->value.MemberEnd())
+                    a_proj.aproj_mask_perc = itr->value.GetDouble();
             }
 #endif
             // Source Find settings

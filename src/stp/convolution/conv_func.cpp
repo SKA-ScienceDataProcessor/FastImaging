@@ -40,6 +40,7 @@ arma::Col<real_t> TopHat::gcf(const arma::Col<real_t>& radius) const
     return arma::conv_to<arma::Col<real_t>>::from(radius);
 }
 
+// Sinc function
 arma::Col<real_t> Sinc::operator()(const arma::Col<real_t>& radius_in_pix) const
 {
     // Construction of an array filled with sine of PI vs radius_in_pix split by PI vs radius_in_pix

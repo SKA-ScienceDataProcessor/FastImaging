@@ -159,7 +159,7 @@ public:
     double detection_n_sigma;
     double analysis_n_sigma;
     double rms_est;
-    double bg_level;
+    real_t bg_level;
     std::vector<IslandParams> islands;
     bool fit_gaussian;
 
@@ -176,7 +176,7 @@ public:
      * @param[in] input_analysis_n_sigma (double): Analysis threshold as multiple of RMS
      * @param[in] input_rms_est (double): RMS estimate (may be 0.0, in which case RMS is estimated from the image data).
      * @param[in] find_negative_sources (bool): Find also negative sources (with signal is -1)
-     * @param[in] sigmaclip_iters (uint): Number of iterations of sigma clip function.
+     * @param[in] sigmaclip_iters (int): Number of iterations of sigma clip function.
      * @param[in] median_method (MedianMethod): Method used to compute the median.
      * @param[in] gaussian_fitting (bool): Perform gaussian fitting for each island.
      * @param[in] ccl_4connectivity (bool): Use 4-connected component labeling for source find (default is 8-connected component labeling).
@@ -191,7 +191,7 @@ public:
         double input_analysis_n_sigma,
         double input_rms_est = 0.0,
         bool find_negative_sources = true,
-        uint sigma_clip_iters = 5,
+        int sigma_clip_iters = 5,
         MedianMethod median_method = MedianMethod::BINAPPROX,
         bool gaussian_fitting = false,
         bool ccl_4connectivity = false,

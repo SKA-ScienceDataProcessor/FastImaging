@@ -18,6 +18,9 @@
 ## Build & Run
 ### Dependencies 
 
+**GCC version must be less or equal to 7.3**
+**STP does not perform correctly when compiled with gcc-8 or higher due to FFTW issues when using gcc-8 and ffast-math option**
+
 #### In Source (third-party)
 - [Armadillo](http://arma.sourceforge.net/) [8.400.0]
 - [Google Test](https://github.com/google/googletest) [1.8.0]
@@ -29,7 +32,7 @@
 - [OpenBLAS](http://www.openblas.net) [0.2.20]
 - [RapidJSON](https://github.com/miloyip/rapidjson) [1.1.0]
 - [TCLAP](http://tclap.sourceforge.net/) [1.2.1]
-- [spdlog](https://github.com/gabime/spdlog) [1.0.0]
+- [spdlog](https://github.com/gabime/spdlog) [1.3.1]
 - [Eigen](http://eigen.tuxfamily.org/) [3.3.4]
 - [Ceres Solver](http://ceres-solver.org/) [1.14.0]
 

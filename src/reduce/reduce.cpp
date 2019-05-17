@@ -38,24 +38,24 @@ std::shared_ptr<spdlog::logger> srclogger;
 std::shared_ptr<spdlog::logger> benchlogger;
 
 // Command line parser
-TCLAP::CmdLine cmd("Simulated Slow Transients Pipeline run", ' ', "2.0-beta");
+static TCLAP::CmdLine cmd("Simulated Slow Transients Pipeline run", ' ', "2.0-beta");
 
 // Input Json config filename
-TCLAP::UnlabeledValueArg<std::string> inJsonFileArg("input-file-json", "Input JSON filename with configuration parameters.", true, "", "input-file-json");
+static TCLAP::UnlabeledValueArg<std::string> inJsonFileArg("input-file-json", "Input JSON filename with configuration parameters.", true, "", "input-file-json");
 // Input Npz filenames
-TCLAP::UnlabeledValueArg<std::string> inNpzFileArg("input-file-npz", "Input NPZ filename with simulation data (uvw_lambda, vis, skymodel).", true, "", "input-file-npz");
+static TCLAP::UnlabeledValueArg<std::string> inNpzFileArg("input-file-npz", "Input NPZ filename with simulation data (uvw_lambda, vis, skymodel).", true, "", "input-file-npz");
 // Output Json config filename
-TCLAP::ValueArg<std::string> outJsonFileArg("s", "output-file-json", "(optional)  Output JSON filename for detected islands.", false, "", "output-file-json");
+static TCLAP::ValueArg<std::string> outJsonFileArg("s", "output-file-json", "(optional)  Output JSON filename for detected islands.", false, "", "output-file-json");
 // Output Npz filenames
-TCLAP::ValueArg<std::string> outNpzFileArg("o", "output-file-npz", "(optional)  Output NPZ filename for label map matrix (label_map).", false, "", "output-file-npz");
+static TCLAP::ValueArg<std::string> outNpzFileArg("o", "output-file-npz", "(optional)  Output NPZ filename for label map matrix (label_map).", false, "", "output-file-npz");
 // Use residual visibilities - difference between 'input_vis' and 'model' visibilities
-TCLAP::SwitchArg useDiffArg("d", "diff", "Use residual visibilities - difference between 'input_vis' and 'model' visibilities. Input NPZ must contain 'skymodel' data.", false);
+static TCLAP::SwitchArg useDiffArg("d", "diff", "Use residual visibilities - difference between 'input_vis' and 'model' visibilities. Input NPZ must contain 'skymodel' data.", false);
 // Enable logger
 TCLAP::MultiSwitchArg enableLoggerArg("l", "log", "Enable logger to stdout and logfile.txt (-ll for further debug logging of stp library).", false);
 // Print islands
-TCLAP::SwitchArg disableIslandPrintArg("n", "no-src", "Disable logging of detected islands.", false);
+static TCLAP::SwitchArg disableIslandPrintArg("n", "no-src", "Disable logging of detected islands.", false);
 // Print benchmarks
-TCLAP::SwitchArg disableBenchPrintArg("b", "no-bench", "Disable logging of function timings.", false);
+static TCLAP::SwitchArg disableBenchPrintArg("b", "no-bench", "Disable logging of function timings.", false);
 
 void createFlags()
 {
@@ -92,8 +92,8 @@ int main(int argc, char** argv)
     // Load all configurations from json configuration file
     ConfigurationFile cfg(inJsonFileArg.getValue());
 
-    // Image size must be a power of two value
-    check_image_size(cfg.img_pars.image_size);
+    // Set padded image size
+    set_image_sizes(cfg.img_pars);
 
     // Log configuration
     log_configuration_imager(cfg);
@@ -107,7 +107,6 @@ int main(int argc, char** argv)
 #ifdef APROJECTION
     if (cfg.a_proj.isEnabled()) {
         cfg.a_proj.lha = load_npy_double_array<double>(inNpzFileArg.getValue(), "lha");
-        cfg.a_proj.mueller_term = arma::ones(cfg.img_pars.image_size, cfg.img_pars.image_size);
     }
 #endif
 

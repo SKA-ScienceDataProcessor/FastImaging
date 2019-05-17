@@ -33,7 +33,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, OversampledKernelIndices)
 
 TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculation)
 {
-    int col(0);
+    arma::uword col(0);
     arma::mat aux;
     aux.set_size(io_pairs.n_rows);
 
@@ -42,7 +42,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculation)
         col++;
     });
 
-    arma::imat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
+    arma::Mat<int> outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
 
     col = 0;
     io_pairs.each_row([&aux, &col](arma::mat& r) {
@@ -56,7 +56,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
 {
     io_pairs *= -1;
 
-    int col(0);
+    arma::uword col(0);
     arma::mat aux;
     aux.set_size(io_pairs.n_rows);
 
@@ -65,7 +65,7 @@ TEST(GridderFractionalCoordToOversampledIndexMath, EasyCalculationSymetry)
         col++;
     });
 
-    arma::imat outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
+    arma::Mat<int> outputs = calculate_oversampled_kernel_indices(aux, oversampling_kernel_indices);
 
     col = 0;
     io_pairs.each_row([&aux, &col](arma::mat& r) {
@@ -80,6 +80,6 @@ TEST(GridderFractionalCoordToOversampledIndexMath, CoOrdinatePairs)
 {
     arma::mat inputs = { { 0.3, 0.3 } };
     arma::imat outputs = { { 2, 2 } };
-    arma::imat oversampled_indices = calculate_oversampled_kernel_indices(inputs, oversampling_kernel_indices);
+    arma::Mat<int> oversampled_indices = calculate_oversampled_kernel_indices(inputs, oversampling_kernel_indices);
     EXPECT_TRUE(arma::accu(oversampled_indices != outputs) == 0);
 }

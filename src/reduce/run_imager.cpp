@@ -85,8 +85,8 @@ int main(int argc, char** argv)
     // Load all configurations from json configuration file
     ConfigurationFile cfg(inJsonFileArg.getValue());
 
-    // Image size must be a power of two value
-    check_image_size(cfg.img_pars.image_size);
+    // Set padded image size
+    set_image_sizes(cfg.img_pars);
 
     // Log configuration
     log_configuration_imager(cfg);
@@ -99,7 +99,6 @@ int main(int argc, char** argv)
 #ifdef APROJECTION
     if (cfg.a_proj.isEnabled()) {
         cfg.a_proj.lha = load_npy_double_array<double>(inNpzFileArg.getValue(), "lha");
-        cfg.a_proj.mueller_term = arma::ones(cfg.img_pars.image_size, cfg.img_pars.image_size);
     }
 #endif
 

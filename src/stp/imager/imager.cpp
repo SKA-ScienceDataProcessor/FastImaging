@@ -8,6 +8,7 @@
 namespace stp {
 
 std::vector<std::chrono::high_resolution_clock::time_point> times_iv;
+std::vector<std::chrono::duration<double>> times_gridder;
 
 ImageVisibilities::ImageVisibilities(
     const arma::cx_mat& vis,

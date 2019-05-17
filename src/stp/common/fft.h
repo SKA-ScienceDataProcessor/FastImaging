@@ -69,6 +69,8 @@ void fft_fftw_c2c(arma::Mat<cx_real_t>& input, arma::Mat<cx_real_t>& output, FFT
  */
 void fft_fftw_dft_r2r_1d(arma::Col<real_t>& input, arma::Col<real_t>& output, FFTRoutine r_fft);
 
+void fft_fftw_dft_c2c_1d(arma::Col<cx_real_t>& input, arma::Col<cx_real_t>& output, FFTRoutine r_fft);
+
 /**
  * @brief Generates a hermitian matrix from the non-redundant values
  *

@@ -159,7 +159,7 @@ SourceFindImage::SourceFindImage(
     double input_analysis_n_sigma,
     double input_rms_est,
     bool find_negative_sources,
-    uint sigma_clip_iters,
+    int sigma_clip_iters,
     MedianMethod median_method,
     bool gaussian_fitting,
     bool ccl_4connectivity,
@@ -191,21 +191,21 @@ SourceFindImage::SourceFindImage(
         data_stats = mat_binmedian(input_data);
         break;
     case MedianMethod::NTHELEMENT:
-        data_stats.median = mat_median_exact(input_data);
+        data_stats.median = real_t(mat_median_exact(input_data));
         data_stats.median_valid = true;
         break;
     }
     // Set background level
     bg_level = data_stats.median;
 
-    STPLIB_DEBUG(spdlog::get("stplib"), "Sourcefind: Background level = {}", bg_level);
+    STPLIB_DEBUG("stplib", "Sourcefind: Background level = {}", bg_level);
 
     TIMESTAMP_SOURCEFIND
 
     // Estimate RMS value, if rms_est is less or equal to 0.0
     rms_est = std::abs(input_rms_est) > 0.0 ? input_rms_est : estimate_rms(input_data, 3, sigma_clip_iters, data_stats);
 
-    STPLIB_DEBUG(spdlog::get("stplib"), "Sourcefind: Estimated RMS value = {}", rms_est);
+    STPLIB_DEBUG("stplib", "Sourcefind: Estimated RMS value = {}", rms_est);
 
     TIMESTAMP_SOURCEFIND
 
@@ -217,7 +217,7 @@ SourceFindImage::SourceFindImage(
         numValidLabels = _label_detection_islands<false>(input_data, find_negative_sources, fit_gaussian, ccl_4connectivity);
     }
 
-    STPLIB_DEBUG(spdlog::get("stplib"), "Sourcefind: Number of valid labels = {}", numValidLabels);
+    STPLIB_DEBUG("stplib", "Sourcefind: Number of valid labels = {}", numValidLabels);
 
     TIMESTAMP_SOURCEFIND
 
@@ -227,8 +227,8 @@ SourceFindImage::SourceFindImage(
     islands.reserve(numValidLabels);
 
 #ifndef FFTSHIFT
-    int h_shift = input_data.n_cols / 2;
-    int v_shift = input_data.n_rows / 2;
+    int h_shift = int(input_data.n_cols) / 2;
+    int v_shift = int(input_data.n_rows) / 2;
 #endif
 
     // Process positive islands
@@ -240,11 +240,11 @@ SourceFindImage::SourceFindImage(
             int x_idx = (int)coord[1];
 #else
             // Shift coordinates because source find assumed input image was shifted
-            int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
-            int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
+            int y_idx = int(coord[0]) < v_shift ? int(coord[0]) + v_shift : int(coord[0]) - v_shift;
+            int x_idx = int(coord[1]) < h_shift ? int(coord[1]) + h_shift : int(coord[1]) - h_shift;
 #endif
             if (label_extrema_numsamples_pos[i] >= source_min_area) {
-                IslandParams island(label_extrema_id_pos[i], label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_numsamples_pos[i],
+                IslandParams island(int(label_extrema_id_pos[i]), label_extrema_val_pos.at(i), y_idx, x_idx, label_extrema_numsamples_pos[i],
                     label_extrema_boundingbox_pos[i]);
                 island.estimate_moments_fit(label_extrema_moments_pos.col(i)(0), label_extrema_moments_pos.col(i)(1),
                     label_extrema_moments_pos.col(i)(2), label_extrema_moments_pos.col(i)(3), label_extrema_moments_pos.col(i)(4),
@@ -263,11 +263,11 @@ SourceFindImage::SourceFindImage(
             int x_idx = (int)coord[1];
 #else
             // Shift coordinates because source find assumed input image was shifted
-            int y_idx = (int)coord[0] < v_shift ? coord[0] + v_shift : (int)coord[0] - v_shift;
-            int x_idx = (int)coord[1] < h_shift ? coord[1] + h_shift : (int)coord[1] - h_shift;
+            int y_idx = int(coord[0]) < v_shift ? int(coord[0]) + v_shift : int(coord[0]) - v_shift;
+            int x_idx = int(coord[1]) < h_shift ? int(coord[1]) + h_shift : int(coord[1]) - h_shift;
 #endif
             if (label_extrema_numsamples_neg[i] >= source_min_area) {
-                IslandParams island(label_extrema_id_neg[i], label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_numsamples_neg[i],
+                IslandParams island(int(label_extrema_id_neg[i]), label_extrema_val_neg.at(i), y_idx, x_idx, label_extrema_numsamples_neg[i],
                     label_extrema_boundingbox_neg[i]);
                 island.estimate_moments_fit(label_extrema_moments_neg.col(i)(0), label_extrema_moments_neg.col(i)(1),
                     label_extrema_moments_neg.col(i)(2), label_extrema_moments_neg.col(i)(3), label_extrema_moments_neg.col(i)(4),
@@ -450,8 +450,8 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
     tbb::combinable<std::vector<BoundingBox>> boundingbox_neg(std::vector<BoundingBox>(num_l_neg, BoundingBox(data.n_rows, -1, data.n_cols, -1)));
 
 #ifndef FFTSHIFT
-    int h_shift = (int)(data.n_cols / 2);
-    int v_shift = (int)(data.n_rows / 2);
+    int h_shift = int(data.n_cols / 2);
+    int v_shift = int(data.n_rows / 2);
 #endif
 
     // Loop over image
@@ -474,7 +474,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
                 if (label > 0) {
                     idx = label - 1;
                     // This will remove weak sources (below the detection threshold)
-                    if (label_extrema_id_pos.at(idx) == 0) {
+                    if (label_extrema_id_pos.at(size_t(idx)) == 0) {
                         // Update label_map with final label indexes (and clean weak sources)
                         if (generateLabelMap) {
                             label_map.at(li) = 0;
@@ -484,7 +484,7 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
                 } else {
                     idx = -label - 1;
                     // This will remove weak sources (below the detection threshold)
-                    if (label_extrema_id_neg.at(idx) == 0) {
+                    if (label_extrema_id_neg.at(size_t(idx)) == 0) {
                         // Update label_map with final label indexes (and clean weak sources)
                         if (generateLabelMap) {
                             label_map.at(li) = 0;
@@ -495,14 +495,14 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
 
                 // Calculate moments
                 assert(idx > -1);
-                double val = data.at(li);
+                real_t val = data.at(li);
 #ifdef FFTSHIFT
                 const double y_idx = (double)j;
                 const double x_idx = (double)i;
 #else
                 // Get shifted coordinates centered in the image
-                const double y_idx = (int)j < v_shift ? (double)(j + v_shift) : (double)(j - v_shift);
-                const double x_idx = (int)i < h_shift ? (double)(i + h_shift) : (double)(i - h_shift);
+                const double y_idx = int(j) < v_shift ? double(j + v_shift) : double(j - v_shift);
+                const double x_idx = int(i) < h_shift ? double(i + h_shift) : double(i - h_shift);
 #endif
                 const double x_bar = x_idx * val;
                 const double y_bar = y_idx * val;
@@ -533,8 +533,8 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
                     const int col = (int)i;
                     const int row = (int)j;
 #else
-                    const int col = (int)i < h_shift ? (int)i + h_shift : (int)i - h_shift;
-                    const int row = (int)j < v_shift ? (int)j + v_shift : (int)j - v_shift;
+                    const int col = int(i) < h_shift ? int(i) + h_shift : int(i) - h_shift;
+                    const int row = int(j) < v_shift ? int(j) + v_shift : int(j) - v_shift;
 #endif
                     if (label > 0) {
                         if (col < r_boundingbox_pos[idx].left) {
@@ -602,6 +602,9 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
             label_extrema_moments_pos.at(2, l) = xx_bar;
             label_extrema_moments_pos.at(3, l) = yy_bar;
             label_extrema_moments_pos.at(4, l) = xy_bar;
+
+            STPLIB_DEBUG("stplib", "MomentsAux: 0={} 1={} 2={} 3={} 4={} 5={} ", all_moments_pos.at(0, l), all_moments_pos.at(1, l), all_moments_pos.at(2, l), all_moments_pos.at(3, l), all_moments_pos.at(4, l), all_moments_pos.at(5, l));
+            STPLIB_DEBUG("stplib", "Moments: x_bar={} y_bar={} xx_bar={} yy_bar={} xy_bar={}", x_bar, y_bar, xx_bar, yy_bar, xy_bar);
         }
     }
     // Set moments of negative sources in label_extrema_moments_neg array
@@ -618,6 +621,9 @@ uint SourceFindImage::_label_detection_islands(const arma::Mat<real_t>& data, bo
             label_extrema_moments_neg.at(2, l) = xx_bar;
             label_extrema_moments_neg.at(3, l) = yy_bar;
             label_extrema_moments_neg.at(4, l) = xy_bar;
+
+            STPLIB_DEBUG("stplib", "MomentsAux: 0={} 1={} 2={} 3={} 4={} 5={} ", all_moments_neg.at(0, l), all_moments_neg.at(1, l), all_moments_neg.at(2, l), all_moments_neg.at(3, l), all_moments_neg.at(4, l), all_moments_neg.at(5, l));
+            STPLIB_DEBUG("stplib", "Moments: x_bar={} y_bar={} xx_bar={} yy_bar={} xy_bar={} flux_sum={} ", x_bar, y_bar, xx_bar, yy_bar, xy_bar, all_moments_neg.at(5, l));
         }
     }
 
@@ -715,19 +721,27 @@ void IslandParams::leastsq_fit_gaussian_2d(const arma::Mat<real_t>& data, const 
     // Get the number of residuals
     int num_residuals = num_samples;
 
-    // Return if it is one-pixel source
-    if (num_residuals == 1) {
+    // Return if it is one- or two-pixel source
+    if (num_samples < 3) {
         leastsq_fit = Gaussian2dParams(extremum_val, 0.0, 0.0, 0.0, 0.0, 0.0);
-        ceres_report.assign("ceres::Solve was not called.");
+        ceres_report.assign("ceres::Solve not called for too small source (1 or 2 pixels).");
         return;
     }
+
+    STPLIB_DEBUG("stplib", "Gaussian Fitting: x_centre={} y_centre={} semimajor={} semiminor={} theta={} ", moments_fit.x_centre, moments_fit.y_centre, moments_fit.semimajor, moments_fit.semiminor, moments_fit.theta);
 
     // The variable to solve for with its initial value.
     // It will be mutated in place by the solver.
     // Variable fields: amplitude, x0, y0, x_stddev, y_stddev and theta
     // Initial values are the given by the moments_fit
-    double gaussian_params[] = { moments_fit.amplitude, moments_fit.x_centre, moments_fit.y_centre,
-        moments_fit.semimajor, moments_fit.semiminor, moments_fit.theta };
+    double amplitude = moments_fit.amplitude;
+    double x_centre = moments_fit.x_centre;
+    double y_centre = moments_fit.y_centre;
+    double semimajor = (moments_fit.semimajor > 0.0) ? moments_fit.semimajor : 1.0;
+    double semiminor = (moments_fit.semiminor > 0.0) ? moments_fit.semiminor : 1.0;
+    double theta = moments_fit.theta;
+
+    double gaussian_params[] = { amplitude, x_centre, y_centre, semimajor, semiminor, theta };
 
     // Build the problem.
     ceres::Problem problem;
@@ -737,20 +751,20 @@ void IslandParams::leastsq_fit_gaussian_2d(const arma::Mat<real_t>& data, const 
 
     case CeresDiffMethod::AutoDiff: {
 #ifndef FFTSHIFT
-        int h_shift = (int)(data.n_cols / 2);
-        int v_shift = (int)(data.n_rows / 2);
+        uint h_shift = uint(data.n_cols / 2);
+        uint v_shift = uint(data.n_rows / 2);
 #endif
         // Compute each residual associated to label_idx
-        for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
-            for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
+        for (uint i = bounding_box.left; i <= bounding_box.right; ++i) {
+            for (uint j = bounding_box.top; j <= bounding_box.bottom; ++j) {
                 const double x = double(i);
                 const double y = double(j);
 #ifdef FFTSHIFT
-                const int& ii = i;
-                const int& jj = j;
+                const uint& ii = i;
+                const uint& jj = j;
 #else
-                const int ii = i < h_shift ? i + h_shift : i - h_shift;
-                const int jj = j < v_shift ? j + v_shift : j - v_shift;
+                const uint ii = i < h_shift ? i + h_shift : i - h_shift;
+                const uint jj = j < v_shift ? j + v_shift : j - v_shift;
 #endif
                 if (label_map.at(jj, ii) != label_idx) {
                     continue;
@@ -772,20 +786,20 @@ void IslandParams::leastsq_fit_gaussian_2d(const arma::Mat<real_t>& data, const 
 
     case CeresDiffMethod::AnalyticDiff: {
 #ifndef FFTSHIFT
-        int h_shift = (int)(data.n_cols / 2);
-        int v_shift = (int)(data.n_rows / 2);
+        uint h_shift = uint(data.n_cols / 2);
+        uint v_shift = uint(data.n_rows / 2);
 #endif
         // Compute each residual associated to label_idx
-        for (int i = bounding_box.left; i <= bounding_box.right; ++i) {
-            for (int j = bounding_box.top; j <= bounding_box.bottom; ++j) {
+        for (uint i = bounding_box.left; i <= bounding_box.right; ++i) {
+            for (uint j = bounding_box.top; j <= bounding_box.bottom; ++j) {
                 const double x = double(i);
                 const double y = double(j);
 #ifdef FFTSHIFT
-                const int& ii = i;
-                const int& jj = j;
+                const uint& ii = i;
+                const uint& jj = j;
 #else
-                const int ii = i < h_shift ? i + h_shift : i - h_shift;
-                const int jj = j < v_shift ? j + v_shift : j - v_shift;
+                const uint ii = i < h_shift ? i + h_shift : i - h_shift;
+                const uint jj = j < v_shift ? j + v_shift : j - v_shift;
 #endif
                 if (label_map.at(jj, ii) != label_idx) {
                     continue;

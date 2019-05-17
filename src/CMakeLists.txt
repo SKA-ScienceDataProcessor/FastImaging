@@ -25,7 +25,8 @@ endif()
 # Options
 option(BUILD_TESTS "Builds the unit tests" ON)
 option(BUILD_BENCHMARK "Builds the benchmark tests" ON)
-option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode - required for parallel nth_element" ON)
+option(USE_GLIBCXX_PARALLEL "Uses GLIBCXX parallel mode - required for
+parallel nth_element" OFF)
 option(USE_FLOAT "Builds STP using FLOAT type to represent large arrays of real/complex numbers" OFF)
 option(ENABLE_FUNCTIONTIMINGS "Measures function execution times from the reduce executable" ON)
 option(USE_SERIAL_GRIDDER "Uses serial implementation of gridder" OFF)
