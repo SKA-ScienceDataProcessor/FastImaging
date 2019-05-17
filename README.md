@@ -18,8 +18,8 @@
 ## Build & Run
 ### Dependencies 
 
-**GCC version must be less or equal to 7.3**
-**STP does not perform correctly when compiled with gcc-8 or higher due to FFTW issues when using gcc-8 and ffast-math option**
+**GCC-7 version must be used**
+**The software will not perform correctly if compiled with GCC-8 or higher due to FFTW issues when using GCC-8 and ffast-math option**
 
 #### In Source (third-party)
 - [Armadillo](http://arma.sourceforge.net/) [8.400.0]
@@ -97,7 +97,7 @@ OPTION | Description
 ```sh
 $ mkdir -p <path/to/build/directory>
 $ cd <path/to/build/directory>
-$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF -DENABLE_WPROJECTION=ON <path/to/project/src>
+$ cmake -DCMAKE_BUILD_TYPE=Release -DUSE_FLOAT=OFF -DENABLE_WPROJECTION=ON -DENABLE_APROJECTION=ON <path/to/project/src>
 $ make all -j4
 $ make fftwisdom
 $ make test
@@ -240,7 +240,7 @@ import stp_python
 import numpy as np
 
 # Input simdata file must be located in the current directory
-vis_filepath = 'simdata_awproj_nstep10.npz'
+vis_filepath = 'fivesrcdata_awproj.npz'
 
 # This example is not computing residual visibilities. 'vis' component is directly used as input to the pipeline
 with open(vis_filepath, 'rb') as f:
@@ -248,26 +248,35 @@ with open(vis_filepath, 'rb') as f:
     uvw_lambda = npz_data_dict['uvw_lambda']
     vis = npz_data_dict['vis']
     snr_weights = npz_data_dict['snr_weights']
+    lha = npz_data_dict['lha']
 
 # Parameters of image_visibilities function
-image_size = 1024
-cell_size = 100
-kernel_func_name = stp_python.KernelFunction.PSWF
+image_size = 2048
+cell_size = 60
+padding_factor = 1.0
+kernel_func_name = stp_python.KernelFunction.Gaussian
 kernel_support = 3
 kernel_exact = False
 kernel_oversampling = 8
 generate_beam = False
 grid_image_correction = True
+analytic_gcf = False
 fft_routine = stp_python.FFTRoutine.FFTW_ESTIMATE_FFT
 fft_wisdom_filename = ""
-analytic_gcf = False
-num_wplanes = 50
+num_wplanes = 128
 wplanes_median = False
-max_wpconv_support = 30
-hankel_opt = False
+max_wpconv_support = 127
+hankel_opt = True
+hankel_proj_slice = True
 undersampling_opt = 1
 kernel_trunc_perc = 1.0
-interp_type = stp_python.InterpType.LINEAR
+interp_type = stp_python.InterpType.CUBIC
+aproj_numtimesteps = 0
+obs_dec = 47.339
+obs_ra = 194.24
+aproj_opt=False
+aproj_mask_perc=0.0
+pbeam_coefs = np.array([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0])
 
 # Call image_visibilities
 cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(
@@ -276,6 +285,7 @@ cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(
     uvw_lambda,
     image_size,
     cell_size,
+    padding_factor,
     kernel_func_name,
     kernel_support,
     kernel_exact,
@@ -289,15 +299,23 @@ cpp_img, cpp_beam = stp_python.image_visibilities_wrapper(
     wplanes_median,
     max_wpconv_support,
     hankel_opt,
+    hankel_proj_slice,
     undersampling_opt,
     kernel_trunc_perc,
     interp_type,
+    aproj_numtimesteps,
+    obs_dec,
+    obs_ra,
+    aproj_opt,
+    aproj_mask_perc,
+    lha,
+    pbeam_coefs
 )
     
 
 # Parameters of source_find function
-detection_n_sigma = 50.0
-analysis_n_sigma = 50.0
+detection_n_sigma = 20.0
+analysis_n_sigma = 20.0
 rms_est = 0.0
 find_negative = True
 sigma_clip_iters = 5
